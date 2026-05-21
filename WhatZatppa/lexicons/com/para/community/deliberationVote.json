@@ -1,0 +1,32 @@
+{
+  "lexicon": 1,
+  "id": "com.para.community.deliberationVote",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["deliberation", "voter", "direction"],
+        "properties": {
+          "deliberation": {
+            "type": "string",
+            "format": "at-uri"
+          },
+          "voter": {
+            "type": "string",
+            "format": "did"
+          },
+          "direction": {
+            "type": "string",
+            "enum": ["agree", "disagree", "pass"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

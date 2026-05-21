@@ -1,0 +1,10 @@
+{
+  "extends": ["../../../tsconfig/nodenext.json"],
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true
+  },
+  "include": ["./*.js", "./*.cjs", "./*.mjs", "./*.ts", "./*.cts", "./*.mts",
+    "../../../tsconfig/cjs-default-exports.d.ts"
+  ]
+}

@@ -1,0 +1,53 @@
+# PARA Production PostgreSQL Configuration
+# Based on 4 vCPU / 8 GB RAM baseline. Tune for your hardware.
+
+# Connections
+max_connections = 200
+
+# Memory
+shared_buffers = 2GB
+effective_cache_size = 6GB
+maintenance_work_mem = 512MB
+work_mem = 10MB
+
+# WAL / Checkpointing
+wal_level = replica
+wal_buffers = 16MB
+max_wal_size = 2GB
+min_wal_size = 512MB
+checkpoint_completion_target = 0.9
+checkpoint_timeout = 10min
+
+# WAL Archiving (Point-in-Time Recovery)
+archive_mode = on
+archive_command = '/opt/postgres/scripts/wal_archive.sh %p %f'
+archive_timeout = 60
+
+# Query planner
+default_statistics_target = 100
+random_page_cost = 1.1
+effective_io_concurrency = 200
+
+# Logging
+log_destination = 'stderr'
+logging_collector = on
+log_directory = '/var/log/postgresql'
+log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+log_rotation_age = 1d
+log_rotation_size = 100MB
+log_min_duration_statement = 1000
+log_checkpoints = on
+log_connections = on
+log_disconnections = on
+log_lock_waits = on
+
+# Performance
+jit = on
+max_parallel_workers_per_gather = 2
+max_parallel_workers = 4
+max_worker_processes = 4
+
+# Safety
+fsync = on
+synchronous_commit = on
+full_page_writes = on

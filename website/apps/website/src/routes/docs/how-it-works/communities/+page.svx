@@ -1,0 +1,108 @@
+<script>
+	import StatusPill from '$lib/components/StatusPill.svelte';
+</script>
+
+<svelte:head>
+	<title>Communities • How It Works • PARA Docs</title>
+</svelte:head>
+
+<section class="docs-hero-card">
+	<p class="docs-hero-kicker">How it works</p>
+# Communities
+
+	<StatusPill status="implemented" />
+
+	Communities are one of PARA's clearest non-generic structures. They turn the app away from a
+	single global feed and toward belief clusters, civic hubs, badges, governance, and community-level
+	participation.
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Routes</p>
+## Primary routes
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card"><span class="docs-meta-label">Hub routes</span><div class="docs-meta-value"><code>/communities</code>, <code>/base</code>, <code>/my-base</code></div></div>
+		<div class="docs-meta-card"><span class="docs-meta-label">Profile route</span><div class="docs-meta-value"><code>/communities/profile/:communityId</code></div></div>
+		<div class="docs-meta-card"><span class="docs-meta-label">Adjacent routes</span><div class="docs-meta-value"><code>/communities/:communityId/raq</code>, <code>/communities/:communityId/voters</code>, <code>/communities/:communityId/badges</code></div></div>
+	</div>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">State ownership</p>
+## What this route family owns
+	<ul>
+		<li>Community identity, slug, and profile framing.</li>
+		<li>Governance roster and role hierarchy overlays.</li>
+		<li>Community-scoped participation routes such as RAQ, voters, and badges.</li>
+		<li>Entry into related civic surfaces such as cabildeos and local reading.</li>
+	</ul>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">User actions</p>
+## What users do here
+	<ul>
+		<li>Find a political home around ideas, regions, or issue clusters.</li>
+		<li>Read governance and role assignment instead of treating the community as a flat feed.</li>
+		<li>Move into RAQ, voters, badges, and cabildeo from a community context.</li>
+	</ul>
+	<div class="docs-callout">
+		<p>
+			The key product distinction is that communities are structural, not decorative. They anchor
+			navigation and participation.
+		</p>
+	</div>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Backend contracts</p>
+## Schema support
+
+	<p>
+		Community governance is backed by two schemas: a view definition that describes the shape of
+		governance data, and a query that returns the live roster for a given community.
+	</p>
+
+	### <code>com.para.community.defs</code>
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>moderators</code></span>
+			<div class="docs-meta-value">Array of moderator handles with role and active status.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>officials</code></span>
+			<div class="docs-meta-value">Array of officials with title, scope, and tenure.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>deputies</code></span>
+			<div class="docs-meta-value">Array of deputy handles with delegation and active status.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>history</code></span>
+			<div class="docs-meta-value">Chronological governance events: role changes, elections, and moderation actions.</div>
+		</div>
+	</div>
+
+	### <code>com.para.community.getGovernance</code>
+	<p>
+		This XRPC query returns the live governance view for a community. It is read-only and serves
+		from indexed state rather than scanning raw records.
+	</p>
+	<ul>
+		<li>Returns the full governance roster: moderators, officials, deputies, and history.</li>
+		<li>Used by the community profile route and moderation dashboards.</li>
+		<li>Backed by indexed governance state in the AppView.</li>
+	</ul>
+</section>
+
+## Related contracts
+
+- `com.para.community.defs`
+- `com.para.community.getGovernance`
+- `com.para.actor.defs`
+
+## Read next
+
+- Read [Cabildeo](/docs/how-it-works/cabildeo)
+- Read [RAQ](/docs/how-it-works/raq)
+- Browse the [community schemas](/docs/schemas/com.para.community.defs)

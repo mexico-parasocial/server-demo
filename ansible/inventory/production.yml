@@ -1,0 +1,36 @@
+---
+# PARA Production Infrastructure
+# Edit IPs and SSH users before first run.
+
+all:
+  children:
+    swarm_managers:
+      hosts:
+        para-manager-01:
+          ansible_host: 123.45.67.89
+          ansible_user: root
+          # This node runs the Swarm control plane + Traefik + PDS + Ozone
+          node_labels:
+            - traefik-public=true
+            - pds-node=true
+            - ozone-node=true
+            - postgres-primary=true
+
+    swarm_workers:
+      hosts:
+        para-worker-01:
+          ansible_host: 123.45.67.90
+          ansible_user: root
+          node_labels:
+            - appview-node=true
+        para-worker-02:
+          ansible_host: 123.45.67.91
+          ansible_user: root
+          node_labels:
+            - appview-node=true
+
+    # Optional: dedicated database tier (managed RDS/Cloud SQL is recommended)
+    # db_nodes:
+    #   hosts:
+    #     para-db-01:
+    #       ansible_host: 123.45.67.92

@@ -1,0 +1,33 @@
+---
+slug: 'm8-identity-broker-estado-tecnico'
+title: 'm8: Estado técnico del broker de identidad'
+description: 'Reporte técnico del estado actual del m8 Identity Broker: arquitectura de pruebas, componentes clave, y cómo encaja en el ecosistema PARA.'
+date: 'May 9, 2026'
+author: 'PARA'
+---
+
+m8 no es una wallet de identidad. Es un **broker de pruebas**. Esta distinción no es semántica: define toda la arquitectura.
+
+El problema que resuelve m8 es simple de enunciar y complejo de implementar: ¿cómo pruebo algo sobre mí mismo sin revelar quién soy? En un contexto cívico mexicano, esto no es paranoia. Es necesidad. La correlación entre identidad real y opinión política tiene consecuencias.
+
+**Arquitectura de tres capas.**  
+La sesión comienza con ATProto sign-in: el usuario demuestra control sobre un DID. Eso no dice nada sobre su persona física, solo sobre su capacidad de firmar con una clave. Luego entra el proof broker session: un estado intermedio donde el usuario acumula pruebas verificadas. Finalmente, persona/surface/grant management: decidir qué pruebas se exponen en qué superficie, bajo qué condiciones.
+
+**Componentes actuales.**
+
+- Persona switcher: permite operar con distintas máscaras cívicas sin logout.
+- Custom surface builder: el usuario define qué combinación de pruebas se muestra en cada contexto.
+- INE verification modal: escaneo de credencial de elector con validación cruzada.
+- Biometric gate + AppState auto-lock: si el usuario abandona la app, la sesión de pruebas se bloquea.
+- QR export: compartir un bundle de pruebas verificadas sin canal digital directo.
+
+**MyBase: el canvas de conocimiento.**  
+PolicyTreeCanvas con gesture pan/zoom y colores por tipo de nodo. PolicyList como vista mobile alternativa. SpaceShareModal para enviar espacios permissioned. EndorsementPanel como cola de moderación. Los tipos subyacentes — PolicyNode, PolicyEdge, KnowledgeBundle, PermissionedSpace — son la gramática que permite que el mapa cívico personal se convierta en comunitario.
+
+**Stack técnico.**  
+React Native Expo, react-native-gesture-handler, react-native-reanimated, react-native-svg. Todo integrado en ConsoleScreen con navegación por secciones. No usamos WebView para el grafo: SVG nativo con simulación de fuerzas propia (d3-force adaptado) para paridad mobile/web.
+
+**Estado actual.**  
+Funcional en dev. La arquitectura de pruebas está completa: puedes crear personas, acumular pruebas, definir superficies, y exportar bundles. Lo que sigue es endurecimiento: más verificadores de prueba (INE es solo el primero), integración con Ozone para decisión de moderación sobre bundles rechazados, y optimización de performance del canvas para >100 nodos.
+
+La pregunta que m8 responde no es "¿quién eres?" sino "¿qué puedes demostrar?". Esa inversión es intencional y es el núcleo del diseño.

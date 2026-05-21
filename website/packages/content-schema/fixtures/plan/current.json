@@ -1,0 +1,32 @@
+[
+  {
+    "id": "merge-site",
+    "title": "Unify landing and docs at one origin",
+    "summary": "Serve marketing content at / and documentation at /docs from one SvelteKit app so local and production routing match.",
+    "target": "Completed"
+  },
+  {
+    "id": "rewrite-copy",
+    "title": "Ground copy in PARA and WhatZatppa",
+    "summary": "Replace placeholder Parasocial language with PARA product surfaces and WhatZatppa backend terminology.",
+    "target": "Completed"
+  },
+  {
+    "id": "curate-schema-set",
+    "title": "Publish the Para schema set",
+    "summary": "Curate com.para post, actor, community, civic, highlight, and status docs in the site schema reference with fields, constraints, relationships, and examples.",
+    "target": "Completed"
+  },
+  {
+    "id": "expand-architecture-docs",
+    "title": "Document the backend topology",
+    "summary": "Expand the architecture page to explain PDS, AppView, indexing pipeline, data flow, and the four schema categories.",
+    "target": "Completed"
+  },
+  {
+    "id": "backend-status-matrix",
+    "title": "Backend feature status matrix",
+    "summary": "Add a status page section that maps each com.para.* schema to its implementation maturity.",
+    "target": "In progress"
+  }
+]

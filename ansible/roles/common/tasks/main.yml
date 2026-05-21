@@ -1,0 +1,96 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install base packages
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - software-properties-common
+      - htop
+      - vim
+      - ufw
+      - fail2ban
+      - ncdu
+    state: present
+
+- name: Set timezone to UTC
+  timezone:
+    name: UTC
+
+- name: Configure UFW — allow SSH
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: Configure UFW — allow HTTPS
+  ufw:
+    rule: allow
+    port: "443"
+    proto: tcp
+
+- name: Configure UFW — allow Swarm management port (internal)
+  ufw:
+    rule: allow
+    port: "2377"
+    proto: tcp
+    src: "10.0.0.0/8"
+  when: inventory_hostname in groups['swarm_managers'] or inventory_hostname in groups['swarm_workers']
+
+- name: Configure UFW — allow Swarm overlay network (internal)
+  ufw:
+    rule: allow
+    port: "4789"
+    proto: udp
+    src: "10.0.0.0/8"
+  when: inventory_hostname in groups['swarm_managers'] or inventory_hostname in groups['swarm_workers']
+
+- name: Configure UFW — allow Swarm gossip (internal)
+  ufw:
+    rule: allow
+    port: "7946"
+    proto: any
+    src: "10.0.0.0/8"
+  when: inventory_hostname in groups['swarm_managers'] or inventory_hostname in groups['swarm_workers']
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: deny
+
+- name: Configure fail2ban
+  template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+  notify: restart fail2ban
+
+- name: Ensure fail2ban is running
+  service:
+    name: fail2ban
+    state: started
+    enabled: yes
+
+- name: Create PARA deploy directory
+  file:
+    path: "{{ para_deploy_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Tune kernel params for Docker
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  loop:
+    - { key: "net.ipv4.ip_forward", value: "1" }
+    - { key: "net.bridge.bridge-nf-call-iptables", value: "1" }
+    - { key: "net.bridge.bridge-nf-call-ip6tables", value: "1" }
+    - { key: "vm.max_map_count", value: "262144" }

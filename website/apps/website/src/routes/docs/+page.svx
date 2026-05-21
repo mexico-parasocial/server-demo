@@ -1,0 +1,102 @@
+<script lang="ts">
+</script>
+
+<svelte:head>
+	<title>{`PARA Docs`}</title>
+	<meta
+		name="description"
+		content={`Documentation for PARA, organized around the thesis, product routes, trust model, and schema reference.`}
+	/>
+</svelte:head>
+
+<section class="docs-hero-card">
+	<p class="docs-hero-kicker">Documentation</p>
+	# PARA docs
+
+	
+		The docs are simpler now. Start with the thesis, the product routes, or the contracts depending on
+		what you actually need.
+	
+
+	<div class="docs-link-grid">
+		<a class="docs-link-card" href="/thesis">
+			<strong>Understand PARA</strong>
+			<span>Read the political thesis and the second-layer argument first.</span>
+		</a>
+		<a class="docs-link-card" href="/docs/how-it-works">
+			<strong>Explore the product</strong>
+			<span>Read the route families for communities, RAQ, cabildeo, representatives, discovery, and messages.</span>
+		</a>
+		<a class="docs-link-card" href="/docs/schemas">
+			<strong>Inspect the contracts</strong>
+			<span>Open the `com.para.*` reference when you want the protocol layer.</span>
+		</a>
+	</div>
+</section>
+
+<div class="docs-editorial-block">
+	<section class="docs-section-card">
+		<p class="docs-section-kicker">Choose a lane</p>
+		## Use the shortest path that fits your question
+
+		<div class="docs-split-grid">
+			<div class="docs-note-panel">
+				<h3>What is PARA?</h3>
+				<p>Read <a href="/thesis">Thesis</a>, then move into <a href="/docs/product">Product</a>.</p>
+			</div>
+			<div class="docs-note-panel">
+				<h3>How does the civic model work?</h3>
+				<p>Open <a href="/docs/how-it-works">How it works</a> for the core route families and terms.</p>
+			</div>
+			<div class="docs-note-panel">
+				<h3>How do I access the app?</h3>
+				<p>Use <a href="/try-app">Try app</a> for the Android recommendation or the local GitHub runbook.</p>
+			</div>
+			<div class="docs-note-panel">
+				<h3>How mature is it?</h3>
+				<p>Use <a href="/docs/status">Status</a> to distinguish implemented, partial, and thesis-only areas.</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="docs-section-card">
+		<p class="docs-section-kicker">Docs map</p>
+		## The reference is split into four clear layers
+
+		<div class="docs-meta-grid">
+			<div class="docs-meta-card">
+				<span class="docs-meta-label">Thesis</span>
+				<div class="docs-meta-value"><a href="/thesis">Thesis</a> explains the democratic-friction argument and the product worldview.</div>
+			</div>
+			<div class="docs-meta-card">
+				<span class="docs-meta-label">Product</span>
+				<div class="docs-meta-value"><a href="/docs/how-it-works">How it works</a> and <a href="/docs/product">Product</a> explain the visible app surface.</div>
+			</div>
+			<div class="docs-meta-card">
+				<span class="docs-meta-label">Operations</span>
+				<div class="docs-meta-value"><a href="/trust-and-safety">Trust and safety</a>, <a href="/try-app">Try app</a>, and <a href="/docs/status">Status</a> cover access and guardrails.</div>
+			</div>
+			<div class="docs-meta-card">
+				<span class="docs-meta-label">Contracts</span>
+				<div class="docs-meta-value"><a href="/docs/schemas">Schemas</a> keeps the `WhatZatppa` and `com.para.*` reference reachable when needed.</div>
+			</div>
+		</div>
+
+		<div class="docs-callout">
+			<p>
+				
+					The core rule is simple: product language first, protocol language second. That keeps the docs
+					useful for both readers and builders.
+				
+			</p>
+		</div>
+	</section>
+</div>
+
+## Read next
+
+- Read [How it works](/docs/how-it-works)
+- Read the [Product page](/docs/product)
+- Read the [Trust and safety page](/trust-and-safety)
+- Read the [Try app page](/try-app)
+- Browse the [schema reference](/docs/schemas)

@@ -1,0 +1,138 @@
+<script lang="ts">
+	import StatusPill from '$lib/components/StatusPill.svelte';
+</script>
+
+<svelte:head>
+	<title>{`Status Guide • PARA Docs`}</title>
+	<meta
+		name="description"
+		content={`How PARA docs mark maturity: implemented, partial, experimental, and thesis. Backend schema status matrix included.`}
+	/>
+</svelte:head>
+
+<section class="docs-hero-card">
+	<p class="docs-hero-kicker">Status</p>
+	# Maturity markers
+
+	
+		The docs use explicit maturity labels so readers can distinguish current product behavior from
+		partial flows, experimental surfaces, and thesis-level direction.
+	
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Legend</p>
+	<h2>What each label means</h2>
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<StatusPill status="implemented" />
+			<div class="docs-meta-value">A route or contract exists, is wired into the product, and should be described as a real current surface.</div>
+		</div>
+		<div class="docs-meta-card">
+			<StatusPill status="partial" />
+			<div class="docs-meta-value">The route family or model exists, but the product behavior, data maturity, or contract coverage is still incomplete.</div>
+		</div>
+		<div class="docs-meta-card">
+			<StatusPill status="experimental" />
+			<div class="docs-meta-value">The route or contract exists, but the interaction model or surrounding infrastructure is still moving enough that the docs should stay careful.</div>
+		</div>
+		<div class="docs-meta-card">
+			<StatusPill status="thesis" />
+			<div class="docs-meta-value">The concept belongs to PARA's long-term direction, but the site should not imply that it is already implemented end to end.</div>
+		</div>
+	</div>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Usage rules</p>
+	<h2>How the site should use these labels</h2>
+	<ul>
+		<li>Use <code>implemented</code> when a reader can actually open the route or rely on the contract today.</li>
+		<li>Use <code>partial</code> when the route exists but product maturity and data maturity are not the same thing.</li>
+		<li>Use <code>experimental</code> when the surface is real but still unstable enough to avoid overpromising.</li>
+		<li>Use <code>thesis</code> when the docs are describing direction, not current delivery.</li>
+	</ul>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Backend schema matrix</p>
+	<h2>com.para.* contract maturity</h2>
+
+	<p>
+		
+			This matrix maps every published <code>com.para.*</code> schema to its current backend maturity.
+			Stable schemas have fixed fields and are safe to build against. Experimental schemas may gain or
+			lose fields as the product surfaces they support evolve.
+		
+	</p>
+
+	<h3>Records</h3>
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.post</code></span>
+			<div class="docs-meta-value"><StatusPill status="stable" /> Primary post record. Fixed fields, in production use.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.status</code></span>
+			<div class="docs-meta-value"><StatusPill status="stable" /> Public status record. Fixed fields, in production use.</div>
+		</div>
+	</div>
+
+	<h3>Metadata overlays</h3>
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.social.postMeta</code></span>
+			<div class="docs-meta-value"><StatusPill status="experimental" /> Civic classification overlay. Field set may evolve.</div>
+		</div>
+	</div>
+
+	<h3>Views</h3>
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.actor.defs</code></span>
+			<div class="docs-meta-value"><StatusPill status="experimental" /> Profile stats view. Influence scoring still being calibrated.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.community.defs</code></span>
+			<div class="docs-meta-value"><StatusPill status="experimental" /> Governance roster view. Role taxonomy may expand.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.civic.defs</code></span>
+			<div class="docs-meta-value"><StatusPill status="experimental" /> Cabildeo and position views. Aggregate shape still settling.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.highlight.defs</code></span>
+			<div class="docs-meta-value"><StatusPill status="experimental" /> Highlight annotation view. Filter set may expand.</div>
+		</div>
+	</div>
+
+	<h3>Queries</h3>
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.actor.getProfileStats</code></span>
+			<div class="docs-meta-value"><StatusPill status="experimental" /> Actor stats query. Aggregation logic still being refined.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.community.getGovernance</code></span>
+			<div class="docs-meta-value"><StatusPill status="experimental" /> Governance query. History depth and moderation context evolving.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.civic.getCabildeo</code></span>
+			<div class="docs-meta-value"><StatusPill status="experimental" /> Cabildeo detail query. Viewer context and delegation shape still settling.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.civic.listCabildeos</code></span>
+			<div class="docs-meta-value"><StatusPill status="experimental" /> Cabildeo list query. Filter set and pagination stable but may expand.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.highlight.listHighlights</code></span>
+			<div class="docs-meta-value"><StatusPill status="experimental" /> Highlight list query. Filter set stable but may expand.</div>
+		</div>
+	</div>
+</section>
+
+## Read next
+
+- Read [How it works](/docs/how-it-works)
+- Read the [Glossary](/docs/glossary)
+- Browse the [Schema reference](/docs/schemas)s)

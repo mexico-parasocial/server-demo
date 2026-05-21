@@ -1,0 +1,32 @@
+---
+slug: 'passkit-vs-m8-arquitectura-prueba'
+title: 'PassKit Identity vs m8: traer tu credencial vs construir tu reputación'
+description: 'Análisis arquitectónico: cómo funciona PassKit Identity de Apple, por qué México no tiene mDL todavía, y cómo m8 ocupa ese vacío con un modelo de prueba distribuida.'
+date: 'May 9, 2026'
+author: 'PARA'
+---
+
+Apple publicó recientemente la documentación para **requesting identity data from a Wallet pass**: una API que permite a apps de terceros leer credenciales verificadas almacenadas en Apple Wallet. El caso de uso estrella es el Mobile Driving License (mDL), un estándar ISO que varios estados de EE.UU. ya emiten.
+
+**Cómo funciona PassKit Identity.**  
+El flujo es: emisor oficial (gobierno, banco, universidad) genera una credencial criptográficamente firmada → usuario la almacena en Apple Wallet → app de terceros solicita lectura con permiso explícito del usuario → Apple valida la firma contra el emisor antes de entregar los datos. La confianza viene del emisor, no de Apple. Apple es solo el pipe con UI consistente.
+
+**Por qué esto no resuelve el problema cívico mexicano hoy.**  
+México no tiene emisor de mDL. El INE no emite credenciales digitales verificables. No hay infraestructura de PKI gubernamental accesible para ciudadanos comunes. PassKit, en este momento, es una especificación sin contenido para el 99% de los mexicanos.
+
+**La diferencia arquitectónica central.**  
+PassKit es **trae tu credencial**: el usuario ya tiene una prueba emitida por una autoridad, y la presenta cuando se la piden. m8 es **construye tu reputación**: el usuario genera pruebas progresivamente, cada una verificada por distintos mecanismos, y el agregado es lo que cuenta. No hay emisor único. Hay un broker que orquesta múltiples fuentes de confianza.
+
+**Analogía concreta.**  
+PassKit es como mostrar tu pasaporte en la aduana: una credencial única, fuerte, emitida por un estado. m8 es como construir una historia crediticia: muchas transacciones pequeñas, verificadas por distintos actores, que en conjunto generan confianza suficiente para una transacción mayor.
+
+**¿Pueden coexistir? Sí, y deberían.**  
+En un futuro donde México emita mDL o credencial digital INE, m8 podría integrar PassKit como **una fuente más** de prueba. El INE scan actual es un hack necesario; un mDL oficial sería estrictamente mejor. Pero m8 no se vuelve obsoleto: el valor no está en la verificación del INE, está en la **composición de pruebas** y el **control de exposición** que el usuario tiene sobre ellas.
+
+**El vacío que m8 ocupa ahora.**  
+Mientras no haya infraestructura estatal de identidad verificable, alguien tiene que construir el puente. m8 no finge ser el estado. No emite credenciales oficiales. Lo que hace es: (1) definir un formato de prueba interoperable, (2) permitir múltiples verificadores (INE, biometría, red social, endorsers), (3) dar al usuario control granular sobre qué pruebas se exponen dónde.
+
+**Lección para otros mercados emergentes.**  
+La arquitectura de PassKit asume un emisor confiable. Esa asunción no se sostiene en países donde la institucionalidad es débil o donde la correlación identidad-opinión es peligrosa. m8 es un modelo para esos contextos: distribuido, progresivo, reversible, controlado por el usuario.
+
+PassKit es el futuro que el norte ya está construyendo. m8 es el presente que el sur necesita sobrevivir hasta que ese futuro llegue.

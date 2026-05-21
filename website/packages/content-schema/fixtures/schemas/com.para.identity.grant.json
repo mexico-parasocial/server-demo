@@ -1,0 +1,52 @@
+{
+  "id": "com.para.identity.grant",
+  "title": "com.para.identity.grant",
+  "summary": "Consent grant record representing a citizen's approval for a third party to access specific identity data or perform actions on their behalf.",
+  "status": "experimental",
+  "tags": ["identity", "grants", "consent", "records"],
+  "backendOwner": "identity-manager/app/controllers/grants_controller.ts",
+  "sourcePath": "m8/lexicons/com/para/identity/grant.json",
+  "examples": [
+    "{\"$type\":\"com.para.identity.grant\",\"scope\":\"profile.read\",\"recipient\":\"did:para:app123\",\"expiresAt\":\"2026-12-31T23:59:59.000Z\",\"createdAt\":\"2026-05-18T00:00:00.000Z\"}"
+  ],
+  "relationships": [
+    "Grants are created by the identity owner and approved explicitly via m8.",
+    "Revoked grants remain in the ledger for audit but are marked inactive."
+  ],
+  "constraints": [
+    "Scope must be a known grant scope registered in the m8 grants registry.",
+    "Recipient must be a valid DID or registered application identifier."
+  ],
+  "fields": [
+    {
+      "name": "scope",
+      "type": "string",
+      "required": true,
+      "description": "Grant scope defining what data or action is being authorized."
+    },
+    {
+      "name": "recipient",
+      "type": "string",
+      "required": true,
+      "description": "DID or application identifier of the party receiving the grant."
+    },
+    {
+      "name": "status",
+      "type": "string",
+      "required": true,
+      "description": "Grant lifecycle state: pending, approved, revoked, expired."
+    },
+    {
+      "name": "expiresAt",
+      "type": "datetime",
+      "required": false,
+      "description": "Optional expiration timestamp after which the grant is invalid."
+    },
+    {
+      "name": "createdAt",
+      "type": "datetime",
+      "required": true,
+      "description": "Timestamp when the grant was originally created."
+    }
+  ]
+}

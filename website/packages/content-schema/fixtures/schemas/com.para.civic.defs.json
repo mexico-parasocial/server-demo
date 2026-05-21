@@ -1,0 +1,72 @@
+{
+  "id": "com.para.civic.defs",
+  "title": "com.para.civic.defs",
+  "summary": "Indexed civic views for cabildeos, positions, option summaries, vote totals, outcomes, and viewer context.",
+  "status": "experimental",
+  "tags": ["civic", "governance", "views"],
+  "backendOwner": "lexicons/com/para/civic/defs.json",
+  "sourcePath": "WhatZatppa/lexicons/com/para/civic/defs.json",
+  "examples": [
+    "{\"cabildeoView\":{\"title\":\"Water allocation reform\",\"phase\":\"voting\",\"optionSummary\":[{\"optionIndex\":0,\"label\":\"Approve\",\"votes\":82,\"positions\":16}]}}"
+  ],
+  "relationships": [
+    "Backs com.para.civic.getCabildeo and list-style civic queries.",
+    "Includes viewerContext for direct and delegated vote state."
+  ],
+  "constraints": [
+    "`cabildeoView` requires title, description, community, options, phase, createdAt, optionSummary, positionCounts, and voteTotals.",
+    "`positionView` requires cabildeo linkage, stance, text, and createdAt."
+  ],
+  "lifecycle": [
+    "Records such as cabildeo, position, vote, and delegation are indexed into civic view objects.",
+    "Clients primarily consume the indexed view layer rather than stitching raw civic records together."
+  ],
+  "writers": [
+    "Backend indexing pipeline writes view materializations from civic records."
+  ],
+  "readers": [
+    "Cabildeo detail, cabildeo list, delegation UX, and community civic overlays."
+  ],
+  "routes": [
+    "/communities/cabildeos",
+    "/communities/cabildeos/:cabildeoUri",
+    "/communities/cabildeos/:cabildeoUri/delegate-vote"
+  ],
+  "xrpcMethods": [
+    "com.para.civic.getCabildeo",
+    "com.para.civic.listCabildeos",
+    "com.para.civic.listCabildeoPositions"
+  ],
+  "indexing": [
+    "Aggregates options, votes, positions, and viewer context into cabildeoView.",
+    "Computes outcome and option summaries from indexed participation state."
+  ],
+  "moderation": [
+    "Community scope and viewer context shape which civic activity is shown to a user."
+  ],
+  "productSurfaces": [
+    "Cabildeo detail",
+    "Cabildeo list",
+    "Delegated voting"
+  ],
+  "fields": [
+    {
+      "name": "cabildeoView",
+      "type": "indexed object view",
+      "required": true,
+      "description": "Full indexed view of a civic deliberation including phase, options, summaries, vote totals, and viewer context."
+    },
+    {
+      "name": "positionView",
+      "type": "indexed object view",
+      "required": true,
+      "description": "Indexed view of a user position tied to a cabildeo, including stance and text."
+    },
+    {
+      "name": "viewerContext",
+      "type": "object",
+      "required": false,
+      "description": "Per-viewer civic state such as current vote, delegation target, and grace-period metadata."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+# PARA Ansible Variables (non-secret)
+# =============================================================================
+
+# Domain names
+para_domain: "para.social"
+pds_hostname: "pds.{{ para_domain }}"
+appview_hostname: "appview.{{ para_domain }}"
+ozone_hostname: "ozone.{{ para_domain }}"
+chat_hostname: "chat.{{ para_domain }}"
+
+# Docker
+docker_version: "5:27.0.0-1~ubuntu.24.04~noble"
+docker_compose_version: "v2.27.0"
+
+# Swarm
+swarm_port: 2377
+swarm_overlay_network: "para-network"
+
+# Traefik
+traefik_version: "v3.0"
+traefik_acme_email: "ops@{{ para_domain }}"
+
+# PARA Stack
+para_stack_name: "para"
+para_deploy_dir: "/opt/para"
+para_repo_url: "git@github.com:TinoMachino/final.git"
+para_repo_branch: "main"
+
+# Replica counts (scale horizontally by bumping these)
+appview_replicas: 2
+bsync_replicas: 1
+ozone_replicas: 1
+
+# Resource constraints (adjust per node size)
+appview_memory_limit: "2g"
+appview_cpu_limit: "1.5"
+pds_memory_limit: "1g"
+pds_cpu_limit: "0.5"
+
+# PostgreSQL Self-Managed
+postgres_user: "pg"
+postgres_password: "{{ vault_postgres_password | default('changeme') }}"
+postgres_db: "para"
+
+# Backup destination (S3-compatible: R2, MinIO, or AWS S3)
+s3_endpoint: "https://YOUR_ACCOUNT.r2.cloudflarestorage.com"
+s3_backup_bucket: "para-backups"
+s3_access_key: "{{ vault_s3_access_key | default('') }}"
+s3_secret_key: "{{ vault_s3_secret_key | default('') }}"
+s3_region: "auto"
+
+# Monitoring
+node_exporter_version: "1.8.0"

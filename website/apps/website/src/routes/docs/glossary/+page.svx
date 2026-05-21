@@ -1,0 +1,104 @@
+<svelte:head>
+	<title>Glossary • PARA Docs</title>
+	<meta
+		name="description"
+		content="Canonical vocabulary for PARA terms such as RAQ, cabildeo, matters, flairs, second layer, and civic intelligence."
+	/>
+</svelte:head>
+
+<section class="docs-hero-card">
+	<p class="docs-hero-kicker">Glossary</p>
+	# Shared vocabulary
+
+	PARA uses internal vocabulary that carries product meaning. This page is the canonical reference
+	for those terms so the other docs can stay shorter and more consistent.
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Core terms</p>
+	<h2>Political and product vocabulary</h2>
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Second layer</span>
+			<div class="docs-meta-value">PARA’s model for adding political context, validation, and civic workflows without requiring every conversation to begin inside PARA.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">RAQ</span>
+			<div class="docs-meta-value">Rightfully Asked Questions. A route family for assessment, results, proposals, open questions, and ideological self-location.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Cabildeo</span>
+			<div class="docs-meta-value">A structured lobbying and deliberation flow with proposals, positions, delegations, voting phases, and community context.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Matter</span>
+			<div class="docs-meta-value">An issue, controversy, or agenda item that concentrates attention. Matters are distinct from policy proposals.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Policy</span>
+			<div class="docs-meta-value">A more explicit proposal surface where direction and strength of support can be measured rather than implied.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Flair</span>
+			<div class="docs-meta-value">A structured civic label carried by PARA posts and metadata so political speech is easier to classify and compare.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Quadratic voting</span>
+			<div class="docs-meta-value">The intensity layer on top of the `-3` to `+3` policy scale. The docs use the term for strength-aware civic input, not a generic “like” count.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Civic intelligence</span>
+			<div class="docs-meta-value">The combination of clustering, classification, embeddings, agents, trend reading, and assisted reasoning built on top of civic data.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Persona</span>
+			<div class="docs-meta-value">A face or card within m8. A user can have up to 3 personas (PARA, Independent, Public), but all share a single central private identity that enforces one vote per policy.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Grant</span>
+			<div class="docs-meta-value">A permission that an app requests to access specific identity claims. Grants are fine-grained, time-bounded, and revocable by the user at any time.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Proof</span>
+			<div class="docs-meta-value">A cryptographic receipt that certifies a claim (e.g., "age ≥ 18") without revealing the underlying data. Proofs are generated as zero-knowledge artifacts.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">ZKP</span>
+			<div class="docs-meta-value">Zero-Knowledge Proof. A method by which m8 can prove a citizen is eligible to vote without revealing their name, CURP, or photo to PARA or any third party.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">INE verification</span>
+			<div class="docs-meta-value">The process by which m8 reads a user's Mexican voter ID (INE) locally, extracts verifiable claims, and issues a cryptographic credential. Raw documents never leave the device.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Anonymous identity</span>
+			<div class="docs-meta-value">An unlinked pseudonymous profile used for sensitive posts. Anonymous identities are created automatically upon credential issuance and carry karma independently.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Surface</span>
+			<div class="docs-meta-value">A sharing context that replaces the old global-privacy switch. Each persona can have different states per surface (public, civic, dating), making privacy explicit rather than binary.</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">One vote guarantee</span>
+			<div class="docs-meta-value">The promise that no matter how many personas a user activates, their central private identity ensures they can only vote once per policy. Multiple faces, one voice, one vote.</div>
+		</div>
+	</div>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Route terms</p>
+	<h2>Operational route families</h2>
+	<ul>
+		<li><strong>Base / My Base:</strong> orientation surfaces for civic activity, identity, and participation summaries.</li>
+		<li><strong>Highlights:</strong> a separate reading layer for annotations, not just bookmarks.</li>
+		<li><strong>Representatives:</strong> a civic route family for political actors and comparison, distinct from generic profiles.</li>
+		<li><strong>Community profile:</strong> the route where a belief cluster, community identity, and governance overlays come together.</li>
+		<li><strong>Agent chat:</strong> conversation with a community or premium agent; still earlier and less stable than the regular inbox model.</li>
+	</ul>
+</section>
+
+## Read next
+
+- Read [How it works](/docs/how-it-works)
+- Read the [Status guide](/docs/status)
+- Read [Thesis](/thesis)

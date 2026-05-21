@@ -1,0 +1,72 @@
+#!/bin/bash
+set -euo pipefail
+
+# PARA PostgreSQL Backup Script
+# Runs daily via systemd timer. Creates pg_dump + uploads to S3/R2.
+
+PG_USER="{{ postgres_user }}"
+PG_PASS="{{ postgres_password }}"
+PG_DB="{{ postgres_db }}"
+PG_HOST="localhost"
+PG_PORT="5432"
+
+BACKUP_DIR="{{ para_deploy_dir }}/postgres/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_FILE="$BACKUP_DIR/para_${DATE}.sql.gz"
+DUMP_LOG="$BACKUP_DIR/backup_${DATE}.log"
+
+# S3-compatible settings (R2, MinIO, or S3)
+S3_ENDPOINT="{{ s3_endpoint | default('') }}"
+S3_BUCKET="{{ s3_backup_bucket | default('') }}"
+S3_ACCESS_KEY="{{ s3_access_key | default('') }}"
+S3_SECRET_KEY="{{ s3_secret_key | default('') }}"
+S3_REGION="{{ s3_region | default('auto') }}"
+
+export PGPASSWORD="$PG_PASS"
+
+mkdir -p "$BACKUP_DIR"
+
+echo "[$(date)] Starting PostgreSQL backup..." | tee -a "$DUMP_LOG"
+
+# 1. pg_dump (consistent point-in-time snapshot)
+pg_dump \
+  -h "$PG_HOST" \
+  -p "$PG_PORT" \
+  -U "$PG_USER" \
+  -d "$PG_DB" \
+  -Fc \
+  --verbose \
+  --no-owner \
+  --no-acl \
+  2>>"$DUMP_LOG" | gzip > "$BACKUP_FILE"
+
+BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
+echo "[$(date)] Backup complete: $BACKUP_FILE ($BACKUP_SIZE)" | tee -a "$DUMP_LOG"
+
+# 2. Upload to S3/R2 if configured
+if [[ -n "$S3_ENDPOINT" && -n "$S3_BUCKET" && -n "$S3_ACCESS_KEY" ]]; then
+  echo "[$(date)] Uploading to S3..." | tee -a "$DUMP_LOG"
+
+  # Use MinIO client (mc) or AWS CLI
+  if command -v mc &> /dev/null; then
+    mc alias set para-backup "$S3_ENDPOINT" "$S3_ACCESS_KEY" "$S3_SECRET_KEY" 2>>"$DUMP_LOG"
+    mc cp "$BACKUP_FILE" "para-backup/$S3_BUCKET/postgres/daily/" 2>>"$DUMP_LOG"
+  elif command -v aws &> /dev/null; then
+    AWS_ACCESS_KEY_ID="$S3_ACCESS_KEY" \
+    AWS_SECRET_ACCESS_KEY="$S3_SECRET_KEY" \
+    aws s3 cp "$BACKUP_FILE" "s3://$S3_BUCKET/postgres/daily/" \
+      --endpoint-url "$S3_ENDPOINT" \
+      --region "$S3_REGION" \
+      2>>"$DUMP_LOG"
+  else
+    echo "[$(date)] WARNING: No S3 client (mc or aws) found. Skipping upload." | tee -a "$DUMP_LOG"
+  fi
+
+  echo "[$(date)] S3 upload complete." | tee -a "$DUMP_LOG"
+fi
+
+# 3. Cleanup old local backups (keep 14 days)
+find "$BACKUP_DIR" -name "para_*.sql.gz" -mtime +14 -delete
+find "$BACKUP_DIR" -name "backup_*.log" -mtime +14 -delete
+
+echo "[$(date)] Backup job finished." | tee -a "$DUMP_LOG"

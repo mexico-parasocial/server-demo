@@ -1,0 +1,64 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Env files (security)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Temp
+tmp/
+temp/
+*.tmp
+
+# Global build artifacts
+*.tsbuildinfo
+node_modules/
+
+# Website build artifacts
+website/node_modules/
+website/.pnpm-store/
+website/dist/
+website/build/
+website/.svelte-kit/
+website/coverage/
+website/vite.config.timestamp-*.mjs
+website/.wrangler/
+website/.vercel/
+
+# WhatZatppa build artifacts
+WhatZatppa/node_modules/
+WhatZatppa/**/dist/
+WhatZatppa/**/*.tsbuildinfo
+
+# PARA build artifacts
+PARA/node_modules/
+PARA/ios/build/
+PARA/android/build/
+PARA/android/app/build/
+PARA/.expo/
+PARA/dist/
+
+# Test artifacts
+**/coverage/
+**/.nyc_output/
+
+# Package manager
+.pnpm-store/
+**/pnpm-lock.yaml.bak
+
+# Misc
+*.orig
+*.rej

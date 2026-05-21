@@ -1,0 +1,46 @@
+{
+  "id": "com.para.identity.defs",
+  "title": "com.para.identity.defs",
+  "summary": "Core identity definitions for personas, verification status, device trust, and anonymous credentials.",
+  "status": "experimental",
+  "tags": ["identity", "definitions", "views"],
+  "backendOwner": "identity-manager/app/controllers/identities_controller.ts",
+  "sourcePath": "m8/lexicons/com/para/identity/defs.json",
+  "examples": [
+    "{\"personas\":{\"para\":{\"displayName\":\"Citizen One\",\"handle\":\"@citizen1.para.mx\"},\"independent\":{\"displayName\":\"Indy Voice\",\"handle\":\"@indy.para.mx\"},\"public\":{\"displayName\":\"Public Figure\",\"handle\":\"@public.para.mx\"}},\"verification\":{\"status\":\"verified\",\"method\":\"ine\"}}"
+  ],
+  "relationships": [
+    "Personas are scoped to a single central identity managed by m8.",
+    "Anonymous identities are derived from the central identity via ZKP nullifiers."
+  ],
+  "constraints": [
+    "Exactly one PARA persona per identity. Independent and Public personas are optional.",
+    "Verification status is one of: pending, verified, rejected, revoked."
+  ],
+  "fields": [
+    {
+      "name": "personas",
+      "type": "object",
+      "required": true,
+      "description": "Map of persona types (para, independent, public) to display name and handle."
+    },
+    {
+      "name": "verification",
+      "type": "{ status: string; method: string; verifiedAt?: datetime }",
+      "required": true,
+      "description": "Citizen verification status, method used (ine, biometric, etc.), and optional timestamp."
+    },
+    {
+      "name": "deviceTrust",
+      "type": "{ level: string; development?: boolean; verifiedAt?: datetime }",
+      "required": false,
+      "description": "Device trust level and development mode flag for trusted device flows."
+    },
+    {
+      "name": "biometricEnabled",
+      "type": "boolean",
+      "required": false,
+      "description": "Whether biometric authentication is enabled for this identity session."
+    }
+  ]
+}

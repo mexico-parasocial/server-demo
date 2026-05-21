@@ -1,0 +1,59 @@
+---
+- name: Deploy Node Exporter
+  docker_swarm_service:
+    name: node-exporter
+    image: "prom/node-exporter:v{{ node_exporter_version }}"
+    mode: global
+    mounts:
+      - source: /proc
+        target: /host/proc
+        type: bind
+        read_only: yes
+      - source: /sys
+        target: /host/sys
+        type: bind
+        read_only: yes
+      - source: /
+        target: /rootfs
+        type: bind
+        read_only: yes
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - "{{ swarm_overlay_network }}"
+    labels:
+      traefik.enable: "false"
+  delegate_to: "{{ groups['swarm_managers'][0] }}"
+  run_once: true
+
+- name: Deploy cAdvisor for container metrics
+  docker_swarm_service:
+    name: cadvisor
+    image: "gcr.io/cadvisor/cadvisor:v0.49.1"
+    mode: global
+    mounts:
+      - source: /
+        target: /rootfs
+        type: bind
+        read_only: yes
+      - source: /var/run
+        target: /var/run
+        type: bind
+        read_only: yes
+      - source: /sys
+        target: /sys
+        type: bind
+        read_only: yes
+      - source: /var/lib/docker
+        target: /var/lib/docker
+        type: bind
+        read_only: yes
+    networks:
+      - "{{ swarm_overlay_network }}"
+    labels:
+      traefik.enable: "false"
+  delegate_to: "{{ groups['swarm_managers'][0] }}"
+  run_once: true

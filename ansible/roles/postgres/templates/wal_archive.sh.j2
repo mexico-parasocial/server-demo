@@ -1,0 +1,44 @@
+#!/bin/bash
+set -euo pipefail
+
+# WAL Archive Script
+# Called by PostgreSQL's archive_command for continuous WAL shipping.
+# Usage: wal_archive.sh %p %f
+#   %p = full path to WAL file
+#   %f = filename only
+
+WAL_FILE="$1"
+WAL_FILENAME="$2"
+
+S3_ENDPOINT="{{ s3_endpoint | default('') }}"
+S3_BUCKET="{{ s3_backup_bucket | default('') }}"
+S3_ACCESS_KEY="{{ s3_access_key | default('') }}"
+S3_SECRET_KEY="{{ s3_secret_key | default('') }}"
+S3_REGION="{{ s3_region | default('auto') }}"
+
+# Local WAL archive (last resort)
+LOCAL_ARCHIVE="{{ para_deploy_dir }}/postgres/wal_archive"
+mkdir -p "$LOCAL_ARCHIVE"
+
+# Always copy locally first (fast, survives S3 outage)
+cp "$WAL_FILE" "$LOCAL_ARCHIVE/$WAL_FILENAME"
+
+# Upload to S3/R2 if configured
+if [[ -n "$S3_ENDPOINT" && -n "$S3_BUCKET" && -n "$S3_ACCESS_KEY" ]]; then
+  if command -v mc &> /dev/null; then
+    mc alias set para-backup "$S3_ENDPOINT" "$S3_ACCESS_KEY" "$S3_SECRET_KEY" > /dev/null 2>&1 || true
+    mc cp "$WAL_FILE" "para-backup/$S3_BUCKET/postgres/wal/$WAL_FILENAME" > /dev/null 2>&1 || true
+  elif command -v aws &> /dev/null; then
+    AWS_ACCESS_KEY_ID="$S3_ACCESS_KEY" \
+    AWS_SECRET_ACCESS_KEY="$S3_SECRET_KEY" \
+    aws s3 cp "$WAL_FILE" "s3://$S3_BUCKET/postgres/wal/$WAL_FILENAME" \
+      --endpoint-url "$S3_ENDPOINT" \
+      --region "$S3_REGION" \
+      > /dev/null 2>&1 || true
+  fi
+fi
+
+# Cleanup old local WALs (keep 7 days)
+find "$LOCAL_ARCHIVE" -type f -mtime +7 -delete
+
+exit 0

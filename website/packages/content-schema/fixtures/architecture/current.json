@@ -1,0 +1,56 @@
+[
+  {
+    "id": "lexicon-core",
+    "title": "Lexicons as the contract surface",
+    "summary": "WhatZatppa keeps com.atproto.*, app.bsky.*, and com.para.* lexicons as the canonical schema layer for records, queries, and views.",
+    "status": "active"
+  },
+  {
+    "id": "service-split",
+    "title": "PDS and AppView service split",
+    "summary": "The backend language reflects the WhatZatppa separation between personal data hosting, appview APIs, identity, repo, and xrpc service layers.",
+    "status": "active"
+  },
+  {
+    "id": "indexing-pipeline",
+    "title": "Record-to-view indexing pipeline",
+    "summary": "Raw repo commits are transformed into queryable views through an indexing layer. Posts become feed items, votes become cabildeo aggregates, and actor activity becomes profile stats.",
+    "status": "active"
+  },
+  {
+    "id": "views-over-scans",
+    "title": "Views over record scans",
+    "summary": "All list and detail queries serve from pre-materialized indexed views rather than scanning raw records. This keeps civic aggregates fast and consistent at scale.",
+    "status": "active"
+  },
+  {
+    "id": "civic-view-materialization",
+    "title": "Civic view materialization",
+    "summary": "Cabildeo vote totals, position counts, delegation summaries, and governance rosters are maintained by the indexer and served as fields in com.para.civic.defs and com.para.community.defs views.",
+    "status": "active"
+  },
+  {
+    "id": "actor-stats",
+    "title": "Actor stats materialization",
+    "summary": "Influence scores, community contributions, and active community lists are computed from indexed activity and served through com.para.actor.getProfileStats.",
+    "status": "active"
+  },
+  {
+    "id": "highlight-annotations",
+    "title": "Highlight annotation indexing",
+    "summary": "Public and private highlight ranges over subject records are indexed into browseable views with subject, creator, community, and state filters.",
+    "status": "active"
+  },
+  {
+    "id": "metadata-overlays",
+    "title": "Metadata overlays on posts",
+    "summary": "com.para.social.postMeta attaches civic classification (policy, matter, meme) and vote scores to existing posts without modifying the base record.",
+    "status": "active"
+  },
+  {
+    "id": "stable-core-experimental-edges",
+    "title": "Stable core, experimental edges",
+    "summary": "Post and status records are stable. Views and queries are experimental because their field sets evolve as product surfaces mature.",
+    "status": "active"
+  }
+]

@@ -1,0 +1,75 @@
+---
+- name: Clone / update PARA repository
+  git:
+    repo: "{{ para_repo_url }}"
+    dest: "{{ para_deploy_dir }}/repo"
+    version: "{{ para_repo_branch }}"
+    accept_hostkey: yes
+    force: yes
+  delegate_to: "{{ groups['swarm_managers'][0] }}"
+  run_once: true
+
+- name: Copy production .env to deploy directory
+  template:
+    src: "../../../WhatZatppa/.env"
+    dest: "{{ para_deploy_dir }}/.env"
+  delegate_to: "{{ groups['swarm_managers'][0] }}"
+  run_once: true
+  # NOTE: In production, use Ansible Vault instead of a plain .env file
+
+- name: Deploy PARA stack to Swarm
+  shell: |
+    cd {{ para_deploy_dir }}/repo/WhatZatppa && \
+    docker stack deploy \
+      --compose-file docker-compose.swarm.yml \
+      --with-registry-auth \
+      {{ para_stack_name }}
+  delegate_to: "{{ groups['swarm_managers'][0] }}"
+  run_once: true
+
+- name: Wait for services to stabilize
+  pause:
+    seconds: 10
+
+- name: Verify PDS health
+  uri:
+    url: "http://localhost:2583/xrpc/_health"
+    method: GET
+    status_code: 200
+  register: pds_health
+  retries: 6
+  delay: 5
+  until: pds_health.status == 200
+  delegate_to: "{{ groups['swarm_managers'][0] }}"
+  run_once: true
+
+- name: Verify AppView health
+  uri:
+    url: "http://localhost:2584/xrpc/_health"
+    method: GET
+    status_code: 200
+  register: appview_health
+  retries: 6
+  delay: 5
+  until: appview_health.status == 200
+  delegate_to: "{{ groups['swarm_managers'][0] }}"
+  run_once: true
+
+- name: Print deployment status
+  debug:
+    msg: |
+      ✅ PARA stack deployed successfully!
+
+      Services:
+        PDS:      https://{{ pds_hostname }}
+        AppView:  https://{{ appview_hostname }}
+        Ozone:    https://{{ ozone_hostname }}
+
+      View logs:
+        ssh {{ groups['swarm_managers'][0] }} 'docker service logs -f {{ para_stack_name }}_pds'
+        ssh {{ groups['swarm_managers'][0] }} 'docker service logs -f {{ para_stack_name }}_appview'
+
+      Scale AppView:
+        ssh {{ groups['swarm_managers'][0] }} 'docker service scale {{ para_stack_name }}_appview=4'
+  delegate_to: "{{ groups['swarm_managers'][0] }}"
+  run_once: true

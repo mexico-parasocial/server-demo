@@ -1,0 +1,68 @@
+{
+  "id": "com.para.actor.getProfileStats",
+  "title": "com.para.actor.getProfileStats",
+  "summary": "Actor query for Para profile stats and current public status, used to enrich representative and profile-adjacent civic surfaces.",
+  "status": "experimental",
+  "tags": ["actors", "queries", "profiles"],
+  "backendOwner": "lexicons/com/para/actor/getProfileStats.json",
+  "sourcePath": "WhatZatppa/lexicons/com/para/actor/getProfileStats.json",
+  "examples": [
+    "{\"actor\":\"did:plc:example\",\"stats\":{\"communities\":6,\"posts\":42},\"status\":{\"literal\":\"Independent\",\"party\":\"none\"}}"
+  ],
+  "relationships": [
+    "Returns com.para.actor.defs#profileStats and com.para.actor.defs#statusView.",
+    "Extends the profile route with Para-specific civic state rather than generic social counters."
+  ],
+  "constraints": [
+    "`actor` is required and may be a handle or DID.",
+    "Current published errors include NotFound, BlockedActor, and BlockedByActor."
+  ],
+  "lifecycle": [
+    "Read at profile-adjacent surfaces when Para civic context is needed.",
+    "Combines indexed actor stats with current Para status."
+  ],
+  "writers": [
+    "Not written directly by clients; materialized by backend profile/stat logic."
+  ],
+  "readers": [
+    "Profile and representative views.",
+    "Any civic surface that needs Para-specific actor summaries."
+  ],
+  "routes": [
+    "/profile/:name",
+    "/representatives"
+  ],
+  "xrpcMethods": [
+    "com.para.actor.getProfileStats"
+  ],
+  "indexing": [
+    "Depends on indexed actor state and Para status records."
+  ],
+  "moderation": [
+    "BlockedActor and BlockedByActor errors enforce actor-level safety constraints."
+  ],
+  "productSurfaces": [
+    "Representative summaries",
+    "Profile civic stats"
+  ],
+  "fields": [
+    {
+      "name": "actor",
+      "type": "at-identifier",
+      "required": true,
+      "description": "Handle or DID identifying the actor whose Para civic stats should be returned."
+    },
+    {
+      "name": "stats",
+      "type": "com.para.actor.defs#profileStats",
+      "required": true,
+      "description": "Aggregated Para profile statistics and civic counters."
+    },
+    {
+      "name": "status",
+      "type": "com.para.actor.defs#statusView",
+      "required": false,
+      "description": "Current public Para status for the actor when available."
+    }
+  ]
+}

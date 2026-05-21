@@ -1,0 +1,417 @@
+<script>
+	import StatusPill from '$lib/components/StatusPill.svelte';
+</script>
+
+<svelte:head>
+	<title>Backend Architecture • PARA Docs</title>
+	<meta
+		name="description"
+		content="How WhatZatppa works: PDS, AppView, indexing pipeline, and the com.para.* schema layers that power PARA's civic surfaces."
+	/>
+</svelte:head>
+
+<section class="docs-hero-card">
+	<p class="docs-hero-kicker">Architecture</p>
+# Backend architecture
+
+	PARA runs on two backends: WhatZatppa (the atproto-style PDS and AppView that handles posts,
+		communities, and civic surfaces) and m8 (the identity broker that handles verification,
+		zero-knowledge proofs, grants, and persona management). This page explains how both fit together.
+</section>
+
+<div class="docs-link-grid">
+	<a class="docs-link-card" href="/docs/schemas">
+		<strong>Schema reference</strong>
+		<span>Browse the <code>com.para.*</code> and <code>com.para.identity.*</code> contracts that define records, views, and queries.</span>
+	</a>
+	<a class="docs-link-card" href="/docs/how-it-works">
+		<strong>How it works</strong>
+		<span>Read route-level behavior for communities, cabildeo, RAQ, highlights, and representatives.</span>
+	</a>
+	<a class="docs-link-card" href="/docs/status">
+		<strong>Status</strong>
+		<span>See which backend surfaces are stable, experimental, or still thesis-only.</span>
+	</a>
+</div>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Service topology</p>
+## Four service layers
+
+	<div class="docs-split-grid">
+		<div class="docs-note-panel">
+			<h3>PDS — Personal Data Store</h3>
+			<p>
+				Every actor owns a repository of signed records. The PDS handles auth, repo writes, blob storage,
+				and atproto identity. PARA posts, statuses, votes, and positions are all records stored here
+				first.
+			</p>
+		</div>
+		<div class="docs-note-panel">
+			<h3>AppView — Application views</h3>
+			<p>
+				The AppView subscribes to repo commits, runs the indexing pipeline, and serves read models
+				through XRPC. All list queries, profile stats, governance views, and cabildeo aggregates live
+				in the AppView layer.
+			</p>
+		</div>
+	</div>
+
+	<div class="docs-split-grid">
+		<div class="docs-note-panel">
+			<h3>m8 — Identity broker</h3>
+			<p>
+				m8 sits between the citizen and PARA. It handles INE verification, zero-knowledge proof
+				generation, grant consent, persona management, and anonymous identity issuance. m8 does not
+				replace the PDS; it feeds verified credentials into it.
+			</p>
+		</div>
+		<div class="docs-note-panel">
+			<h3>Indexing pipeline</h3>
+			<p>
+				When a record is written to the PDS, the AppView indexes it into derived tables. Posts become
+				feed items, votes become cabildeo aggregates, highlights become annotation views, and actor
+				activity becomes profile stats.
+			</p>
+		</div>
+	</div>
+
+	<div class="docs-split-grid">
+		<div class="docs-note-panel">
+			<h3>Shared platform packages</h3>
+			<p>
+				Identity, repo serialization, XRPC framing, and lexicon validation are shared across the stack.
+				PARA extends this foundation with <code>com.para.*</code> lexicons rather than replacing it.
+			</p>
+		</div>
+	</div>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Data flow</p>
+## Write path and read path
+
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">1. Client creates record</span>
+			<div class="docs-meta-value">
+				The app builds a lexicon-validated record (post, vote, highlight, etc.) and sends it to the
+				actor's PDS through XRPC.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">2. PDS persists and emits</span>
+			<div class="docs-meta-value">
+				The PDS writes the record to the repo, updates the MST, and emits a commit event that the
+				AppView consumes.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">3. AppView indexes</span>
+			<div class="docs-meta-value">
+				The indexing pipeline transforms raw records into queryable views: feed items, vote totals,
+				governance state, highlight annotations, and actor statistics.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">4. Queries serve views</span>
+			<div class="docs-meta-value">
+				List and detail XRPC methods read from indexed views, not raw records. This keeps civic
+				aggregates fast and consistent.
+			</div>
+		</div>
+	</div>
+
+	<div class="docs-callout">
+		<p>
+			The key design decision is that reads are views, not record scans. A cabildeo vote total is not
+			computed on the fly; it is maintained by the indexer and served as a field in
+			<code>com.para.civic.defs#cabildeoView</code>.
+		</p>
+	</div>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Schema layers</p>
+## Four categories of com.para.* contract
+
+	<p>
+		The 12 published WhatZatppa schemas fall into four groups. Records are what users write. Metadata overlays
+		attach civic semantics to existing content. Views are the read models the AppView materializes.
+		Queries are the XRPC methods that surface those views. m8 adds identity-specific contracts
+		(<code>com.para.identity.*</code>) for proofs, grants, and anonymous credentials.
+	</p>
+
+	### Records
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.post</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="stable" /> Primary post with flairs, post types, and rich text. The
+				foundation of all feed and civic content.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.status</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="stable" /> Public status message with optional party and community
+				context. Lightweight presence record.
+			</div>
+		</div>
+	</div>
+
+	### Metadata overlays
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.social.postMeta</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="experimental" /> Vote scores and civic classification
+				(<code>policy</code>, <code>matter</code>, <code>meme</code>) attached to posts. Bridges
+				content to civic analytics.
+			</div>
+		</div>
+	</div>
+
+	### Views
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.actor.defs</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="experimental" /> Profile statistics: influence score, community
+				contributions, active communities, and public status view.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.community.defs</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="experimental" /> Governance roster: moderators, officials, deputies,
+				and role history for a community.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.civic.defs</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="experimental" /> Cabildeo views: full cabildeo state, position views,
+				vote totals, and delegation summaries.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.highlight.defs</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="experimental" /> Highlight annotations: range, text, color, tag,
+				location, and community context for reading markup.
+			</div>
+		</div>
+	</div>
+
+	### Queries
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.actor.getProfileStats</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="experimental" /> Returns aggregated actor stats including influence,
+				contributions, and active community list.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.community.getGovernance</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="experimental" /> Returns governance roster, history, and moderation
+				context for a community.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.civic.getCabildeo</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="experimental" /> Returns full indexed cabildeo detail with positions,
+				vote totals, and viewer delegation state.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.civic.listCabildeos</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="experimental" /> Returns paginated cabildeo list with community and
+				phase filters.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label"><code>com.para.highlight.listHighlights</code></span>
+			<div class="docs-meta-value">
+				<StatusPill status="experimental" /> Returns paginated highlight annotations with subject,
+				creator, community, and state filters.
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Backend repo</p>
+## WhatZatppa structure
+
+	<div class="docs-split-grid">
+		<div class="docs-note-panel">
+			<h3>Lexicons</h3>
+			<p>
+				<code>lexicons/com/para/*.json</code> defines the schema surface. These are the source of
+				truth for records, views, and queries. The website's schema reference is derived from these
+				files.
+			</p>
+		</div>
+		<div class="docs-note-panel">
+			<h3>PDS packages</h3>
+			<p>
+				Repo storage, identity resolution, auth, and blob handling. PARA uses the standard atproto
+				PDS model with <code>com.para.*</code> record types added to the allowed lexicon set.
+			</p>
+		</div>
+	</div>
+
+	<div class="docs-split-grid">
+		<div class="docs-note-panel">
+			<h3>AppView services</h3>
+			<p>
+				Feed generation, cabildeo indexing, highlight aggregation, actor stats materialization, and
+				community governance state. Each service owns its indexed tables and XRPC query surface.
+			</p>
+		</div>
+		<div class="docs-note-panel">
+			<h3>Shared utilities</h3>
+			<p>
+				Lexicon validation, DID resolution, XRPC client/server framing, and MST operations. These
+				packages are reused across PDS and AppView boundaries.
+			</p>
+		</div>
+	</div>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Backend repo</p>
+	## m8 structure
+
+	<div class="docs-split-grid">
+		<div class="docs-note-panel">
+			<h3>AdonisJS controllers</h3>
+			<p>
+				<code>app/controllers/*_controller.ts</code> handles the 10 route groups: sessions, grants,
+				claims, providers, identities, issuers, karma, ledger, anonymous, and health. Each controller
+				owns its validation, i18n, and error formatting.
+			</p>
+		</div>
+		<div class="docs-note-panel">
+			<h3>Identity routes</h3>
+			<p>
+				<code>start/routes.ts</code> wires all controllers under the <code>/v1</code> prefix.
+				Identity presentation, INE verification, ZKP verification, credential revocation, and
+				CRL are all served from this single router.
+			</p>
+		</div>
+	</div>
+
+	<div class="docs-split-grid">
+		<div class="docs-note-panel">
+			<h3>ZKP prover assets</h3>
+			<p>
+				Static <code>.wasm</code> and <code>.zkey</code> files for the Circom age verifier are served
+				from <code>public/zkp/</code> so the mobile app can download them on demand.
+			</p>
+		</div>
+		<div class="docs-note-panel">
+			<h3>Chat key backup</h3>
+			<p>
+				Matrix E2EE key backup material is stored per-session via
+				<code>POST /v1/identities/chat-key-backup</code> and retrieved with
+				<code>GET /v1/identities/chat-key-backup</code>.
+			</p>
+		</div>
+	</div>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Product mapping</p>
+## Which schemas power which surfaces
+
+	<div class="docs-meta-grid">
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Communities</span>
+			<div class="docs-meta-value">
+				<code>com.para.community.defs</code> + <code>com.para.community.getGovernance</code> for
+				roster and moderation context.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Cabildeo</span>
+			<div class="docs-meta-value">
+				<code>com.para.civic.defs</code> + <code>getCabildeo</code> + <code>listCabildeos</code> for
+				deliberation, positions, and vote aggregation.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Highlights</span>
+			<div class="docs-meta-value">
+				<code>com.para.highlight.defs</code> + <code>listHighlights</code> for reading annotations
+				and public/private markup.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Representatives</span>
+			<div class="docs-meta-value">
+				<code>com.para.actor.defs</code> + <code>getProfileStats</code> for influence, contributions,
+				and civic presence.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Feed and posts</span>
+			<div class="docs-meta-value">
+				<code>com.para.post</code> for records, <code>com.para.social.postMeta</code> for civic
+				classification and scoring overlays.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Status</span>
+			<div class="docs-meta-value">
+				<code>com.para.status</code> for public presence, party affiliation, and community-scoped
+				messaging.
+			</div>
+		</div>
+		<div class="docs-meta-card">
+			<span class="docs-meta-label">Identity</span>
+			<div class="docs-meta-value">
+				<code>com.para.identity.*</code> for INE proofs, ZKP age verification, grant consent,
+				and anonymous persona issuance. Managed by m8, surfaced in the Identity tab.
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="docs-section-card">
+	<p class="docs-section-kicker">Design principles</p>
+## How the backend stays aligned with the product
+
+	<ul>
+		<li>
+			<strong>Views over scans.</strong> Civic aggregates are materialized at write time, not computed
+			on every read. This makes cabildeo vote totals, actor stats, and governance state fast and
+			consistent.
+		</li>
+		<li>
+			<strong>Lexicons as contracts.</strong> Every record shape, view field, and query parameter is
+			declared in JSON before it is implemented. The docs site reflects the same lexicons the backend
+			validates against.
+		</li>
+		<li>
+			<strong>Stable core, experimental edges.</strong> Post and status records are stable. Views and
+			queries are experimental because their exact field sets evolve as the product surfaces mature.
+		</li>
+		<li>
+			<strong>Product language in docs, protocol language in schemas.</strong> The architecture page
+			uses product vocabulary (cabildeo, highlights, communities). The schema pages use protocol
+			vocabulary (records, views, XRPC, fields).
+		</li>
+	</ul>
+</section>
+
+## Read next
+
+- Browse the [schema reference](/docs/schemas)
+- Read [How it works](/docs/how-it-works) for route-level behavior
+- Check [Status](/docs/status) for maturity of each backend surface

@@ -1,0 +1,64 @@
+---
+# =============================================================================
+# PARA Production Deployment Playbook
+# =============================================================================
+# Usage:
+#   ansible-playbook -i inventory/production.yml playbooks/site.yml
+#
+# This playbook:
+#   1. Hardens all nodes (firewall, fail2ban, sysctl)
+#   2. Installs Docker on all nodes
+#   3. Initializes Docker Swarm (manager) and joins workers
+#   4. Deploys Traefik as the ingress reverse proxy + SSL
+#   5. Deploys the PARA stack (PDS, AppView, Bsync, Ozone)
+#   6. Deploys monitoring (Node Exporter, cAdvisor)
+#
+# Prerequisites:
+#   - Edit inventory/production.yml with your server IPs
+#   - Generate secrets: ./scripts/generate-secrets.sh > WhatZatppa/.env
+#   - Fill in all <blank> values in WhatZatppa/.env
+#   - Ensure SSH key access to all nodes
+# =============================================================================
+
+- name: Provision all nodes
+  hosts: all
+  become: yes
+  roles:
+    - common
+    - docker
+
+- name: Initialize Swarm
+  hosts: swarm_managers
+  become: yes
+  roles:
+    - swarm
+
+- name: Join workers to Swarm
+  hosts: swarm_workers
+  become: yes
+  roles:
+    - swarm
+
+- name: Deploy Traefik ingress
+  hosts: swarm_managers
+  become: yes
+  roles:
+    - traefik
+
+- name: Deploy Self-Managed PostgreSQL with backups
+  hosts: swarm_managers
+  become: yes
+  roles:
+    - postgres
+
+- name: Deploy PARA stack
+  hosts: swarm_managers
+  become: yes
+  roles:
+    - para-deploy
+
+- name: Deploy monitoring
+  hosts: swarm_managers
+  become: yes
+  roles:
+    - monitoring

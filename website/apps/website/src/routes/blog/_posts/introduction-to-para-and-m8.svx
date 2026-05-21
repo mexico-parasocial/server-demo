@@ -1,0 +1,24 @@
+---
+slug: 'introduction-to-para-and-m8'
+title: 'Introduction to PARA and m8'
+description: 'How the PARA civic platform and the m8 identity broker work together to build a new civic layer.'
+date: 'May 12, 2026'
+author: 'PARA'
+---
+
+PARA is a new civic layer designed to reduce the friction of democratic participation. However, building a trusted political network requires solving a fundamental problem: how do you verify that someone is a real citizen without forcing them to reveal their real identity to the public?
+
+Enter **m8**.
+
+### What is m8?
+m8 is not just an identity wallet; it is a **proof broker**. It acts as the critical bridge between verifiable real-world identity (like the INE in Mexico) and pseudonymous civic action on PARA. 
+
+When you use PARA, you aren't logging in with your name and photo. Instead, you authenticate through m8, which holds your verified credentials securely. m8 allows you to generate zero-knowledge proofs—proving that you are a unique, eligible voter—without exposing your personal data to the PARA network or its users.
+
+### The Synergy
+The integration of PARA and m8 creates a unique environment:
+- **Anonymity with Accountability:** Users can speak freely and participate in debates without fear of personal repercussion, knowing that everyone else in the system is also a verified unique citizen.
+- **Sybil Resistance:** By relying on m8's stringent verification processes, PARA ensures that one person equals one vote in our quadratic voting and RAQ (Rightfully Asked Questions) systems.
+- **Civic Surfaces:** When you interact with `#POLICY||` or `#MATTER|` flairs, your actions carry the weight of a verified citizen, turning mere opinion into actionable civic data.
+
+Together, PARA and m8 don't just simulate politics—they provide the infrastructure for a more plural, structured, and secure democracy.

@@ -1,0 +1,817 @@
+<script lang="ts">
+</script>
+
+<svelte:head>
+	<title>{`Trust and Safety • PARA`}</title>
+	<meta
+		name="description"
+		content={`How PARA handles identity, moderation, verification, privacy, and account control.`}
+	/>
+</svelte:head>
+
+<div class="site-trust">
+	<section class="trust-hero">
+		<div class="container trust-hero-grid">
+			<div class="trust-hero-copy">
+				<div class="eyebrow">Trust and safety</div>
+				<h1 class="trust-hero-title">Protected speech needs real safety infrastructure.</h1>
+				<p class="trust-hero-lead">
+					
+						PARA depends on a difficult balance: anonymity where thought needs protection,
+						validation where civic participation needs legitimacy, and enough moderation and account
+						control that public politics does not collapse into chaos.
+					
+				</p>
+				<p class="trust-hero-body">
+					
+						This page sits outside the docs shell on purpose. Trust and safety is not just another
+						subsection of reference material. It is a first-order product surface that shapes how
+						identity, participation, and governance can work at all.
+					
+				</p>
+			</div>
+
+			<div class="trust-pillar-stack">
+				{#each [
+					{ index: '01', title: `Identity`, desc: `Profiles, political self-placement, and public-versus-private participation controls.` },
+					{ index: '02', title: `Moderation`, desc: `Baseline rules, labelers, appeals, and proportional enforcement.` },
+					{ index: '03', title: `Verification`, desc: `Identity proofs, geographic signals, and reputation without forced doxxing.` },
+					{ index: '04', title: `Privacy`, desc: `Data handling, federation visibility, and user-facing controls.` }
+				] as pillar (pillar.title)}
+					<div class="surface-card trust-pillar">
+						<p class="pillar-index">{pillar.index}</p>
+						<h3>{pillar.title}</h3>
+						<p>{pillar.desc}</p>
+					</div>
+				{/each}
+			</div>
+		</div>
+	</section>
+
+	<section class="trust-principles">
+		<div class="container">
+			<div class="principle-card surface-card">
+				<p class="principle-eyebrow">Design principle</p>
+				<p class="principle-quote">
+					If the product does not make exit legible, the consent is not real.
+				</p>
+				<p class="principle-body">
+					
+						Account deletion, data export, and appeals are not afterthoughts. They are part of the
+						trust surface. Every feature we build is evaluated against whether a user can understand,
+						control, and leave it.
+					
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<div class="container layout-with-toc">
+		<nav class="toc-sidebar">
+			<div class="toc-sticky">
+				<p class="toc-title">On this page</p>
+				<ul class="toc-list">
+					<li><a href="#identity">01 / Identity</a></li>
+					<li><a href="#moderation">02 / Moderation</a></li>
+					<li><a href="#verification">03 / Verification</a></li>
+					<li><a href="#privacy">04 / Privacy</a></li>
+					<li><a href="#account-control">05 / Account control</a></li>
+				</ul>
+			</div>
+		</nav>
+
+		<div class="toc-content">
+			<section class="trust-bands" id="identity">
+				<div class="section-head">
+					<div>
+						<div class="eyebrow">01 / Identity</div>
+						<h2 class="section-title">Who you are, who you appear to be, and who can tell the difference.</h2>
+					</div>
+				</div>
+				<div>
+					<p class="section-intro">
+						
+							PARA is designed around personas and proof bundles, not a single public name. You can
+							operate with different masks for different communities, and you can choose how much of
+							your verification stack is visible in each context.
+						
+					</p>
+					<div class="band-grid">
+						<div class="surface-card band-card">
+							<p class="band-kicker">Pseudonymity and personas</p>
+							<details class="trust-accordion">
+								<summary>View persona features</summary>
+								<div class="accordion-content">
+									<ul>
+										<li>Multiple personas per account, switchable without logout.</li>
+										<li>Each persona can have its own display name, bio, and political placement.</li>
+										<li>Personas are not burner accounts; they are first-class identity surfaces.</li>
+									</ul>
+								</div>
+							</details>
+						</div>
+						<div class="surface-card band-card">
+							<p class="band-kicker">Proof bundles</p>
+							<details class="trust-accordion">
+								<summary>View verification layers</summary>
+								<div class="accordion-content">
+									<ul>
+										<li>INE scan for Mexican voter verification.</li>
+										<li>Biometric gate and app-state auto-lock.</li>
+										<li>QR export to share verified bundles offline.</li>
+										<li>Custom surface builder to control what each context sees.</li>
+									</ul>
+								</div>
+							</details>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="trust-bands" id="moderation">
+				<div class="section-head">
+					<div>
+						<div class="eyebrow">02 / Moderation</div>
+						<h2 class="section-title">Rules, tools, and proportionality.</h2>
+					</div>
+				</div>
+				<div>
+					<p class="section-intro">
+						
+							We enforce baseline rules through human review and automated signals. We also design for
+							composable safety—labelers, user controls, and community-specific norms—so moderation
+							is not a single gatekeeper.
+						
+					</p>
+					<div class="band-grid">
+						<div class="surface-card band-card">
+							<p class="band-kicker">Baseline</p>
+							<h3>Community Guidelines</h3>
+							<p>
+								
+									Safety first, respect others, be authentic, follow the rules. These four principles
+									govern what we remove or limit on PARA services we operate.
+								
+							</p>
+						</div>
+						<div class="surface-card band-card">
+							<p class="band-kicker">Composable</p>
+							<h3>Labelers and user controls</h3>
+							<p>
+								
+									Where the protocol supports it, users can subscribe to additional labelers and adjust
+									safety settings. Communities can add context on top of baseline rules.
+								
+							</p>
+						</div>
+					</div>
+					<div class="docs-callout appeals-callout">
+						<p>
+							<strong>Appeals.</strong> If we restrict or suspend your account, you may appeal within fourteen (14) days. Late or bare appeals may be declined. We retain discretion to make final calls.
+						</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="trust-bands" id="verification">
+				<div class="section-head">
+					<div>
+						<div class="eyebrow">03 / Verification</div>
+						<h2 class="section-title">Trust without forced exposure.</h2>
+					</div>
+				</div>
+				<div>
+					<p class="section-intro">
+						
+							Validation matters for civic participation, but not every user should have to expose
+							their real name to participate. PARA holds both at once.
+						
+					</p>
+					<div class="band-grid">
+						<div class="surface-card band-card">
+							<p class="band-kicker">What verification enables</p>
+							<details class="trust-accordion">
+								<summary>View benefits</summary>
+								<div class="accordion-content">
+									<ul>
+										<li>Access to verified-only communities and representative channels.</li>
+										<li>Higher weight in certain aggregation or ranking surfaces.</li>
+										<li>Reputation that persists across personas where you choose to link it.</li>
+									</ul>
+								</div>
+							</details>
+						</div>
+						<div class="surface-card band-card">
+							<p class="band-kicker">What anonymity protects</p>
+							<details class="trust-accordion">
+								<summary>View protections</summary>
+								<div class="accordion-content">
+									<ul>
+										<li>Freedom of thought for people in unsafe political environments.</li>
+										<li>Whistleblowing and dissent without personal exposure.</li>
+										<li>Exploration of political identity before committing to a public position.</li>
+									</ul>
+								</div>
+							</details>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="trust-bands" id="privacy">
+				<div class="section-head">
+					<div>
+						<div class="eyebrow">04 / Privacy</div>
+						<h2 class="section-title">Data visibility in a federated system.</h2>
+					</div>
+				</div>
+				<div>
+					<p class="section-intro">
+						
+							PARA is built on open protocol infrastructure. That means public posts may be replicated
+							by third-party services outside our direct control. We design the product to make
+							visibility legible, not hidden.
+						
+					</p>
+					<div class="meta-band">
+						<div class="surface-card meta-card">
+							<span class="meta-label">Public by default</span>
+							<p>
+								
+									Posts, votes, and profile fields are public unless the product offers a restricted
+									mode. Federation means copies may exist elsewhere.
+								
+							</p>
+						</div>
+						<div class="surface-card meta-card">
+							<span class="meta-label">Messages</span>
+							<p>
+								
+									Direct and group messaging uses end-to-end encryption where the protocol supports it.
+									Metadata may still be visible to infrastructure operators.
+								
+							</p>
+						</div>
+						<div class="surface-card meta-card">
+							<span class="meta-label">Retention</span>
+							<p>
+								
+									We keep data as long as needed to operate the service and meet legal obligations.
+									Deletion requests go to support and are handled when verifiable.
+								
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="trust-bands" id="account-control">
+				<div class="section-head">
+					<div>
+						<div class="eyebrow">05 / Account control</div>
+						<h2 class="section-title">You should be able to leave, export, or appeal.</h2>
+					</div>
+				</div>
+				<div>
+					<p class="section-intro">
+						
+							Account deletion, data export, and appeals are not afterthoughts. They are part of the
+							trust surface.
+						
+					</p>
+					<div class="band-grid">
+						<div class="surface-card band-card">
+							<p class="band-kicker">Deletion</p>
+							<p>
+								
+									You can delete your account where the product provides the feature. We remove content
+									from services we control, subject to backups, legal holds, and safety needs.
+								
+							</p>
+						</div>
+						<div class="surface-card band-card">
+							<p class="band-kicker">Export</p>
+							<p>
+								
+									Repository exports are possible through protocol-native tools. Contact support if you
+									need help locating the right export path.
+								
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+
+	<section class="trust-closing">
+		<div class="container">
+			<div class="surface-card closing-card">
+				<div>
+					<div class="eyebrow">Read next</div>
+					<h2 class="section-title">Trust and safety should connect product, thesis, and protocol.</h2>
+				</div>
+				<div class="path-grid">
+					<a class="surface-card path-card" href="/thesis">
+						<p class="card-kicker">About</p>
+						<h3>The political thesis</h3>
+						<p>Return to the broader democratic-friction argument.</p>
+						<span class="path-link">Open</span>
+					</a>
+					<a class="surface-card path-card" href="/docs/product">
+						<p class="card-kicker">Product</p>
+						<h3>Product surfaces</h3>
+						<p>See how communities, voting, RAQ, and civic participation work together.</p>
+						<span class="path-link">Open</span>
+					</a>
+					<a class="surface-card path-card" href="/docs/schemas">
+						<p class="card-kicker">Schemas</p>
+						<h3>Schema reference</h3>
+						<p>Browse the technical notes behind the product.</p>
+						<span class="path-link">Open</span>
+					</a>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+
+<style>
+	.site-trust {
+		padding-bottom: 4rem;
+	}
+
+	.container {
+		width: min(var(--ps-max-width-docs), calc(100% - 2rem));
+		margin: 0 auto;
+	}
+
+	.trust-hero,
+	.trust-principles,
+	.trust-bands,
+	.trust-closing {
+		padding-top: 2.5rem;
+	}
+
+	.trust-hero-grid,
+	.section-head {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		gap: 1.25rem;
+		align-items: start;
+	}
+
+	.trust-hero-copy {
+		grid-column: span 7;
+		display: grid;
+		gap: 1rem;
+		align-content: start;
+		padding-top: 1rem;
+	}
+
+	.trust-hero-title {
+		font-family: 'PARA Cinzel', var(--ps-font-display), serif;
+		font-size: clamp(2.8rem, 6vw, 5rem);
+		font-weight: 600;
+		line-height: 0.94;
+		letter-spacing: -0.02em;
+		color: #f8fbff;
+		margin: 0;
+		max-width: 14ch;
+	}
+
+	.trust-hero-lead {
+		font-size: 1.15rem;
+		color: #bcc8d9;
+		line-height: 1.72;
+		margin: 0;
+		max-width: 36rem;
+	}
+
+	.trust-hero-body {
+		color: #a3adc0;
+		line-height: 1.72;
+		margin: 0;
+		max-width: 36rem;
+	}
+
+	.trust-pillar-stack {
+		grid-column: span 5;
+		display: grid;
+		gap: 0.85rem;
+		align-content: start;
+	}
+
+	.surface-card {
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 1.6rem;
+		background:
+			linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+			rgba(8, 16, 28, 0.62);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.05),
+			0 20px 60px rgba(0, 0, 0, 0.18);
+		backdrop-filter: blur(18px);
+		transition:
+			transform 0.18s ease,
+			border-color 0.18s ease;
+	}
+
+	.surface-card:hover {
+		transform: translateY(-2px);
+		border-color: rgba(255, 255, 255, 0.18);
+	}
+
+	.trust-pillar {
+		padding: 1.25rem;
+		display: grid;
+		gap: 0.5rem;
+	}
+
+	.pillar-index {
+		margin: 0;
+		font-family: var(--ps-font-mono);
+		font-size: 0.75rem;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #c8b6ef;
+		background: rgba(72, 38, 127, 0.35);
+		border: 1px solid rgba(72, 38, 127, 0.5);
+		width: fit-content;
+		padding: 0.25rem 0.6rem;
+		border-radius: 99px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 0 12px rgba(72, 38, 127, 0.2);
+	}
+
+	.trust-pillar h3 {
+		margin: 0;
+		font-family: var(--ps-font-display);
+		font-size: 1.35rem;
+		line-height: 1.05;
+		color: #ffffff;
+	}
+
+	.trust-pillar p {
+		margin: 0;
+		color: #a3adc0;
+		line-height: 1.65;
+		font-size: 0.95rem;
+	}
+
+	.principle-card {
+		padding: clamp(1.5rem, 3vw, 2.2rem);
+		display: grid;
+		gap: 1rem;
+		max-width: 48rem;
+		margin: 0 auto;
+		background:
+			radial-gradient(circle at top right, rgba(72, 38, 127, 0.22), transparent 35%),
+			linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+			rgba(8, 16, 28, 0.62);
+	}
+
+	.principle-eyebrow {
+		width: fit-content;
+		font-family: var(--ps-font-mono);
+		font-size: 0.76rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #c8b6ef;
+		margin: 0;
+	}
+
+	.principle-quote {
+		font-family: 'PARA Cinzel', var(--ps-font-display), serif;
+		font-size: clamp(1.4rem, 3vw, 2rem);
+		font-weight: 600;
+		line-height: 1.1;
+		color: #f8fbff;
+		margin: 0;
+		max-width: 28ch;
+	}
+
+	.principle-body {
+		color: #bcc8d9;
+		line-height: 1.72;
+		margin: 0;
+		max-width: 40rem;
+		font-size: 1.05rem;
+	}
+
+	.section-head > :first-child {
+		grid-column: span 7;
+		display: grid;
+		gap: 0.9rem;
+	}
+
+	.eyebrow {
+		width: fit-content;
+		font-family: var(--ps-font-mono);
+		font-size: 0.76rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #c8b6ef;
+	}
+
+	.section-title {
+		font-family: 'PARA Cinzel', var(--ps-font-display), serif;
+		font-size: clamp(2rem, 4.2vw, 3.6rem);
+		font-weight: 600;
+		line-height: 0.98;
+		letter-spacing: -0.02em;
+		color: #f8fbff;
+		margin: 0;
+		max-width: 14ch;
+	}
+
+	.section-intro {
+		font-size: 1.12rem;
+		color: #bcc8d9;
+		line-height: 1.72;
+		margin: 1.25rem 0 0;
+		max-width: 44rem;
+	}
+
+	.band-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		gap: 1rem;
+		margin-top: 1.25rem;
+	}
+
+	.band-card {
+		grid-column: span 6;
+		padding: 1.35rem;
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.band-kicker {
+		margin: 0;
+		font-family: var(--ps-font-mono);
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #c8b6ef;
+	}
+
+	.band-card h3 {
+		margin: 0;
+		font-family: var(--ps-font-display);
+		font-size: 1.35rem;
+		line-height: 1.05;
+		color: #ffffff;
+	}
+
+	.band-card p {
+		margin: 0;
+		color: #a3adc0;
+		line-height: 1.72;
+	}
+
+	.band-card ul {
+		margin: 0;
+		padding-left: 1.1rem;
+		color: #a3adc0;
+		line-height: 1.72;
+		display: grid;
+		gap: 0.5rem;
+	}
+
+	.band-card li::marker {
+		color: var(--para-accent-soft);
+	}
+
+	.appeals-callout {
+		margin-top: 1.25rem;
+	}
+
+	.meta-band {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		gap: 1rem;
+		margin-top: 1.25rem;
+	}
+
+	.meta-card {
+		grid-column: span 4;
+		padding: 1.25rem;
+		display: grid;
+		gap: 0.5rem;
+	}
+
+	.meta-label {
+		display: block;
+		margin-bottom: 0.35rem;
+		font-size: 0.74rem;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #918ba0;
+	}
+
+	.meta-card p {
+		margin: 0;
+		color: #a3adc0;
+		line-height: 1.72;
+		font-size: 0.98rem;
+	}
+
+	.trust-closing {
+		padding-top: 2.5rem;
+	}
+
+	.closing-card {
+		padding: clamp(1.5rem, 3vw, 2rem);
+		display: grid;
+		gap: 1.25rem;
+	}
+
+	.closing-card .section-title {
+		max-width: 18ch;
+	}
+
+	.path-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		gap: 1rem;
+	}
+
+	.path-card {
+		grid-column: span 4;
+		padding: 1.35rem;
+		display: grid;
+		gap: 0.75rem;
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.card-kicker {
+		margin: 0;
+		font-family: var(--ps-font-mono);
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #c8b6ef;
+	}
+
+	.path-card h3 {
+		margin: 0;
+		font-family: 'PARA Cinzel', var(--ps-font-display), serif;
+		font-size: 1.45rem;
+		font-weight: 600;
+		line-height: 1.05;
+		color: #f8fbff;
+	}
+
+	.path-card p {
+		margin: 0;
+		color: #a3adc0;
+		line-height: 1.65;
+		font-size: 0.98rem;
+	}
+
+	.path-link {
+		font-weight: 700;
+		color: #f6fbff;
+		margin-top: 0.5rem;
+	}
+
+	/* Layout with TOC */
+	.layout-with-toc {
+		display: grid;
+		grid-template-columns: 240px 1fr;
+		gap: 3rem;
+		align-items: start;
+		padding-top: 2rem;
+	}
+
+	.toc-sidebar {
+		position: relative;
+	}
+
+	.toc-sticky {
+		position: sticky;
+		top: 6rem;
+		display: grid;
+		gap: 1rem;
+	}
+
+	.toc-title {
+		margin: 0;
+		font-family: var(--ps-font-mono);
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #c8b6ef;
+	}
+
+	.toc-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.toc-list a {
+		color: #8f8aa1;
+		text-decoration: none;
+		font-size: 0.95rem;
+		transition: color 0.2s ease;
+	}
+
+	.toc-list a:hover {
+		color: #f8fbff;
+	}
+
+	/* Accordions */
+	.trust-accordion {
+		border-top: 1px solid rgba(255, 255, 255, 0.08);
+		padding-top: 0.75rem;
+		margin-top: 0.25rem;
+	}
+
+	.trust-accordion summary {
+		cursor: pointer;
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: #c8b6ef;
+		list-style: none;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		user-select: none;
+	}
+
+	.trust-accordion summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.trust-accordion summary::after {
+		content: '+';
+		font-size: 1.2rem;
+		line-height: 1;
+		transition: transform 0.2s ease;
+	}
+
+	.trust-accordion[open] summary::after {
+		transform: rotate(45deg);
+	}
+
+	.accordion-content {
+		padding-top: 0.75rem;
+		animation: slideDown 0.3s ease-out;
+	}
+
+	@keyframes slideDown {
+		from { opacity: 0; transform: translateY(-10px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	@media (max-width: 1100px) {
+		.trust-hero-grid,
+		.section-head,
+		.band-grid,
+		.meta-band,
+		.path-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.trust-hero-copy,
+		.trust-pillar-stack,
+		.section-head > :first-child,
+		.band-card,
+		.meta-card,
+		.path-card {
+			grid-column: 1 / -1;
+		}
+
+		.layout-with-toc {
+			grid-template-columns: 1fr;
+		}
+
+		.toc-sidebar {
+			display: none; /* Hide TOC on smaller screens to save space */
+		}
+	}
+
+	@media (max-width: 720px) {
+		.container {
+			width: min(var(--ps-max-width-docs), calc(100% - 1.25rem));
+		}
+
+		.trust-hero-title {
+			font-size: clamp(2.4rem, 13vw, 4rem);
+		}
+	}
+</style>
