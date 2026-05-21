@@ -1,20 +1,20 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { ReactNode, useCallback, useState } from 'react'
 import type { CustomizationData } from '@atproto/oauth-provider-api'
-import { WizardCard } from '../../../components/forms/wizard-card.tsx.js'
+import { WizardCard } from '../../../components/forms/wizard-card.tsx'
 import {
   LayoutTitlePage,
   LayoutTitlePageProps,
-} from '../../../components/layouts/layout-title-page.tsx.js'
-import { HelpCard } from '../../../components/utils/help-card.tsx.js'
+} from '../../../components/layouts/layout-title-page.tsx'
+import { HelpCard } from '../../../components/utils/help-card.tsx'
 import { Override } from '../../../lib/util.ts'
 import {
   SignUpAccountForm,
   SignUpAccountFormOutput,
-} from './sign-up-account-form.tsx.js'
-import { SignUpDisclaimer } from './sign-up-disclaimer.tsx.js'
-import { SignUpHandleForm } from './sign-up-handle-form.tsx.js'
-import { SignUpHcaptchaForm } from './sign-up-hcaptcha-form.tsx.js'
+} from './sign-up-account-form.tsx'
+import { SignUpDisclaimer } from './sign-up-disclaimer.tsx'
+import { SignUpHandleForm } from './sign-up-handle-form.tsx'
+import { SignUpHcaptchaForm } from './sign-up-hcaptcha-form.tsx'
 
 export type SignUpViewProps = Override<
   LayoutTitlePageProps,

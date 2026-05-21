@@ -1,4 +1,5 @@
-import { Code, ConnectError, ServiceImpl } from '@connectrpc/connect'
+import { Code, ConnectError } from '@connectrpc/connect'
+import { FixedServiceImpl } from '../types/connect-fix.js'
 import { sql } from 'kysely'
 import { AppContext } from '../context.js'
 import { Database } from '../db/index.js'
@@ -8,7 +9,7 @@ import { AddNotifOperationResponse } from '../proto/bsync_pb.js'
 import { authWithApiKey } from './auth.js'
 import { isValidDid } from './util.js'
 
-export default (ctx: AppContext): Partial<ServiceImpl<typeof Service>> => ({
+export default (ctx: AppContext): Partial<FixedServiceImpl<typeof Service>> => ({
   async addNotifOperation(req, handlerCtx) {
     authWithApiKey(ctx, handlerCtx)
     const { db } = ctx

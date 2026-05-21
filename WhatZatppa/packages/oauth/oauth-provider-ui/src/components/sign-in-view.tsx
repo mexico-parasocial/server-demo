@@ -3,9 +3,9 @@ import { Trans } from '@lingui/react/macro'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import type { Session } from '@atproto/oauth-provider-api'
 import { useCustomizationData } from '#/contexts/customization.tsx'
-import { LayoutTitle } from './layouts/layout-title.tsx.js'
-import { SignInForm, SignInFormOutput } from './sign-in-form.tsx.js'
-import { SignInPicker } from './sign-in-picker.tsx.js'
+import { LayoutTitle } from './layouts/layout-title.tsx'
+import { SignInForm, SignInFormOutput } from './sign-in-form.tsx'
+import { SignInPicker } from './sign-in-picker.tsx'
 
 export type SignInViewProps = {
   disableRemember?: boolean

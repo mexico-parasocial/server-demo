@@ -2,7 +2,7 @@ import { clsx } from 'clsx'
 import { JSX, ReactNode } from 'react'
 import type { CustomizationData } from '@atproto/oauth-provider-api'
 import { Override } from '../../lib/util.ts'
-import { LocaleSelector } from '../../locales/locale-selector.tsx.js'
+import { LocaleSelector } from '../../locales/locale-selector.tsx'
 
 export type LayoutTitlePageProps = Override<
   JSX.IntrinsicElements['div'],

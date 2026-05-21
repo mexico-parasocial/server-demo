@@ -5,9 +5,9 @@ import type { OAuthClientMetadata } from '@atproto/oauth-types'
 import {
   LayoutTitlePage,
   LayoutTitlePageProps,
-} from '../../../components/layouts/layout-title-page.tsx.js'
+} from '../../../components/layouts/layout-title-page.tsx'
 import { Override } from '../../../lib/util.ts'
-import { ConsentForm } from './consent-form.tsx.js'
+import { ConsentForm } from './consent-form.tsx'
 
 export type ConsentViewProps = Override<
   LayoutTitlePageProps,

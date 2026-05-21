@@ -28,6 +28,7 @@ import updateDraft from './app/bsky/draft/updateDraft.js'
 import getActorFeeds from './app/bsky/feed/getActorFeeds.js'
 import getActorLikes from './app/bsky/feed/getActorLikes.js'
 import getAuthorFeed from './app/bsky/feed/getAuthorFeed.js'
+import getEmbedExternalView from './app/bsky/embed/getEmbedExternalView.js'
 import getFeed from './app/bsky/feed/getFeed.js'
 import getFeedGenerator from './app/bsky/feed/getFeedGenerator.js'
 import getFeedGenerators from './app/bsky/feed/getFeedGenerators.js'
@@ -194,6 +195,7 @@ export default function (server: Server, ctx: AppContext) {
   getLikes(server, ctx)
   getListFeed(server, ctx)
   getQuotes(server, ctx)
+  getEmbedExternalView(server, ctx)
   getPostThread(server, ctx)
   getPostThreadOtherV2(server, ctx)
   getPostThreadV2(server, ctx)

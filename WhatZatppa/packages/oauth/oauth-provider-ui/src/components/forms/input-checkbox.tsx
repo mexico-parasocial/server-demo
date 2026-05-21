@@ -3,9 +3,9 @@ import { JSX, ReactNode, useContext, useRef } from 'react'
 import { useRandomString } from '#/hooks/use-random-string.ts'
 import { mergeRefs } from '#/lib/ref.ts'
 import { Override } from '#/lib/util.ts'
-import { Checkbox } from './checkbox.tsx.js'
-import { FieldsetContext } from './form-field.tsx.js'
-import { InputContainer } from './input-container.tsx.js'
+import { Checkbox } from './checkbox.tsx'
+import { FieldsetContext } from './form-field.tsx'
+import { InputContainer } from './input-container.tsx'
 
 export type InputCheckboxProps = Override<
   Omit<JSX.IntrinsicElements['input'], 'className' | 'type' | 'children'>,

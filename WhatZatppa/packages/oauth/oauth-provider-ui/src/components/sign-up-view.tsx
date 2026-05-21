@@ -2,16 +2,16 @@ import { msg } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { ReactNode, useCallback, useState } from 'react'
 import { useCustomizationData } from '#/contexts/customization.tsx'
-import { WizardCard } from './forms/wizard-card.tsx.js'
-import { LayoutTitle } from './layouts/layout-title.tsx.js'
+import { WizardCard } from './forms/wizard-card.tsx'
+import { LayoutTitle } from './layouts/layout-title.tsx'
 import {
   SignUpAccountForm,
   SignUpAccountFormOutput,
-} from './sign-up-account-form.tsx.js'
-import { SignUpDisclaimer } from './sign-up-disclaimer.tsx.js'
-import { SignUpHandleForm } from './sign-up-handle-form.tsx.js'
-import { SignUpHcaptchaForm } from './sign-up-hcaptcha-form.tsx.js'
-import { HelpCard } from './utils/help-card.tsx.js'
+} from './sign-up-account-form.tsx'
+import { SignUpDisclaimer } from './sign-up-disclaimer.tsx'
+import { SignUpHandleForm } from './sign-up-handle-form.tsx'
+import { SignUpHcaptchaForm } from './sign-up-hcaptcha-form.tsx'
+import { HelpCard } from './utils/help-card.tsx'
 
 export type SignUpViewProps = {
   onBack?: () => void

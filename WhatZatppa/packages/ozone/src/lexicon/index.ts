@@ -35,6 +35,7 @@ import * as AppBskyDraftCreateDraft from './types/app/bsky/draft/createDraft.js'
 import * as AppBskyDraftDeleteDraft from './types/app/bsky/draft/deleteDraft.js'
 import * as AppBskyDraftGetDrafts from './types/app/bsky/draft/getDrafts.js'
 import * as AppBskyDraftUpdateDraft from './types/app/bsky/draft/updateDraft.js'
+import * as AppBskyEmbedGetEmbedExternalView from './types/app/bsky/embed/getEmbedExternalView.js'
 import * as AppBskyFeedDescribeFeedGenerator from './types/app/bsky/feed/describeFeedGenerator.js'
 import * as AppBskyFeedGetActorFeeds from './types/app/bsky/feed/getActorFeeds.js'
 import * as AppBskyFeedGetActorLikes from './types/app/bsky/feed/getActorLikes.js'
@@ -240,13 +241,6 @@ import * as ComAtprotoSyncListReposByCollection from './types/com/atproto/sync/l
 import * as ComAtprotoSyncNotifyOfUpdate from './types/com/atproto/sync/notifyOfUpdate.js'
 import * as ComAtprotoSyncRequestCrawl from './types/com/atproto/sync/requestCrawl.js'
 import * as ComAtprotoSyncSubscribeRepos from './types/com/atproto/sync/subscribeRepos.js'
-import * as ComAtprotoTempAddReservedHandle from './types/com/atproto/temp/addReservedHandle.js'
-import * as ComAtprotoTempCheckHandleAvailability from './types/com/atproto/temp/checkHandleAvailability.js'
-import * as ComAtprotoTempCheckSignupQueue from './types/com/atproto/temp/checkSignupQueue.js'
-import * as ComAtprotoTempDereferenceScope from './types/com/atproto/temp/dereferenceScope.js'
-import * as ComAtprotoTempFetchLabels from './types/com/atproto/temp/fetchLabels.js'
-import * as ComAtprotoTempRequestPhoneVerification from './types/com/atproto/temp/requestPhoneVerification.js'
-import * as ComAtprotoTempRevokeAccountCredentials from './types/com/atproto/temp/revokeAccountCredentials.js'
 import * as ComParaActorGetProfileStats from './types/com/para/actor/getProfileStats.js'
 import * as ComParaAgentGetConversation from './types/com/para/agent/getConversation.js'
 import * as ComParaAgentSendMessage from './types/com/para/agent/sendMessage.js'
@@ -893,6 +887,18 @@ export class AppBskyEmbedNS {
 
   constructor(server: Server) {
     this._server = server
+  }
+
+  getEmbedExternalView<A extends Auth = void>(
+    cfg: MethodConfigOrHandler<
+      A,
+      AppBskyEmbedGetEmbedExternalView.QueryParams,
+      AppBskyEmbedGetEmbedExternalView.HandlerInput,
+      AppBskyEmbedGetEmbedExternalView.HandlerOutput
+    >,
+  ) {
+    const nsid = 'app.bsky.embed.getEmbedExternalView' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
   }
 }
 
@@ -2543,7 +2549,6 @@ export class ComAtprotoNS {
   repo: ComAtprotoRepoNS
   server: ComAtprotoServerNS
   sync: ComAtprotoSyncNS
-  temp: ComAtprotoTempNS
 
   constructor(server: Server) {
     this._server = server
@@ -2555,7 +2560,6 @@ export class ComAtprotoNS {
     this.repo = new ComAtprotoRepoNS(server)
     this.server = new ComAtprotoServerNS(server)
     this.sync = new ComAtprotoSyncNS(server)
-    this.temp = new ComAtprotoTempNS(server)
   }
 }
 
@@ -3566,98 +3570,6 @@ export class ComAtprotoSyncNS {
   ) {
     const nsid = 'com.atproto.sync.subscribeRepos' // @ts-ignore
     return this._server.xrpc.streamMethod(nsid, cfg)
-  }
-}
-
-export class ComAtprotoTempNS {
-  _server: Server
-
-  constructor(server: Server) {
-    this._server = server
-  }
-
-  addReservedHandle<A extends Auth = void>(
-    cfg: MethodConfigOrHandler<
-      A,
-      ComAtprotoTempAddReservedHandle.QueryParams,
-      ComAtprotoTempAddReservedHandle.HandlerInput,
-      ComAtprotoTempAddReservedHandle.HandlerOutput
-    >,
-  ) {
-    const nsid = 'com.atproto.temp.addReservedHandle' // @ts-ignore
-    return this._server.xrpc.method(nsid, cfg)
-  }
-
-  checkHandleAvailability<A extends Auth = void>(
-    cfg: MethodConfigOrHandler<
-      A,
-      ComAtprotoTempCheckHandleAvailability.QueryParams,
-      ComAtprotoTempCheckHandleAvailability.HandlerInput,
-      ComAtprotoTempCheckHandleAvailability.HandlerOutput
-    >,
-  ) {
-    const nsid = 'com.atproto.temp.checkHandleAvailability' // @ts-ignore
-    return this._server.xrpc.method(nsid, cfg)
-  }
-
-  checkSignupQueue<A extends Auth = void>(
-    cfg: MethodConfigOrHandler<
-      A,
-      ComAtprotoTempCheckSignupQueue.QueryParams,
-      ComAtprotoTempCheckSignupQueue.HandlerInput,
-      ComAtprotoTempCheckSignupQueue.HandlerOutput
-    >,
-  ) {
-    const nsid = 'com.atproto.temp.checkSignupQueue' // @ts-ignore
-    return this._server.xrpc.method(nsid, cfg)
-  }
-
-  dereferenceScope<A extends Auth = void>(
-    cfg: MethodConfigOrHandler<
-      A,
-      ComAtprotoTempDereferenceScope.QueryParams,
-      ComAtprotoTempDereferenceScope.HandlerInput,
-      ComAtprotoTempDereferenceScope.HandlerOutput
-    >,
-  ) {
-    const nsid = 'com.atproto.temp.dereferenceScope' // @ts-ignore
-    return this._server.xrpc.method(nsid, cfg)
-  }
-
-  fetchLabels<A extends Auth = void>(
-    cfg: MethodConfigOrHandler<
-      A,
-      ComAtprotoTempFetchLabels.QueryParams,
-      ComAtprotoTempFetchLabels.HandlerInput,
-      ComAtprotoTempFetchLabels.HandlerOutput
-    >,
-  ) {
-    const nsid = 'com.atproto.temp.fetchLabels' // @ts-ignore
-    return this._server.xrpc.method(nsid, cfg)
-  }
-
-  requestPhoneVerification<A extends Auth = void>(
-    cfg: MethodConfigOrHandler<
-      A,
-      ComAtprotoTempRequestPhoneVerification.QueryParams,
-      ComAtprotoTempRequestPhoneVerification.HandlerInput,
-      ComAtprotoTempRequestPhoneVerification.HandlerOutput
-    >,
-  ) {
-    const nsid = 'com.atproto.temp.requestPhoneVerification' // @ts-ignore
-    return this._server.xrpc.method(nsid, cfg)
-  }
-
-  revokeAccountCredentials<A extends Auth = void>(
-    cfg: MethodConfigOrHandler<
-      A,
-      ComAtprotoTempRevokeAccountCredentials.QueryParams,
-      ComAtprotoTempRevokeAccountCredentials.HandlerInput,
-      ComAtprotoTempRevokeAccountCredentials.HandlerOutput
-    >,
-  ) {
-    const nsid = 'com.atproto.temp.revokeAccountCredentials' // @ts-ignore
-    return this._server.xrpc.method(nsid, cfg)
   }
 }
 

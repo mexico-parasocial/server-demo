@@ -1,8 +1,8 @@
 import { Trans } from '@lingui/react/macro'
 import { ReactNode, useEffect, useState } from 'react'
 import { useErrorMessage } from '#/hooks/use-error-message.ts'
-import { Action, Admonition } from './admonition.tsx.js'
-import { ErrorDetails } from './error-details.tsx.js'
+import { Action, Admonition } from './admonition.tsx'
+import { ErrorDetails } from './error-details.tsx'
 
 export type ErrorCardProps = {
   className?: string

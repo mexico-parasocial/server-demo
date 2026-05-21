@@ -4,9 +4,9 @@ import * as Popover from '@radix-ui/react-popover'
 import { ReactNode } from 'react'
 import { useAuthenticationContext } from '#/contexts/authentication.tsx'
 import { useSessionContext } from '#/contexts/session.tsx'
-import { Button, ButtonProps } from '../forms/button.tsx.js'
-import { AccountImage } from './account-image.tsx.js'
-import { AccountOverview } from './account-overview.tsx.js'
+import { Button, ButtonProps } from '../forms/button.tsx'
+import { AccountImage } from './account-image.tsx'
+import { AccountOverview } from './account-overview.tsx'
 
 export type AccountSelectorProps = Omit<
   ButtonProps,

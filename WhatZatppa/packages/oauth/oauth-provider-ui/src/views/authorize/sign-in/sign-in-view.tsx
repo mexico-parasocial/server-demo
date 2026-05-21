@@ -4,10 +4,10 @@ import type { Session } from '@atproto/oauth-provider-api'
 import {
   LayoutTitlePage,
   LayoutTitlePageProps,
-} from '../../../components/layouts/layout-title-page.tsx.js'
+} from '../../../components/layouts/layout-title-page.tsx'
 import { Override } from '../../../lib/util.ts'
-import { SignInForm, SignInFormOutput } from './sign-in-form.tsx.js'
-import { SignInPicker } from './sign-in-picker.tsx.js'
+import { SignInForm, SignInFormOutput } from './sign-in-form.tsx'
+import { SignInPicker } from './sign-in-picker.tsx'
 
 export type SignInViewProps = Override<
   LayoutTitlePageProps,

@@ -1,17 +1,17 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { ReactNode } from 'react'
 import type { Account } from '@atproto/oauth-provider-api'
-import { Button } from '../../../components/forms/button.tsx.js'
+import { Button } from '../../../components/forms/button.tsx'
 import {
   FormCard,
   FormCardProps,
-} from '../../../components/forms/form-card.tsx.js'
-import { InputContainer } from '../../../components/forms/input-container.tsx.js'
-import { AccountImage } from '../../../components/utils/account-image.tsx.js'
+} from '../../../components/forms/form-card.tsx'
+import { InputContainer } from '../../../components/forms/input-container.tsx'
+import { AccountImage } from '../../../components/utils/account-image.tsx'
 import {
   AtSymbolIcon,
   ChevronRightIcon,
-} from '../../../components/utils/icons.tsx.js'
+} from '../../../components/utils/icons.tsx'
 import { Override } from '../../../lib/util.ts'
 
 export type SignInPickerProps = Override<

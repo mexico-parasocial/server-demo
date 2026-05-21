@@ -1,13 +1,13 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useState } from 'react'
-import { Button } from '../../../components/forms/button.tsx.js'
+import { Button } from '../../../components/forms/button.tsx'
 import {
   LayoutTitlePage,
   LayoutTitlePageProps,
-} from '../../../components/layouts/layout-title-page.tsx.js'
+} from '../../../components/layouts/layout-title-page.tsx'
 import { Override } from '../../../lib/util.ts'
-import { ResetPasswordConfirmForm } from './reset-password-confirm-form.tsx.js'
-import { ResetPasswordRequestForm } from './reset-password-request-form.tsx.js'
+import { ResetPasswordConfirmForm } from './reset-password-confirm-form.tsx'
+import { ResetPasswordRequestForm } from './reset-password-request-form.tsx'
 
 export type ResetPasswordViewProps = Override<
   LayoutTitlePageProps,

@@ -4,7 +4,7 @@ import { useLingui } from '@lingui/react'
 import { ReactNode } from 'react'
 import { useCustomizationData } from '#/contexts/customization.tsx'
 import { LocaleSelector } from '#/locales/locale-selector.tsx'
-import { LinkAnchor } from '../utils/link-anchor.tsx.js'
+import { LinkAnchor } from '../utils/link-anchor.tsx'
 
 export type LayoutAppProps = {
   children?: ReactNode

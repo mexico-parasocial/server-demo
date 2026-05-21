@@ -1,4 +1,4 @@
-import './style.css.js'
+import './style.css'
 
 import type { HydrationData } from '#/hydration-data.d.ts'
 import { msg } from '@lingui/core/macro'

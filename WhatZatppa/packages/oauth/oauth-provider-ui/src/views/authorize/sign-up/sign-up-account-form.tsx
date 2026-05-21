@@ -1,15 +1,15 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
-import { Fieldset } from '../../../components/forms/fieldset.tsx.js'
+import { Fieldset } from '../../../components/forms/fieldset.tsx'
 import {
   AsyncActionController,
   FormCardAsync,
   FormCardAsyncProps,
-} from '../../../components/forms/form-card-async.tsx.js'
-import { InputEmailAddress } from '../../../components/forms/input-email-address.tsx.js'
-import { InputNewPassword } from '../../../components/forms/input-new-password.tsx.js'
-import { InputText } from '../../../components/forms/input-text.tsx.js'
-import { TokenIcon } from '../../../components/utils/icons.tsx.js'
+} from '../../../components/forms/form-card-async.tsx'
+import { InputEmailAddress } from '../../../components/forms/input-email-address.tsx'
+import { InputNewPassword } from '../../../components/forms/input-new-password.tsx'
+import { InputText } from '../../../components/forms/input-text.tsx'
+import { TokenIcon } from '../../../components/utils/icons.tsx'
 import { mergeRefs } from '../../../lib/ref.ts'
 import { Override } from '../../../lib/util.ts'
 

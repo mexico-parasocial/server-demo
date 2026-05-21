@@ -2,9 +2,9 @@ import { clsx } from 'clsx'
 import { JSX, ReactNode } from 'react'
 import type { Account } from '@atproto/oauth-provider-api'
 import { Override } from '#/lib/util.ts'
-import { AccountIdentifier } from './account-identifier.tsx.js'
-import { AccountImage } from './account-image.tsx.js'
-import { AccountName } from './account-name.tsx.js'
+import { AccountIdentifier } from './account-identifier.tsx'
+import { AccountImage } from './account-image.tsx'
+import { AccountName } from './account-name.tsx'
 
 export type AccountOverviewProps = Override<
   {

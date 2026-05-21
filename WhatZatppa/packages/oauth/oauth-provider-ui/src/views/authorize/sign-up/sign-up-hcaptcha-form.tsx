@@ -3,7 +3,7 @@ import { ForwardedRef, ReactNode, useCallback, useRef, useState } from 'react'
 import {
   FormCardAsync,
   FormCardAsyncProps,
-} from '../../../components/forms/form-card-async.tsx.js'
+} from '../../../components/forms/form-card-async.tsx'
 import { useBrowserColorScheme } from '../../../hooks/use-browser-color-scheme.ts'
 import { mergeRefs } from '../../../lib/ref.ts'
 import { Override } from '../../../lib/util.ts'

@@ -1,13 +1,13 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useCallback, useRef, useState } from 'react'
-import { Fieldset } from '../../../components/forms/fieldset.tsx.js'
+import { Fieldset } from '../../../components/forms/fieldset.tsx'
 import {
   AsyncActionController,
   FormCardAsync,
   FormCardAsyncProps,
-} from '../../../components/forms/form-card-async.tsx.js'
-import { InputEmailAddress } from '../../../components/forms/input-email-address.tsx.js'
-import { Admonition } from '../../../components/utils/admonition.tsx.js'
+} from '../../../components/forms/form-card-async.tsx'
+import { InputEmailAddress } from '../../../components/forms/input-email-address.tsx'
+import { Admonition } from '../../../components/utils/admonition.tsx'
 import { useRandomString } from '../../../hooks/use-random-string.ts'
 import { mergeRefs } from '../../../lib/ref.ts'
 import { Override } from '../../../lib/util.ts'

@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react'
 import { Override } from '../../lib/util.ts'
-import { Button, ButtonProps } from './button.tsx.js'
+import { Button, ButtonProps } from './button.tsx'
 
 export type ButtonToggleVisibilityProps = Override<
   Omit<ButtonProps, 'aria-label' | 'square'>,

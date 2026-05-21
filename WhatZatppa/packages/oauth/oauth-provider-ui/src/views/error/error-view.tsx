@@ -3,8 +3,8 @@ import { memo } from 'react'
 import {
   LayoutWelcome,
   LayoutWelcomeProps,
-} from '../../components/layouts/layout-welcome.tsx.js'
-import { ErrorCard } from '../../components/utils/error-card.tsx.js'
+} from '../../components/layouts/layout-welcome.tsx'
+import { ErrorCard } from '../../components/utils/error-card.tsx'
 import { Override } from '../../lib/util.ts'
 
 export type ErrorViewProps = Override<

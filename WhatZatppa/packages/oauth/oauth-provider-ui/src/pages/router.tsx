@@ -2,9 +2,9 @@ import { msg } from '@lingui/core/macro'
 import { PaintBucketIcon } from '@phosphor-icons/react'
 import { createRouter } from '@tanstack/react-router'
 import { Palette } from '#/components/utils/palette.tsx'
-import { buildRoutes as buildAccountRoutes } from './account/(authenticated)/route.tsx.js'
-import { Route as ResetPasswordRoute } from './account/(unauthenticated)/reset-password/route.tsx.js'
-import { RootRoute } from './route.tsx.js'
+import { buildRoutes as buildAccountRoutes } from './account/(authenticated)/route.tsx'
+import { Route as ResetPasswordRoute } from './account/(unauthenticated)/reset-password/route.tsx'
+import { RootRoute } from './route.tsx'
 
 const authenticatedRoutes = buildAccountRoutes('/account', {
   // Custom extra pages. The purpose of these is to (eventually!) allow adding

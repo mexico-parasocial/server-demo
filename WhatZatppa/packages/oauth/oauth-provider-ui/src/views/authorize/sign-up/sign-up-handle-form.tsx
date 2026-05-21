@@ -5,14 +5,14 @@ import {
   AsyncActionController,
   FormCardAsync,
   FormCardAsyncProps,
-} from '../../../components/forms/form-card-async.tsx.js'
-import { InputText } from '../../../components/forms/input-text.tsx.js'
-import { Admonition } from '../../../components/utils/admonition.tsx.js'
+} from '../../../components/forms/form-card-async.tsx'
+import { InputText } from '../../../components/forms/input-text.tsx'
+import { Admonition } from '../../../components/utils/admonition.tsx'
 import {
   AtSymbolIcon,
   CheckMarkIcon,
   XMarkIcon,
-} from '../../../components/utils/icons.tsx.js'
+} from '../../../components/utils/icons.tsx'
 import { mergeRefs } from '../../../lib/ref.ts'
 import { Override } from '../../../lib/util.ts'
 

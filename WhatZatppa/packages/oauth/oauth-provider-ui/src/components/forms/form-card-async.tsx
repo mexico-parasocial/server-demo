@@ -6,8 +6,8 @@ import {
   useAsyncAction,
 } from '#/hooks/use-async-action.ts'
 import { Override } from '#/lib/util.ts'
-import { Button } from './button.tsx.js'
-import { FormCard, FormCardProps } from './form-card.tsx.js'
+import { Button } from './button.tsx'
+import { FormCard, FormCardProps } from './form-card.tsx'
 
 export type { AsyncActionController } from '#/hooks/use-async-action.ts'
 

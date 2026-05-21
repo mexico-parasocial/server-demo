@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import type { LinkDefinition } from '@atproto/oauth-provider-api'
-import { useLangString } from './lang-string.tsx.js'
+import { useLangString } from './lang-string.tsx'
 
 export type LinkNameProps = {
   link: LinkDefinition

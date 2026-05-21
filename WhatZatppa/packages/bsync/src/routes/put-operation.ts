@@ -1,4 +1,5 @@
-import { Code, ConnectError, ServiceImpl } from '@connectrpc/connect'
+import { Code, ConnectError } from '@connectrpc/connect'
+import { FixedServiceImpl } from '../types/connect-fix.js'
 import { sql } from 'kysely'
 import { ensureValidRecordKey } from '@atproto/syntax'
 import { AppContext } from '../context.js'
@@ -13,7 +14,7 @@ import {
 import { authWithApiKey } from './auth.js'
 import { isValidDid, validateNamespace } from './util.js'
 
-export default (ctx: AppContext): Partial<ServiceImpl<typeof Service>> => ({
+export default (ctx: AppContext): Partial<FixedServiceImpl<typeof Service>> => ({
   async putOperation(req, handlerCtx) {
     authWithApiKey(ctx, handlerCtx)
     const { db } = ctx

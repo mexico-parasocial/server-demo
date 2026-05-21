@@ -6,15 +6,15 @@ import { OAuthPromptMode } from '@atproto/oauth-types'
 import {
   LayoutTitlePage,
   LayoutTitlePageProps,
-} from '../../components/layouts/layout-title-page.tsx.js'
+} from '../../components/layouts/layout-title-page.tsx'
 import { useApi } from '../../hooks/use-api.ts'
 import { useBoundDispatch } from '../../hooks/use-bound-dispatch.ts'
 import { Override } from '../../lib/util.ts'
-import { ConsentView } from './consent/consent-view.tsx.js'
-import { ResetPasswordView } from './reset-password/reset-password-view.tsx.js'
-import { SignInView } from './sign-in/sign-in-view.tsx.js'
-import { SignUpView } from './sign-up/sign-up-view.tsx.js'
-import { WelcomeView } from './welcome/welcome-view.tsx.js'
+import { ConsentView } from './consent/consent-view.tsx'
+import { ResetPasswordView } from './reset-password/reset-password-view.tsx'
+import { SignInView } from './sign-in/sign-in-view.tsx'
+import { SignUpView } from './sign-up/sign-up-view.tsx'
+import { WelcomeView } from './welcome/welcome-view.tsx'
 
 export type AuthorizeViewProps = Override<
   LayoutTitlePageProps,

@@ -1,7 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { Button } from './forms/button.tsx.js'
-import { LayoutApp } from './layouts/layout-app.tsx.js'
+import { Button } from './forms/button.tsx'
+import { LayoutApp } from './layouts/layout-app.tsx'
 
 export type AuthenticateWelcomeViewParams = {
   onSignIn?: () => void

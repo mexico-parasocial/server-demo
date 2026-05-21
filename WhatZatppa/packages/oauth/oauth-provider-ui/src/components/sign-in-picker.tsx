@@ -3,11 +3,11 @@ import { AtIcon, CaretRightIcon } from '@phosphor-icons/react'
 import { ReactNode } from 'react'
 import type { Session } from '@atproto/oauth-provider-api'
 import { Override } from '#/lib/util.ts'
-import { Button } from './forms/button.tsx.js'
-import { FormCard, FormCardProps } from './forms/form-card.tsx.js'
-import { InputContainer } from './forms/input-container.tsx.js'
-import { AccountCard } from './utils/account-card.tsx.js'
-import { getAccountHandle } from './utils/account-handle.tsx.js'
+import { Button } from './forms/button.tsx'
+import { FormCard, FormCardProps } from './forms/form-card.tsx'
+import { InputContainer } from './forms/input-container.tsx'
+import { AccountCard } from './utils/account-card.tsx'
+import { getAccountHandle } from './utils/account-handle.tsx'
 
 export type SignInPickerProps = Override<
   Omit<FormCardProps, 'cancel' | 'actions' | 'append'>,

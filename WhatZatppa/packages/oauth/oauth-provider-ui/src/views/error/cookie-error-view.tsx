@@ -4,7 +4,7 @@ import { Button } from '#/components/forms/button.tsx'
 import { FormCard } from '#/components/forms/form-card.tsx'
 import { LayoutTitlePage } from '#/components/layouts/layout-title-page.tsx'
 import { Admonition } from '#/components/utils/admonition.tsx'
-import { LayoutWelcomeProps } from '../../components/layouts/layout-welcome.tsx.js'
+import { LayoutWelcomeProps } from '../../components/layouts/layout-welcome.tsx'
 import { Override } from '../../lib/util.ts'
 
 export type CookieErrorViewProps = Override<

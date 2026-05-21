@@ -7,13 +7,13 @@ import type { OAuthClientMetadata } from '@atproto/oauth-types'
 import { ClientImage } from '#/components/utils/client-image.tsx'
 import { DescriptionCard } from '#/components/utils/description-card.tsx'
 import { ScopeDescription } from '#/components/utils/scope-description.tsx'
-import { Button } from '../../../components/forms/button.tsx.js'
+import { Button } from '../../../components/forms/button.tsx'
 import {
   FormCard,
   FormCardProps,
-} from '../../../components/forms/form-card.tsx.js'
-import { AccountIdentifier } from '../../../components/utils/account-identifier.tsx.js'
-import { ClientName } from '../../../components/utils/client-name.tsx.js'
+} from '../../../components/forms/form-card.tsx'
+import { AccountIdentifier } from '../../../components/utils/account-identifier.tsx'
+import { ClientName } from '../../../components/utils/client-name.tsx'
 import { Override } from '../../../lib/util.ts'
 
 export type ConsentFormProps = Override<

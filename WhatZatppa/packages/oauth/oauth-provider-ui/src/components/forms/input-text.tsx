@@ -2,8 +2,8 @@ import { clsx } from 'clsx'
 import { JSX, ReactNode, useContext, useRef } from 'react'
 import { mergeRefs } from '#/lib/ref.ts'
 import { Override } from '#/lib/util.ts'
-import { FieldsetContext } from './form-field.tsx.js'
-import { InputContainer } from './input-container.tsx.js'
+import { FieldsetContext } from './form-field.tsx'
+import { InputContainer } from './input-container.tsx'
 
 export type InputTextProps = Override<
   Omit<JSX.IntrinsicElements['input'], 'children'>,

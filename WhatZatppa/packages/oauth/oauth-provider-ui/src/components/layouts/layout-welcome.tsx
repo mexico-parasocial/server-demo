@@ -3,7 +3,7 @@ import { clsx } from 'clsx'
 import { JSX, ReactNode } from 'react'
 import type { CustomizationData } from '@atproto/oauth-provider-api'
 import { Override } from '../../lib/util.ts'
-import { PageFooter } from '../utils/page-footer.tsx.js'
+import { PageFooter } from '../utils/page-footer.tsx'
 
 export type LayoutWelcomeProps = Override<
   JSX.IntrinsicElements['div'],

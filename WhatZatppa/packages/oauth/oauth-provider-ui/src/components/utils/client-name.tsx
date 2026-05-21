@@ -5,7 +5,7 @@ import {
   isConventionalOAuthClientId,
 } from '#/lib/oauth-client.ts'
 import { Override } from '#/lib/util.ts'
-import { UrlViewer } from './url-viewer.tsx.js'
+import { UrlViewer } from './url-viewer.tsx'
 
 export type ClientNameProps = Override<
   Omit<JSX.IntrinsicElements['span'], 'children'>,

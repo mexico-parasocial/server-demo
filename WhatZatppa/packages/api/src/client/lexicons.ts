@@ -2710,14 +2710,14 @@ export const schemaDict = {
             accept: ['image/*'],
             maxSize: 1000000,
           },
-          associatedRecords: {
+          associatedRefs: {
             type: 'array',
             items: {
-              type: 'string',
-              format: 'at-uri',
+              type: 'ref',
+              ref: 'lex:com.atproto.repo.strongRef',
             },
             description:
-              'The URIs of the Atmosphere records representing this external content, if they exist.',
+              'StrongRefs (uri+cid) of the Atmosphere records that backed this view.',
           },
         },
       },
@@ -2748,6 +2748,179 @@ export const schemaDict = {
           thumb: {
             type: 'string',
             format: 'uri',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'datetime',
+            description:
+              'When the external content was created, if available. Example: a publication date, for an article.',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'datetime',
+            description: 'When the external content was updated, if available.',
+          },
+          readingTime: {
+            type: 'integer',
+            description:
+              'Estimated reading time in minutes, if applicable and available.',
+          },
+          labels: {
+            type: 'array',
+            items: {
+              type: 'ref',
+              ref: 'lex:com.atproto.label.defs#label',
+            },
+          },
+          source: {
+            type: 'ref',
+            ref: 'lex:app.bsky.embed.external#viewExternalSource',
+          },
+          associatedRefs: {
+            type: 'array',
+            items: {
+              type: 'ref',
+              ref: 'lex:com.atproto.repo.strongRef',
+            },
+            description:
+              'StrongRefs (uri+cid) of the Atmosphere records that backed this view.',
+          },
+        },
+      },
+      viewExternalSource: {
+        type: 'object',
+        description:
+          'The source of an external embed, such as a standard.site publication.',
+        properties: {
+          uri: {
+            type: 'string',
+            format: 'uri',
+            description:
+              'URI of the source, if available. Example: the https:// URL of a site.standard.publication record.',
+          },
+          icon: {
+            type: 'string',
+            format: 'uri',
+            description:
+              'Fully-qualified URL where an icon representing the source can be fetched. For example, CDN location provided by the App View.',
+          },
+          title: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          theme: {
+            type: 'ref',
+            ref: 'lex:app.bsky.embed.external#viewExternalSourceTheme',
+          },
+        },
+      },
+      viewExternalSourceTheme: {
+        type: 'object',
+        description:
+          'The theme colors of an external source, such as a site.standard.publication. These colors may be used when rendering an embed from that source.',
+        properties: {
+          backgroundRGB: {
+            type: 'ref',
+            ref: 'lex:app.bsky.embed.external#colorRGB',
+          },
+          foregroundRGB: {
+            type: 'ref',
+            ref: 'lex:app.bsky.embed.external#colorRGB',
+          },
+          accentRGB: {
+            type: 'ref',
+            ref: 'lex:app.bsky.embed.external#colorRGB',
+          },
+          accentForegroundRGB: {
+            type: 'ref',
+            ref: 'lex:app.bsky.embed.external#colorRGB',
+          },
+        },
+      },
+      colorRGB: {
+        type: 'object',
+        description:
+          'RGB color definition, inspired by site.standard.theme.color#rgb',
+        required: ['r', 'g', 'b'],
+        properties: {
+          r: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 255,
+          },
+          g: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 255,
+          },
+          b: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 255,
+          },
+        },
+      },
+    },
+  },
+  AppBskyEmbedGetEmbedExternalView: {
+    lexicon: 1,
+    id: 'app.bsky.embed.getEmbedExternalView',
+    defs: {
+      main: {
+        type: 'query',
+        description:
+          "Resolve one or more AT-URIs into the data needed to render an enhanced external embed. Returns `associatedRefs` (strongRefs to embed into a post's external.associatedRefs) and the raw `associatedRecords`; `view` is also included when the resolved records can produce a renderable view, but may be omitted when no records were hydratable.",
+        parameters: {
+          type: 'params',
+          required: ['url', 'uris'],
+          properties: {
+            url: {
+              type: 'string',
+              format: 'uri',
+              description:
+                "The canonical web URL the embed represents (typically the URL the user pasted into the composer). Used as the returned view's `uri`. May be used for validation in the future.",
+            },
+            uris: {
+              type: 'array',
+              description:
+                'AT-URIs of any Atmosphere records that can be resolved and used to construct #externalView views. Example: a site.standard.document and optionally its associated site.standard.publication.',
+              items: {
+                type: 'string',
+                format: 'at-uri',
+              },
+              maxLength: 4,
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            properties: {
+              view: {
+                type: 'ref',
+                ref: 'lex:app.bsky.embed.external#view',
+              },
+              associatedRefs: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:com.atproto.repo.strongRef',
+                },
+                description:
+                  "StrongRefs (URI+CID) of the Atmosphere records that backed this view, suitable for embedding into a post's external.associatedRefs.",
+              },
+              associatedRecords: {
+                type: 'array',
+                items: {
+                  type: 'unknown',
+                  description:
+                    'The raw record data of the Atmosphere records that backed this view. This is returned for convenience, to avoid the need for the client to separately fetch the record data for the associatedRefs. Example: the site.standard.document and site.standard.publication records that backed this view.',
+                },
+              },
+            },
           },
         },
       },
@@ -18018,289 +18191,6 @@ export const schemaDict = {
             type: 'cid-link',
             description:
               'For updates and deletes, the previous record CID (required for inductive firehose). For creations, field should not be defined.',
-          },
-        },
-      },
-    },
-  },
-  ComAtprotoTempAddReservedHandle: {
-    lexicon: 1,
-    id: 'com.atproto.temp.addReservedHandle',
-    defs: {
-      main: {
-        type: 'procedure',
-        description: 'Add a handle to the set of reserved handles.',
-        input: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['handle'],
-            properties: {
-              handle: {
-                type: 'string',
-              },
-            },
-          },
-        },
-        output: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            properties: {},
-          },
-        },
-      },
-    },
-  },
-  ComAtprotoTempCheckHandleAvailability: {
-    lexicon: 1,
-    id: 'com.atproto.temp.checkHandleAvailability',
-    defs: {
-      main: {
-        type: 'query',
-        description:
-          'Checks whether the provided handle is available. If the handle is not available, available suggestions will be returned. Optional inputs will be used to generate suggestions.',
-        parameters: {
-          type: 'params',
-          required: ['handle'],
-          properties: {
-            handle: {
-              type: 'string',
-              format: 'handle',
-              description:
-                'Tentative handle. Will be checked for availability or used to build handle suggestions.',
-            },
-            email: {
-              type: 'string',
-              description:
-                'User-provided email. Might be used to build handle suggestions.',
-            },
-            birthDate: {
-              type: 'string',
-              format: 'datetime',
-              description:
-                'User-provided birth date. Might be used to build handle suggestions.',
-            },
-          },
-        },
-        output: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['handle', 'result'],
-            properties: {
-              handle: {
-                type: 'string',
-                format: 'handle',
-                description: 'Echo of the input handle.',
-              },
-              result: {
-                type: 'union',
-                refs: [
-                  'lex:com.atproto.temp.checkHandleAvailability#resultAvailable',
-                  'lex:com.atproto.temp.checkHandleAvailability#resultUnavailable',
-                ],
-              },
-            },
-          },
-        },
-        errors: [
-          {
-            name: 'InvalidEmail',
-            description: 'An invalid email was provided.',
-          },
-        ],
-      },
-      resultAvailable: {
-        type: 'object',
-        description: 'Indicates the provided handle is available.',
-        properties: {},
-      },
-      resultUnavailable: {
-        type: 'object',
-        description:
-          'Indicates the provided handle is unavailable and gives suggestions of available handles.',
-        required: ['suggestions'],
-        properties: {
-          suggestions: {
-            type: 'array',
-            description:
-              'List of suggested handles based on the provided inputs.',
-            items: {
-              type: 'ref',
-              ref: 'lex:com.atproto.temp.checkHandleAvailability#suggestion',
-            },
-          },
-        },
-      },
-      suggestion: {
-        type: 'object',
-        required: ['handle', 'method'],
-        properties: {
-          handle: {
-            type: 'string',
-            format: 'handle',
-          },
-          method: {
-            type: 'string',
-            description:
-              'Method used to build this suggestion. Should be considered opaque to clients. Can be used for metrics.',
-          },
-        },
-      },
-    },
-  },
-  ComAtprotoTempCheckSignupQueue: {
-    lexicon: 1,
-    id: 'com.atproto.temp.checkSignupQueue',
-    defs: {
-      main: {
-        type: 'query',
-        description: 'Check accounts location in signup queue.',
-        output: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['activated'],
-            properties: {
-              activated: {
-                type: 'boolean',
-              },
-              placeInQueue: {
-                type: 'integer',
-              },
-              estimatedTimeMs: {
-                type: 'integer',
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  ComAtprotoTempDereferenceScope: {
-    lexicon: 1,
-    id: 'com.atproto.temp.dereferenceScope',
-    defs: {
-      main: {
-        type: 'query',
-        description:
-          'Allows finding the oauth permission scope from a reference',
-        parameters: {
-          type: 'params',
-          required: ['scope'],
-          properties: {
-            scope: {
-              type: 'string',
-              description: "The scope reference (starts with 'ref:')",
-            },
-          },
-        },
-        output: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['scope'],
-            properties: {
-              scope: {
-                type: 'string',
-                description: 'The full oauth permission scope',
-              },
-            },
-          },
-        },
-        errors: [
-          {
-            name: 'InvalidScopeReference',
-            description: 'An invalid scope reference was provided.',
-          },
-        ],
-      },
-    },
-  },
-  ComAtprotoTempFetchLabels: {
-    lexicon: 1,
-    id: 'com.atproto.temp.fetchLabels',
-    defs: {
-      main: {
-        type: 'query',
-        description:
-          'DEPRECATED: use queryLabels or subscribeLabels instead -- Fetch all labels from a labeler created after a certain date.',
-        parameters: {
-          type: 'params',
-          properties: {
-            since: {
-              type: 'integer',
-            },
-            limit: {
-              type: 'integer',
-              minimum: 1,
-              maximum: 250,
-              default: 50,
-            },
-          },
-        },
-        output: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['labels'],
-            properties: {
-              labels: {
-                type: 'array',
-                items: {
-                  type: 'ref',
-                  ref: 'lex:com.atproto.label.defs#label',
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  ComAtprotoTempRequestPhoneVerification: {
-    lexicon: 1,
-    id: 'com.atproto.temp.requestPhoneVerification',
-    defs: {
-      main: {
-        type: 'procedure',
-        description:
-          'Request a verification code to be sent to the supplied phone number',
-        input: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['phoneNumber'],
-            properties: {
-              phoneNumber: {
-                type: 'string',
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  ComAtprotoTempRevokeAccountCredentials: {
-    lexicon: 1,
-    id: 'com.atproto.temp.revokeAccountCredentials',
-    defs: {
-      main: {
-        type: 'procedure',
-        description:
-          'Revoke sessions, password, and app passwords associated with account. May be resolved by a password reset.',
-        input: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['account'],
-            properties: {
-              account: {
-                type: 'string',
-                format: 'at-identifier',
-              },
-            },
           },
         },
       },
@@ -34624,6 +34514,7 @@ export const ids = {
   AppBskyDraftUpdateDraft: 'app.bsky.draft.updateDraft',
   AppBskyEmbedDefs: 'app.bsky.embed.defs',
   AppBskyEmbedExternal: 'app.bsky.embed.external',
+  AppBskyEmbedGetEmbedExternalView: 'app.bsky.embed.getEmbedExternalView',
   AppBskyEmbedImages: 'app.bsky.embed.images',
   AppBskyEmbedRecord: 'app.bsky.embed.record',
   AppBskyEmbedRecordWithMedia: 'app.bsky.embed.recordWithMedia',
@@ -34905,16 +34796,6 @@ export const ids = {
   ComAtprotoSyncNotifyOfUpdate: 'com.atproto.sync.notifyOfUpdate',
   ComAtprotoSyncRequestCrawl: 'com.atproto.sync.requestCrawl',
   ComAtprotoSyncSubscribeRepos: 'com.atproto.sync.subscribeRepos',
-  ComAtprotoTempAddReservedHandle: 'com.atproto.temp.addReservedHandle',
-  ComAtprotoTempCheckHandleAvailability:
-    'com.atproto.temp.checkHandleAvailability',
-  ComAtprotoTempCheckSignupQueue: 'com.atproto.temp.checkSignupQueue',
-  ComAtprotoTempDereferenceScope: 'com.atproto.temp.dereferenceScope',
-  ComAtprotoTempFetchLabels: 'com.atproto.temp.fetchLabels',
-  ComAtprotoTempRequestPhoneVerification:
-    'com.atproto.temp.requestPhoneVerification',
-  ComAtprotoTempRevokeAccountCredentials:
-    'com.atproto.temp.revokeAccountCredentials',
   ComGermnetworkDeclaration: 'com.germnetwork.declaration',
   ComParaActorDefs: 'com.para.actor.defs',
   ComParaActorGetProfileStats: 'com.para.actor.getProfileStats',

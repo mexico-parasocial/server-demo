@@ -3,8 +3,8 @@ import { KeyIcon } from '@phosphor-icons/react'
 import { ChangeEvent, useCallback, useRef, useState } from 'react'
 import { mergeRefs } from '#/lib/ref.ts'
 import { Override } from '#/lib/util.ts'
-import { ButtonToggleVisibility } from './button-toggle-visibility.tsx.js'
-import { InputText, InputTextProps } from './input-text.tsx.js'
+import { ButtonToggleVisibility } from './button-toggle-visibility.tsx'
+import { InputText, InputTextProps } from './input-text.tsx'
 
 export type InputPasswordProps = Override<
   Omit<InputTextProps, 'type' | 'children'>,

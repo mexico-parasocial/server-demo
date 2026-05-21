@@ -62,7 +62,7 @@ for (const file of files) {
 console.log(`Updated ${changedFiles} files with .js extensions`)
 
 function transformMatch(file, match, prefix, importPath, suffix) {
-  if (importPath.endsWith('.js') || importPath.endsWith('.ts') || importPath.endsWith('.json') || importPath.endsWith('.cjs') || importPath.endsWith('.mjs')) {
+  if (importPath.endsWith('.js') || importPath.endsWith('.ts') || importPath.endsWith('.tsx') || importPath.endsWith('.jsx') || importPath.endsWith('.json') || importPath.endsWith('.cjs') || importPath.endsWith('.mjs') || importPath.endsWith('.css')) {
     return match
   }
   if (!importPath.startsWith('.')) {

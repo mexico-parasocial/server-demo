@@ -1,9 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Button } from '../../../components/forms/button.tsx.js'
+import { Button } from '../../../components/forms/button.tsx'
 import {
   LayoutWelcome,
   LayoutWelcomeProps,
-} from '../../../components/layouts/layout-welcome.tsx.js'
+} from '../../../components/layouts/layout-welcome.tsx'
 import { Override } from '../../../lib/util.ts'
 
 export type WelcomeViewParams = Override<

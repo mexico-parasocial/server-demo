@@ -1,5 +1,5 @@
 import { once } from 'node:events'
-import { ServiceImpl } from '@connectrpc/connect'
+import { FixedServiceImpl } from '../types/connect-fix.js'
 import { AppContext } from '../context.js'
 import { createMuteOpChannel } from '../db/schema/mute_op.js'
 import { Service } from '../proto/bsync_connect.js'
@@ -7,7 +7,7 @@ import { ScanMuteOperationsResponse } from '../proto/bsync_pb.js'
 import { authWithApiKey } from './auth.js'
 import { combineSignals, validCursor } from './util.js'
 
-export default (ctx: AppContext): Partial<ServiceImpl<typeof Service>> => ({
+export default (ctx: AppContext): Partial<FixedServiceImpl<typeof Service>> => ({
   async scanMuteOperations(req, handlerCtx) {
     authWithApiKey(ctx, handlerCtx)
     const { db, events } = ctx

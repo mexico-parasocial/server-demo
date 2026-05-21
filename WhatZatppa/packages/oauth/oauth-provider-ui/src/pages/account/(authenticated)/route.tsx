@@ -23,12 +23,12 @@ import {
 import { AuthenticationProvider } from '#/contexts/authentication.tsx'
 import { useSessionContext } from '#/contexts/session.tsx'
 import { Explicit } from '#/lib/util.ts'
-import { RootRoute } from '../../route.tsx.js'
-import { Page as AccountAboutPage } from './about/page.tsx.js'
-import { Page as AccountOAuthPage } from './apps/page.tsx.js'
-import { Page as AccountDevicesPage } from './devices/page.tsx.js'
-import { Page as AccountIndexPage } from './page.tsx.js'
-import { Page as AccountPasswordPage } from './password/page.tsx.js'
+import { RootRoute } from '../../route.tsx'
+import { Page as AccountAboutPage } from './about/page.tsx'
+import { Page as AccountOAuthPage } from './apps/page.tsx'
+import { Page as AccountDevicesPage } from './devices/page.tsx'
+import { Page as AccountIndexPage } from './page.tsx'
+import { Page as AccountPasswordPage } from './password/page.tsx'
 
 type SubPage = {
   title: string | MessageDescriptor

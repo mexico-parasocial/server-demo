@@ -3,8 +3,8 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { useState } from 'react'
 import { Button } from '#/components/forms/button.tsx'
 import { LayoutTitle } from '#/components/layouts/layout-title.tsx'
-import { ResetPasswordConfirmForm } from './reset-password-confirm-form.tsx.js'
-import { ResetPasswordRequestForm } from './reset-password-request-form.tsx.js'
+import { ResetPasswordConfirmForm } from './reset-password-confirm-form.tsx'
+import { ResetPasswordRequestForm } from './reset-password-request-form.tsx'
 
 export type ResetPasswordViewProps = {
   emailDefault?: string

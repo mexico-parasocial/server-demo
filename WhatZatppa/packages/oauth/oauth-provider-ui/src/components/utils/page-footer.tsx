@@ -5,7 +5,7 @@ import type {
 } from '@atproto/oauth-provider-api'
 import { Override } from '#/lib/util'
 import { LocaleSelector } from '#/locales/locale-selector.tsx'
-import { LinkAnchor } from './link-anchor.tsx.js'
+import { LinkAnchor } from './link-anchor.tsx'
 
 export type { CustomizationData }
 export type PageFooterProps = Override<

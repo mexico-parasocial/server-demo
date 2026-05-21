@@ -1,17 +1,17 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { ReactNode, useCallback, useRef, useState } from 'react'
-import { Button } from '../../../components/forms/button.tsx.js'
-import { Fieldset } from '../../../components/forms/fieldset.tsx.js'
+import { Button } from '../../../components/forms/button.tsx'
+import { Fieldset } from '../../../components/forms/fieldset.tsx'
 import {
   FormCardAsync,
   FormCardAsyncProps,
-} from '../../../components/forms/form-card-async.tsx.js'
-import { InputCheckbox } from '../../../components/forms/input-checkbox.tsx.js'
-import { InputPassword } from '../../../components/forms/input-password.tsx.js'
-import { InputText } from '../../../components/forms/input-text.tsx.js'
-import { InputToken } from '../../../components/forms/input-token.tsx.js'
-import { Admonition } from '../../../components/utils/admonition.tsx.js'
-import { AtSymbolIcon } from '../../../components/utils/icons.tsx.js'
+} from '../../../components/forms/form-card-async.tsx'
+import { InputCheckbox } from '../../../components/forms/input-checkbox.tsx'
+import { InputPassword } from '../../../components/forms/input-password.tsx'
+import { InputText } from '../../../components/forms/input-text.tsx'
+import { InputToken } from '../../../components/forms/input-token.tsx'
+import { Admonition } from '../../../components/utils/admonition.tsx'
+import { AtSymbolIcon } from '../../../components/utils/icons.tsx'
 import { AsyncActionController } from '../../../hooks/use-async-action.ts'
 import {
   InvalidCredentialsError,

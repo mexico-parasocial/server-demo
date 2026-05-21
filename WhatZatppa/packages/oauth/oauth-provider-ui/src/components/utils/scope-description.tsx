@@ -23,11 +23,11 @@ import {
   ScopePermissionsTransition,
 } from '@atproto/oauth-scopes'
 import { Override } from '#/lib/util'
-import { Checkbox } from '../forms/checkbox.tsx.js'
-import { Admonition } from './admonition.tsx.js'
-import { DescriptionCard } from './description-card.tsx.js'
-import { ButterflyIcon } from './icons.tsx.js'
-import { LangProp } from './lang-string.tsx.js'
+import { Checkbox } from '../forms/checkbox.tsx'
+import { Admonition } from './admonition.tsx'
+import { DescriptionCard } from './description-card.tsx'
+import { ButterflyIcon } from './icons.tsx'
+import { LangProp } from './lang-string.tsx'
 
 export type ScopeDescriptionProps = Override<
   HTMLAttributes<HTMLDivElement>,

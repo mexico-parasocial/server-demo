@@ -1,7 +1,7 @@
 import { TicketIcon } from '@phosphor-icons/react'
 import { ChangeEvent, useState } from 'react'
 import { Override } from '#/lib/util.ts'
-import { InputText, InputTextProps } from './input-text.tsx.js'
+import { InputText, InputTextProps } from './input-text.tsx'
 
 export type InputTokenProps = Override<
   Omit<

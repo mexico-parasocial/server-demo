@@ -6,8 +6,8 @@ import {
   RateLimitedActionOptions,
   useRateLimitedAction,
 } from '#/hooks/use-rate-limited-action.ts'
-import { CircularProgress } from '../utils/circular-progress.tsx.js'
-import { Button, ButtonProps } from './button.tsx.js'
+import { CircularProgress } from '../utils/circular-progress.tsx'
+import { Button, ButtonProps } from './button.tsx'
 
 export type ButtonCooldownProps = ButtonProps & RateLimitedActionOptions
 

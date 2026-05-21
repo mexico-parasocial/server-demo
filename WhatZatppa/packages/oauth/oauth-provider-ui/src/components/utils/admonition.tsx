@@ -15,7 +15,7 @@ import {
   useMemo,
 } from 'react'
 import { Override } from '#/lib/util.ts'
-import { Button, ButtonProps } from '../forms/button.tsx.js'
+import { Button, ButtonProps } from '../forms/button.tsx'
 
 const _VARIANTS = ['info', 'warning', 'error', 'success'] as const
 type Variant = (typeof _VARIANTS)[number]

@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { AtIcon } from '@phosphor-icons/react'
 import { ChangeEvent, useCallback, useState } from 'react'
 import { Override } from '#/lib/util.ts'
-import { InputText, InputTextProps } from './input-text.tsx.js'
+import { InputText, InputTextProps } from './input-text.tsx'
 
 export type InputEmailAddressProps = Override<
   Omit<InputTextProps, 'type'>,
