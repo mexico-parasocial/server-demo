@@ -241,6 +241,9 @@ import * as ComAtprotoSyncListReposByCollection from './types/com/atproto/sync/l
 import * as ComAtprotoSyncNotifyOfUpdate from './types/com/atproto/sync/notifyOfUpdate.js'
 import * as ComAtprotoSyncRequestCrawl from './types/com/atproto/sync/requestCrawl.js'
 import * as ComAtprotoSyncSubscribeRepos from './types/com/atproto/sync/subscribeRepos.js'
+import * as ComAtprotoTempDereferenceScope from './types/com/atproto/temp/dereferenceScope.js'
+import * as ComAtprotoTempFetchLabels from './types/com/atproto/temp/fetchLabels.js'
+import * as ComAtprotoTempRevokeAccountCredentials from './types/com/atproto/temp/revokeAccountCredentials.js'
 import * as ComParaActorGetProfileStats from './types/com/para/actor/getProfileStats.js'
 import * as ComParaAgentGetConversation from './types/com/para/agent/getConversation.js'
 import * as ComParaAgentSendMessage from './types/com/para/agent/sendMessage.js'
@@ -2549,6 +2552,7 @@ export class ComAtprotoNS {
   repo: ComAtprotoRepoNS
   server: ComAtprotoServerNS
   sync: ComAtprotoSyncNS
+  temp: ComAtprotoTempNS
 
   constructor(server: Server) {
     this._server = server
@@ -2560,6 +2564,7 @@ export class ComAtprotoNS {
     this.repo = new ComAtprotoRepoNS(server)
     this.server = new ComAtprotoServerNS(server)
     this.sync = new ComAtprotoSyncNS(server)
+    this.temp = new ComAtprotoTempNS(server)
   }
 }
 
@@ -3570,6 +3575,50 @@ export class ComAtprotoSyncNS {
   ) {
     const nsid = 'com.atproto.sync.subscribeRepos' // @ts-ignore
     return this._server.xrpc.streamMethod(nsid, cfg)
+  }
+}
+
+export class ComAtprotoTempNS {
+  _server: Server
+
+  constructor(server: Server) {
+    this._server = server
+  }
+
+  dereferenceScope<A extends Auth = void>(
+    cfg: MethodConfigOrHandler<
+      A,
+      ComAtprotoTempDereferenceScope.QueryParams,
+      ComAtprotoTempDereferenceScope.HandlerInput,
+      ComAtprotoTempDereferenceScope.HandlerOutput
+    >,
+  ) {
+    const nsid = 'com.atproto.temp.dereferenceScope' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  fetchLabels<A extends Auth = void>(
+    cfg: MethodConfigOrHandler<
+      A,
+      ComAtprotoTempFetchLabels.QueryParams,
+      ComAtprotoTempFetchLabels.HandlerInput,
+      ComAtprotoTempFetchLabels.HandlerOutput
+    >,
+  ) {
+    const nsid = 'com.atproto.temp.fetchLabels' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  revokeAccountCredentials<A extends Auth = void>(
+    cfg: MethodConfigOrHandler<
+      A,
+      ComAtprotoTempRevokeAccountCredentials.QueryParams,
+      ComAtprotoTempRevokeAccountCredentials.HandlerInput,
+      ComAtprotoTempRevokeAccountCredentials.HandlerOutput
+    >,
+  ) {
+    const nsid = 'com.atproto.temp.revokeAccountCredentials' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
   }
 }
 

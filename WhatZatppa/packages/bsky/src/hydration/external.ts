@@ -35,6 +35,10 @@ export type SiteStandardRecords = {
   documents: SiteStandardDocuments
   publications: SiteStandardPublications
 }
+export type HydratedSiteStandardRecord<T> = {
+  ref: { uri: AtUriString; cid: string }
+  info: T
+}
 
 export const siteStandardRecordKey = (uri: string, cid: string) =>
   `${uri}@${cid}`
@@ -46,6 +50,40 @@ export const parseSiteStandardRecordKey = (
     uri: key.slice(0, at) as AtUriString,
     cid: key.slice(at + 1),
   }
+}
+
+export const getSiteStandardRecordsFromHydrationMapsByDocumentUri = (
+  documents: SiteStandardDocuments | undefined,
+  publications: SiteStandardPublications | undefined,
+): {
+  document: HydratedSiteStandardRecord<SiteStandardDocument> | undefined
+  publication:
+    | HydratedSiteStandardRecord<SiteStandardPublication>
+    | undefined
+} => {
+  let document:
+    | HydratedSiteStandardRecord<SiteStandardDocument>
+    | undefined
+  for (const [key, info] of documents ?? []) {
+    if (!info) continue
+    document = { ref: parseSiteStandardRecordKey(key), info }
+    break
+  }
+
+  let publication:
+    | HydratedSiteStandardRecord<SiteStandardPublication>
+    | undefined
+  const publicationSite = document?.info.record.site
+  for (const [key, info] of publications ?? []) {
+    if (!info) continue
+    const ref = parseSiteStandardRecordKey(key)
+    if (!publication || ref.uri === publicationSite) {
+      publication = { ref, info }
+    }
+    if (ref.uri === publicationSite) break
+  }
+
+  return { document, publication }
 }
 
 export class ExternalHydrator {

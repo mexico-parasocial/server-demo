@@ -499,6 +499,7 @@ message ActorInfo {
   reserved 20; // DO NOT REMOVE - see dataplane repo
   Record germ_record = 21;
   string allow_group_chat_invites_from = 22;
+  string cabildeo_live_json = 23;
 }
 
 message AgeAssuranceStatus {
@@ -1108,6 +1109,7 @@ message SearchPostsRequest {
   string term = 1;
   int32 limit = 2;
   string cursor = 3;
+  repeated string tags = 4;
 }
 
 message SearchPostsResponse {
@@ -1418,6 +1420,693 @@ message SiteStandardRecord {
   Record record = 2;
 }
 
+//
+// PARA dataplane extensions
+//
+
+message CollectionInfo {
+  string key = 1;
+  bytes payload = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+message GetActorCollectionsRequest {
+  string actor_did = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+message GetActorCollectionsResponse {
+  repeated CollectionInfo collections = 1;
+  string cursor = 2;
+}
+message GetCollectionByKeyRequest {
+  string actor_did = 1;
+  string key = 2;
+}
+message GetCollectionByKeyResponse {
+  CollectionInfo collection = 1;
+}
+
+message ParaPostMeta {
+  string uri = 1;
+  string author = 2;
+  string post_type = 3;
+  bool official = 4;
+  string party = 5;
+  string community = 6;
+  string category = 7;
+  repeated string tags = 8;
+  repeated string flairs = 9;
+  int32 vote_score = 10;
+  string interaction_mode = 11;
+  string created_at = 12;
+}
+message GetParaPostMetaRequest {
+  string post_uri = 1;
+}
+message GetParaPostMetaResponse {
+  ParaPostMeta post = 1;
+}
+
+message ParaPolicySignalBucket {
+  int32 signal = 1;
+  int32 count = 2;
+}
+message ParaPolicyTally {
+  string subject = 1;
+  string subject_type = 2;
+  string community = 3;
+  int32 vote_count = 4;
+  int32 direct_vote_count = 5;
+  int32 delegated_vote_count = 6;
+  double signal_sum = 7;
+  double signal_average = 8;
+  int32 eligible_voter_count = 9;
+  int32 quorum_target = 10;
+  bool quorum_met = 11;
+  bool official = 12;
+  bool certified = 13;
+  string outcome = 14;
+  string state = 15;
+  repeated ParaPolicySignalBucket breakdown = 16;
+  string computed_at = 17;
+}
+message GetParaPolicyTallyRequest {
+  string post_uri = 1;
+}
+message GetParaPolicyTallyResponse {
+  ParaPolicyTally tally = 1;
+}
+
+message ParaJsonPageResponse {
+  string items_json = 1;
+  string cursor = 2;
+}
+message GetParaVotesRequest {
+  string proposal = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+message GetParaIntensitiesRequest {
+  string proposal = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+message GetParaDelegationsRequest {
+  string delegator = 1;
+  string delegate = 2;
+  string community = 3;
+  int32 limit = 4;
+  string cursor = 5;
+}
+
+message GetParaTallySimulationRequest {
+  string proposal = 1;
+}
+message GetParaTallySimulationResponse {
+  string flat_json = 1;
+  string sqrt_n_json = 2;
+  string correlation_json = 3;
+  string metrics_json = 4;
+}
+
+message GetParaUserAlignmentRequest {
+  string did = 1;
+  string viewer_did = 2;
+}
+message GetParaUserAlignmentResponse {
+  string assessment_json = 1;
+}
+message GetParaCommunityAlignmentRequest {
+  string community = 1;
+  int32 limit = 2;
+  string cursor = 3;
+  string viewer_did = 4;
+}
+message GetParaCommunityAlignmentResponse {
+  string axes_json = 1;
+  string compass_json = 2;
+  int32 participant_count = 3;
+  string cursor = 4;
+}
+message ParaProposalView {
+  string uri = 1;
+  string cid = 2;
+  string creator = 3;
+  string text = 4;
+  string target_axis = 5;
+  string target_community = 6;
+  int32 upvotes = 7;
+  int32 downvotes = 8;
+  int32 answer_count = 9;
+  int32 answer_average = 10;
+  bool viewer_upvote = 11;
+  bool viewer_downvote = 12;
+  int32 viewer_answer = 13;
+  string created_at = 14;
+  string indexed_at = 15;
+}
+message GetParaProposalsRequest {
+  string community = 1;
+  int32 limit = 2;
+  string cursor = 3;
+  string viewer_did = 4;
+}
+message GetParaProposalsResponse {
+  repeated ParaProposalView proposals = 1;
+  string cursor = 2;
+}
+
+message ParaAuthorFeedItem {
+  string uri = 1;
+  string cid = 2;
+  string author = 3;
+  string text = 4;
+  string created_at = 5;
+  string reply_root = 6;
+  string reply_parent = 7;
+  repeated string langs = 8;
+  repeated string tags = 9;
+  repeated string flairs = 10;
+  string post_type = 11;
+}
+message ParaFeedPageResponse {
+  repeated ParaAuthorFeedItem items = 1;
+  string cursor = 2;
+}
+message GetParaAuthorFeedRequest {
+  string actor_did = 1;
+  int32 limit = 2;
+  string cursor = 3;
+  string party = 4;
+  string community = 5;
+  string flair_tag = 6;
+  string post_type = 7;
+}
+message GetParaTimelineRequest {
+  string actor_did = 1;
+  int32 limit = 2;
+  string cursor = 3;
+  string party = 4;
+  string community = 5;
+  string flair_tag = 6;
+  string post_type = 7;
+}
+message GetParaPostsRequest {
+  repeated string uris = 1;
+}
+message GetParaPostsResponse {
+  repeated ParaAuthorFeedItem items = 1;
+}
+message GetParaThreadRequest {
+  string post_uri = 1;
+  int32 above = 2;
+  int32 below = 3;
+}
+message GetParaThreadResponse {
+  ParaAuthorFeedItem post = 1;
+  repeated ParaAuthorFeedItem parents = 2;
+  repeated ParaAuthorFeedItem replies = 3;
+}
+message ParaOpenQuestionReplyItem {
+  string uri = 1;
+  string cid = 2;
+  string author = 3;
+  string text = 4;
+  string created_at = 5;
+  int32 vote_score = 6;
+  int32 viewer_vote = 7;
+  repeated ParaOpenQuestionReplyItem replies = 8;
+}
+message GetParaOpenQuestionThreadRequest {
+  string post_uri = 1;
+  int32 depth = 2;
+  string viewer_did = 3;
+}
+message GetParaOpenQuestionThreadResponse {
+  ParaAuthorFeedItem post = 1;
+  repeated ParaOpenQuestionReplyItem replies = 2;
+}
+
+message GetParaCabildeosRequest {
+  string community = 1;
+  string phase = 2;
+  int32 limit = 3;
+  string cursor = 4;
+  string viewer_did = 5;
+}
+message GetParaCabildeosResponse {
+  string items_json = 1;
+  string cursor = 2;
+}
+message GetParaCabildeoRequest {
+  string cabildeo_uri = 1;
+  string viewer_did = 2;
+}
+message GetParaCabildeoResponse {
+  string cabildeo_json = 1;
+}
+message GetParaCabildeoPositionsRequest {
+  string cabildeo_uri = 1;
+  string stance = 2;
+  int32 limit = 3;
+  string cursor = 4;
+}
+message GetParaCabildeoPositionsResponse {
+  string positions_json = 1;
+  string cursor = 2;
+}
+message GetParaDelegationCandidatesRequest {
+  string cabildeo_uri = 1;
+  string community_id = 2;
+  string viewer_did = 3;
+  bool viewer_is_admin = 4;
+  int32 limit = 5;
+  string cursor = 6;
+}
+message GetParaDelegationCandidatesResponse {
+  string candidates_json = 1;
+  string cursor = 2;
+}
+message PutParaCabildeoLivePresenceRequest {
+  string actor_did = 1;
+  string cabildeo_uri = 2;
+  string session_id = 3;
+  bool present = 4;
+  string host_live_uri = 5;
+}
+message PutParaCabildeoLivePresenceResponse {
+  string cabildeo_uri = 1;
+  bool present = 2;
+  string expires_at = 3;
+}
+
+message ParaActorStatus {
+  string status = 1;
+  string party = 2;
+  string community = 3;
+  string created_at = 4;
+}
+message ParaProfileStatsContributions {
+  int32 policies = 1;
+  int32 matters = 2;
+  int32 comments = 3;
+}
+message ParaProfileStats {
+  double influence = 1;
+  int32 votes_received_all_time = 2;
+  int32 votes_cast_all_time = 3;
+  ParaProfileStatsContributions contributions = 4;
+  repeated string active_in = 5;
+  string computed_at = 6;
+}
+message GetParaProfileStatsRequest {
+  string actor_did = 1;
+}
+message GetParaProfileStatsResponse {
+  string actor_did = 1;
+  ParaProfileStats stats = 2;
+  ParaActorStatus status = 3;
+}
+
+message ParaHighlight {
+  string uri = 1;
+  string cid = 2;
+  string creator = 3;
+  string indexed_at = 4;
+  string subject_uri = 5;
+  string subject_cid = 6;
+  string text = 7;
+  int32 start = 8;
+  int32 end = 9;
+  string color = 10;
+  string tag = 11;
+  string community = 12;
+  string state = 13;
+  string party = 14;
+  string visibility = 15;
+  string created_at = 16;
+}
+message GetParaHighlightsRequest {
+  string community = 1;
+  string state = 2;
+  string subject_uri = 3;
+  string creator = 4;
+  int32 limit = 5;
+  string cursor = 6;
+}
+message GetParaHighlightsResponse {
+  repeated ParaHighlight items = 1;
+  string cursor = 2;
+}
+message GetParaHighlightRequest {
+  string highlight_uri = 1;
+}
+message GetParaHighlightResponse {
+  ParaHighlight highlight = 1;
+}
+
+message GetParaAuditTrailRequest {
+  string proposal = 1;
+  string community = 2;
+  int32 limit = 3;
+  string cursor = 4;
+}
+message GetParaAuditTrailResponse {
+  string audit_json = 1;
+}
+message GetParaDeliberationsRequest {
+  string proposal = 1;
+  string stance = 2;
+  int32 limit = 3;
+  string cursor = 4;
+}
+message GetParaDeliberationVotesRequest {
+  string statement = 1;
+  string direction = 2;
+  int32 limit = 3;
+  string cursor = 4;
+}
+message GetParaDeliberationClustersRequest {
+  string proposal = 1;
+}
+message GetParaDeliberationClustersResponse {
+  string clusters_json = 1;
+  string bridging_json = 2;
+}
+
+message ParaDiscourseSnapshot {
+  string community = 1;
+  string bucket = 2;
+  int32 post_count = 3;
+  int32 unique_authors = 4;
+  double avg_constructiveness = 5;
+  double semantic_volatility = 6;
+  double lexical_diversity = 7;
+  double polarization_delta = 8;
+  double echo_chamber_index = 9;
+  string top_keywords = 10;
+  string sentiment_distribution = 11;
+}
+message GetParaDiscourseSnapshotRequest {
+  string community = 1;
+  string timeframe = 2;
+}
+message GetParaDiscourseSnapshotResponse {
+  repeated ParaDiscourseSnapshot snapshots = 1;
+}
+message ParaDiscourseTopic {
+  string cluster_label = 1;
+  string keywords = 2;
+  int32 post_count = 3;
+  int32 author_count = 4;
+  double avg_sentiment = 5;
+}
+message GetParaDiscourseTopicsRequest {
+  string community = 1;
+  string timeframe = 2;
+}
+message GetParaDiscourseTopicsResponse {
+  repeated ParaDiscourseTopic topics = 1;
+}
+message ParaDiscourseSentiment {
+  double anger = 1;
+  double fear = 2;
+  double trust = 3;
+  double uncertainty = 4;
+  double neutral = 5;
+}
+message GetParaDiscourseSentimentRequest {
+  string community = 1;
+  string timeframe = 2;
+}
+message GetParaDiscourseSentimentResponse {
+  ParaDiscourseSentiment sentiment = 1;
+}
+message GetParaTrendingTopicsRequest {
+  int32 limit = 1;
+  string timeframe = 2;
+}
+message GetParaTrendingTopicsResponse {
+  string topics_json = 1;
+}
+
+message ParaStrongRef {
+  string uri = 1;
+  string cid = 2;
+}
+message ParaCommunityGovernanceSummary {
+  int32 moderator_count = 1;
+  int32 official_count = 2;
+  int32 deputy_role_count = 3;
+  string last_published_at = 4;
+}
+message ParaCommunityBoardView {
+  string uri = 1;
+  string cid = 2;
+  string creator_did = 3;
+  string creator_handle = 4;
+  string creator_display_name = 5;
+  string community_id = 6;
+  string slug = 7;
+  string name = 8;
+  string description = 9;
+  string quadrant = 10;
+  string delegates_chat_id = 11;
+  string subdelegates_chat_id = 12;
+  int32 member_count = 13;
+  string viewer_membership_state = 14;
+  repeated string viewer_roles = 15;
+  string status = 16;
+  string founder_starter_pack_uri = 17;
+  string created_at = 18;
+  ParaCommunityGovernanceSummary governance_summary = 19;
+  repeated string parent_community_uris = 20;
+  int32 child_community_count = 21;
+  int32 shared_content_count = 22;
+}
+message GetParaCommunityBoardRequest {
+  string community_id = 1;
+  string uri = 2;
+  string viewer_did = 3;
+}
+message GetParaCommunityBoardResponse {
+  ParaCommunityBoardView board = 1;
+  ParaCommunityGovernanceSummary governance_summary = 2;
+}
+message GetParaCommunityBoardsRequest {
+  string viewer_did = 1;
+  int32 limit = 2;
+  string cursor = 3;
+  string query = 4;
+  string state = 5;
+  string participation_kind = 6;
+  string flair_id = 7;
+  string sort = 8;
+  string quadrant = 9;
+}
+message GetParaCommunityBoardsResponse {
+  repeated ParaCommunityBoardView boards = 1;
+  string cursor = 2;
+}
+message ParaCommunityMemberView {
+  string did = 1;
+  string handle = 2;
+  string display_name = 3;
+  string avatar = 4;
+  string membership_state = 5;
+  repeated string roles = 6;
+  string joined_at = 7;
+  int32 vote_count = 8;
+  int32 delegation_count = 9;
+  int32 policy_posts = 10;
+  int32 matter_posts = 11;
+}
+message GetParaCommunityMembersRequest {
+  string community_id = 1;
+  string viewer_did = 2;
+  bool viewer_is_admin = 3;
+  string membership_state = 4;
+  string role = 5;
+  string sort = 6;
+  int32 limit = 7;
+  string cursor = 8;
+}
+message GetParaCommunityMembersResponse {
+  repeated ParaCommunityMemberView members = 1;
+  string cursor = 2;
+}
+message ParaCommunitySummary {
+  int32 members = 1;
+  int32 visible_posters = 2;
+  int32 policy_posts = 3;
+  int32 matter_posts = 4;
+  int32 badge_holders = 5;
+}
+message ParaCommunityMember {
+  string did = 1;
+  string handle = 2;
+  string display_name = 3;
+  string avatar = 4;
+}
+message ParaCommunityModerator {
+  ParaCommunityMember member = 1;
+  string role = 2;
+  repeated string scopes = 3;
+  int32 votes_backing_role = 4;
+  string badge = 5;
+}
+message ParaCommunityOfficial {
+  ParaCommunityMember member = 1;
+  string title = 2;
+  string institution = 3;
+  repeated string scopes = 4;
+  int32 votes_backing_role = 5;
+  string office = 6;
+  string mandate = 7;
+}
+message ParaCommunityDeputyRole {
+  string role = 1;
+  repeated string scopes = 2;
+  int32 seats = 3;
+  int32 filled_seats = 4;
+  int32 votes_backing_role = 5;
+  repeated string applicants = 6;
+  int32 tier = 7;
+  ParaCommunityMember active_holder = 8;
+}
+message ParaCommunityGovernanceMetadata {
+  int32 term_length_days = 1;
+  string review_cadence = 2;
+  string escalation_path = 3;
+  string public_contact = 4;
+  string last_published_at = 5;
+  string state = 6;
+  repeated string matter_flair_ids = 7;
+  repeated string policy_flair_ids = 8;
+}
+message ParaCommunityGovernanceHistoryEntry {
+  string id = 1;
+  string action = 2;
+  string actor_did = 3;
+  string actor_handle = 4;
+  string created_at = 5;
+  string summary = 6;
+}
+message GetParaCommunityGovernanceRequest {
+  string community = 1;
+}
+message GetParaCommunityGovernanceResponse {
+  string community = 1;
+  ParaCommunitySummary summary = 2;
+  repeated ParaCommunityModerator moderators = 3;
+  repeated ParaCommunityOfficial officials = 4;
+  repeated ParaCommunityDeputyRole deputies = 5;
+  string computed_at = 6;
+  ParaCommunityGovernanceMetadata metadata = 7;
+  repeated ParaCommunityGovernanceHistoryEntry edit_history = 8;
+}
+message GetParaCommunityPostsRequest {
+  string community = 1;
+  string post_type = 2;
+  int32 limit = 3;
+  string cursor = 4;
+}
+message GetParaCommunityPostsResponse {
+  repeated ParaAuthorFeedItem items = 1;
+  string cursor = 2;
+}
+message ParaSharedContentActionView {
+  string uri = 1;
+  string cid = 2;
+  ParaStrongRef shared_content = 3;
+  string community_uri = 4;
+  string action = 5;
+  string note = 6;
+  string created_at = 7;
+  string created_by = 8;
+}
+message ParaCommunitySharedContentView {
+  string uri = 1;
+  string cid = 2;
+  ParaStrongRef subject = 3;
+  string community_uri = 4;
+  string source_community_uri = 5;
+  string content_type = 6;
+  string shared_by = 7;
+  string shared_by_handle = 8;
+  string note = 9;
+  string visibility = 10;
+  string source_app = 11;
+  bool pinned = 12;
+  double sort_rank = 13;
+  string created_at = 14;
+  bool removed = 15;
+  string removed_at = 16;
+  string removed_by = 17;
+  ParaSharedContentActionView latest_action = 18;
+  string hydration_state = 19;
+}
+message GetParaCommunitySharedContentRequest {
+  string community_uri = 1;
+  bool include_children = 2;
+  bool include_removed = 3;
+  string viewer_did = 4;
+  string content_type = 5;
+  int32 limit = 6;
+  string cursor = 7;
+}
+message GetParaCommunitySharedContentResponse {
+  repeated ParaCommunitySharedContentView items = 1;
+  string cursor = 2;
+}
+message ParaCommunityRelationView {
+  string uri = 1;
+  string cid = 2;
+  string parent_community_uri = 3;
+  string child_community_uri = 4;
+  string relation = 5;
+  string created_at = 6;
+  string created_by = 7;
+}
+message GetParaCommunityRelationsRequest {
+  string community_uri = 1;
+  string parent_community_uri = 2;
+  string child_community_uri = 3;
+  string relation = 4;
+  int32 limit = 5;
+  string cursor = 6;
+}
+message GetParaCommunityRelationsResponse {
+  repeated ParaCommunityRelationView relations = 1;
+  string cursor = 2;
+}
+
+message PostSubscription {
+  string subscriber_did = 1;
+  string post_uri = 2;
+  bool reply = 3;
+  bool quote = 4;
+  google.protobuf.Timestamp indexed_at = 5;
+}
+message GetPostSubscriptionRequest {
+  string subscriber_did = 1;
+  string post_uri = 2;
+}
+message GetPostSubscriptionResponse {
+  PostSubscription subscription = 1;
+}
+message PutPostSubscriptionRequest {
+  string subscriber_did = 1;
+  string post_uri = 2;
+  bool reply = 3;
+  bool quote = 4;
+}
+message PutPostSubscriptionResponse {
+  PostSubscription subscription = 1;
+}
+
 service Service {
   //
   // Read Path
@@ -1580,7 +2269,48 @@ service Service {
   // Ping
   rpc Ping(PingRequest) returns (PingResponse);
 
-
+  // PARA dataplane extensions
+  rpc GetActorCollections(GetActorCollectionsRequest) returns (GetActorCollectionsResponse);
+  rpc GetCollectionByKey(GetCollectionByKeyRequest) returns (GetCollectionByKeyResponse);
+  rpc GetParaPostMeta(GetParaPostMetaRequest) returns (GetParaPostMetaResponse);
+  rpc GetParaPolicyTally(GetParaPolicyTallyRequest) returns (GetParaPolicyTallyResponse);
+  rpc GetParaVotes(GetParaVotesRequest) returns (ParaJsonPageResponse);
+  rpc GetParaIntensities(GetParaIntensitiesRequest) returns (ParaJsonPageResponse);
+  rpc GetParaDelegations(GetParaDelegationsRequest) returns (ParaJsonPageResponse);
+  rpc GetParaTallySimulation(GetParaTallySimulationRequest) returns (GetParaTallySimulationResponse);
+  rpc GetParaUserAlignment(GetParaUserAlignmentRequest) returns (GetParaUserAlignmentResponse);
+  rpc GetParaCommunityAlignment(GetParaCommunityAlignmentRequest) returns (GetParaCommunityAlignmentResponse);
+  rpc GetParaProposals(GetParaProposalsRequest) returns (GetParaProposalsResponse);
+  rpc GetParaAuthorFeed(GetParaAuthorFeedRequest) returns (ParaFeedPageResponse);
+  rpc GetParaTimeline(GetParaTimelineRequest) returns (ParaFeedPageResponse);
+  rpc GetParaPosts(GetParaPostsRequest) returns (GetParaPostsResponse);
+  rpc GetParaThread(GetParaThreadRequest) returns (GetParaThreadResponse);
+  rpc GetParaOpenQuestionThread(GetParaOpenQuestionThreadRequest) returns (GetParaOpenQuestionThreadResponse);
+  rpc GetParaCabildeos(GetParaCabildeosRequest) returns (GetParaCabildeosResponse);
+  rpc GetParaCabildeo(GetParaCabildeoRequest) returns (GetParaCabildeoResponse);
+  rpc GetParaCabildeoPositions(GetParaCabildeoPositionsRequest) returns (GetParaCabildeoPositionsResponse);
+  rpc GetParaDelegationCandidates(GetParaDelegationCandidatesRequest) returns (GetParaDelegationCandidatesResponse);
+  rpc PutParaCabildeoLivePresence(PutParaCabildeoLivePresenceRequest) returns (PutParaCabildeoLivePresenceResponse);
+  rpc GetParaProfileStats(GetParaProfileStatsRequest) returns (GetParaProfileStatsResponse);
+  rpc GetParaHighlights(GetParaHighlightsRequest) returns (GetParaHighlightsResponse);
+  rpc GetParaHighlight(GetParaHighlightRequest) returns (GetParaHighlightResponse);
+  rpc GetParaAuditTrail(GetParaAuditTrailRequest) returns (GetParaAuditTrailResponse);
+  rpc GetParaDeliberations(GetParaDeliberationsRequest) returns (ParaJsonPageResponse);
+  rpc GetParaDeliberationVotes(GetParaDeliberationVotesRequest) returns (ParaJsonPageResponse);
+  rpc GetParaDeliberationClusters(GetParaDeliberationClustersRequest) returns (GetParaDeliberationClustersResponse);
+  rpc GetParaDiscourseSnapshot(GetParaDiscourseSnapshotRequest) returns (GetParaDiscourseSnapshotResponse);
+  rpc GetParaDiscourseTopics(GetParaDiscourseTopicsRequest) returns (GetParaDiscourseTopicsResponse);
+  rpc GetParaDiscourseSentiment(GetParaDiscourseSentimentRequest) returns (GetParaDiscourseSentimentResponse);
+  rpc GetParaTrendingTopics(GetParaTrendingTopicsRequest) returns (GetParaTrendingTopicsResponse);
+  rpc GetParaCommunityBoard(GetParaCommunityBoardRequest) returns (GetParaCommunityBoardResponse);
+  rpc GetParaCommunityBoards(GetParaCommunityBoardsRequest) returns (GetParaCommunityBoardsResponse);
+  rpc GetParaCommunityMembers(GetParaCommunityMembersRequest) returns (GetParaCommunityMembersResponse);
+  rpc GetParaCommunityGovernance(GetParaCommunityGovernanceRequest) returns (GetParaCommunityGovernanceResponse);
+  rpc GetParaCommunityPosts(GetParaCommunityPostsRequest) returns (GetParaCommunityPostsResponse);
+  rpc GetParaCommunitySharedContent(GetParaCommunitySharedContentRequest) returns (GetParaCommunitySharedContentResponse);
+  rpc GetParaCommunityRelations(GetParaCommunityRelationsRequest) returns (GetParaCommunityRelationsResponse);
+  rpc GetPostSubscription(GetPostSubscriptionRequest) returns (GetPostSubscriptionResponse);
+  rpc PutPostSubscription(PutPostSubscriptionRequest) returns (PutPostSubscriptionResponse);
 
 
   //

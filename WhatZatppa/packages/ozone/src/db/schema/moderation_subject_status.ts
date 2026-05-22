@@ -12,7 +12,6 @@ export interface ModerationSubjectStatus {
   id: Generated<number>
   did: string
   recordPath: string
-  convoId: string
   recordCid: string | null
   blobCids: string[] | null
   reviewState:
@@ -42,6 +41,7 @@ export interface ModerationSubjectStatus {
   priorityScore?: number
   ageAssuranceState: string
   ageAssuranceUpdatedBy?: string | null
+  convoId: string | null
 }
 
 export type PartialDB = {

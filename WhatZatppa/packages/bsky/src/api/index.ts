@@ -98,7 +98,6 @@ import updateSubjectStatus from './com/atproto/admin/updateSubjectStatus.js'
 import resolveHandle from './com/atproto/identity/resolveHandle.js'
 import queryLabels from './com/atproto/label/queryLabels.js'
 import getRecord from './com/atproto/repo/getRecord.js'
-import fetchLabels from './com/atproto/temp/fetchLabels.js'
 import getParaProfileStats from './com/para/actor/getProfileStats.js'
 import getParaAgentConversation from './com/para/agent/getConversation.js'
 import sendParaAgentMessage from './com/para/agent/sendMessage.js'
@@ -266,7 +265,6 @@ export default function (server: Server, ctx: AppContext) {
   getAccountInfos(server, ctx)
   resolveHandle(server, ctx)
   getRecord(server, ctx)
-  fetchLabels(server, ctx)
   queryLabels(server, ctx)
   // com.para
   getParaProfileStats(paraServer, ctx)

@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { type Mock, vi } from 'vitest'
 /// <reference types="jest" />
 import { featureGatesLogger } from '../logger.js'
 import { MetricsClient } from './metrics.js'
@@ -18,12 +18,14 @@ type TestEvents = {
 const flushPromises = () => new Promise((r) => setImmediate(r))
 
 describe('MetricsClient', () => {
-  let fetchMock: vi.Mock
+  let fetchMock: Mock
   let fetchRequests: { body: any }[]
   let client: MetricsClient<TestEvents>
 
   beforeEach(() => {
-    vi.useFakeTimers({ doNotFake: ['setImmediate', 'performance'] })
+    vi.useFakeTimers({
+      doNotFake: ['setImmediate', 'performance'],
+    } as Parameters<typeof vi.useFakeTimers>[0])
     fetchRequests = []
     fetchMock = vi.fn().mockImplementation(async (_url, options) => {
       const body = JSON.parse(options.body)

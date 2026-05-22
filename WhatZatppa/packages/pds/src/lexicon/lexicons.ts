@@ -18254,6 +18254,116 @@ export const schemaDict = {
       },
     },
   },
+  ComAtprotoTempDereferenceScope: {
+    lexicon: 1,
+    id: 'com.atproto.temp.dereferenceScope',
+    defs: {
+      main: {
+        type: 'query',
+        description:
+          'Dereference an OAuth scope reference into the original scope string.',
+        parameters: {
+          type: 'params',
+          required: ['scope'],
+          properties: {
+            scope: {
+              type: 'string',
+              description: 'The scope reference to dereference.',
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['scope'],
+            properties: {
+              scope: {
+                type: 'string',
+              },
+            },
+          },
+        },
+        errors: [
+          {
+            name: 'InvalidScopeReference',
+            description:
+              'The scope reference is invalid or could not be found.',
+          },
+        ],
+      },
+    },
+  },
+  ComAtprotoTempFetchLabels: {
+    lexicon: 1,
+    id: 'com.atproto.temp.fetchLabels',
+    defs: {
+      main: {
+        type: 'query',
+        description:
+          'Fetch labels emitted after a timestamp. Temporary endpoint used by Ozone label sync.',
+        parameters: {
+          type: 'params',
+          properties: {
+            since: {
+              type: 'string',
+              format: 'datetime',
+              description:
+                'Return labels with cts greater than this timestamp.',
+            },
+            limit: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 1000,
+              default: 100,
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['labels'],
+            properties: {
+              labels: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:com.atproto.label.defs#label',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  ComAtprotoTempRevokeAccountCredentials: {
+    lexicon: 1,
+    id: 'com.atproto.temp.revokeAccountCredentials',
+    defs: {
+      main: {
+        type: 'procedure',
+        description:
+          'Revoke credentials for an account. Temporary admin endpoint used by Ozone moderation actions.',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['account'],
+            properties: {
+              account: {
+                type: 'string',
+                format: 'did',
+                description:
+                  'DID of the account whose credentials should be revoked.',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   ComParaActorDefs: {
     lexicon: 1,
     id: 'com.para.actor.defs',
@@ -34785,6 +34895,10 @@ export const ids = {
   ComAtprotoSyncNotifyOfUpdate: 'com.atproto.sync.notifyOfUpdate',
   ComAtprotoSyncRequestCrawl: 'com.atproto.sync.requestCrawl',
   ComAtprotoSyncSubscribeRepos: 'com.atproto.sync.subscribeRepos',
+  ComAtprotoTempDereferenceScope: 'com.atproto.temp.dereferenceScope',
+  ComAtprotoTempFetchLabels: 'com.atproto.temp.fetchLabels',
+  ComAtprotoTempRevokeAccountCredentials:
+    'com.atproto.temp.revokeAccountCredentials',
   ComParaActorDefs: 'com.para.actor.defs',
   ComParaActorGetProfileStats: 'com.para.actor.getProfileStats',
   ComParaAgentDefs: 'com.para.agent.defs',

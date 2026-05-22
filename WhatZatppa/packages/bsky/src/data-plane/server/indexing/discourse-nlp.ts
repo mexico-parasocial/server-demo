@@ -2,7 +2,9 @@ import { removeStopwords, spa } from 'stopword'
 import naturalModule from 'natural'
 import keywordExtractorModule from 'keyword-extractor'
 
-const natural = ((m) => m.default ?? m)(naturalModule)
+const natural =
+  (naturalModule as typeof naturalModule & { default?: typeof naturalModule })
+    .default ?? naturalModule
 const { PorterStemmerEs, SentimentAnalyzer, RegexpTokenizer: WordTokenizer } = natural
 
 const keywordExtractor = ((m) => m.default ?? m)(keywordExtractorModule)

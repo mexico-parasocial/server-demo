@@ -18,8 +18,6 @@ import {
 import { Views } from '../../../../views/index.js'
 import { ExternalEmbedView, StrongRef } from '../../../../views/types.js'
 import { resHeaders } from '../../../util.js'
-import { AtUri, DidString } from '@atproto/syntax'
-import { dedupeStrs } from '@atproto/common'
 
 export default function (server: Server, ctx: AppContext) {
   const getEmbedExternalView = createPipeline(
@@ -48,10 +46,8 @@ const skeleton = async (
   inputs: SkeletonFnInput<Context, Params>,
 ): Promise<Skeleton> => {
   const uris = inputs.params.uris as AtUriString[]
-  const dids = uris.map((uri) => new AtUri(uri).did)
   return {
     uris,
-    dids
   }
 }
 
@@ -61,7 +57,6 @@ const hydration = async (
   const { ctx, params, skeleton } = inputs
   return ctx.hydrator.hydrateEmbedExternalViewFromUris(
     skeleton.uris,
-    skeleton.dids,
     params.hydrateCtx,
   )
 }
@@ -71,7 +66,6 @@ const presentation = (
 ): Output => {
   const documents = inputs.hydration.siteStandardDocuments
   const publications = inputs.hydration.siteStandardPublications
-  const profile = inputs.ctx.views.profileDetailed(inputs.skeleton.did, inputs.hydration)
   // Dispatch by record type. Today site.standard is the only kind we know
   // how to render; future record types get their own branch.
   if (
@@ -118,21 +112,22 @@ const standardSitePresentation = (
 
   if (!associatedRefs.length) return {}
 
-  const overlay = ctx.views.externalEmbedFromStandardSiteRecords({
-    document,
-    publication,
-    state: hydration,
-    assumedUrl: params.url,
-  })
+  const overlay = ctx.views.externalEmbedFromStandardSite(
+    associatedRefs,
+    hydration,
+  )
   // The view builder rejected the records (validation failed, or the pair
   // didn't produce the title viewExternal requires). Return nothing — Cardy
   // falls back to its own card render and doesn't write strongRefs to the
   // post.
-  if (!overlay) return {}
+  const title = overlay?.title
+  if (!title) return {}
 
   const view = app.bsky.embed.external.view.$build({
     external: {
       ...overlay,
+      title,
+      description: overlay.description ?? '',
       uri: params.url,
       associatedRefs,
     },
@@ -152,7 +147,6 @@ type Params = app.bsky.embed.getEmbedExternalView.$Params & {
 
 type Skeleton = {
   uris: AtUriString[]
-  dids: DidString[]
 }
 
 type Output = {

@@ -21,7 +21,10 @@ import { ActorDb, Blob as BlobTable } from '../db/index.js'
 import { BlobReader } from './reader.js'
 import FileTypeModule from 'file-type'
 
-const FileType = ((m) => m.default ?? m)(FileTypeModule)
+const FileType =
+  (FileTypeModule as typeof FileTypeModule & {
+    default?: typeof FileTypeModule
+  }).default ?? FileTypeModule
 const { fromStream: fileTypeFromStream } = FileType
 
 export type BlobMetadata = {

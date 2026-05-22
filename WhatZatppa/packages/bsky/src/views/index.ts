@@ -2158,7 +2158,6 @@ export class Views {
         : undefined
     return app.bsky.embed.external.view.$build({
       external: {
-        uri,
         title: ssView?.title ?? title,
         description: ssView?.description ?? description,
         thumb: ssView?.thumb

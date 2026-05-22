@@ -7,7 +7,6 @@ export interface ExpiringTag {
   eventId: number
   did: string
   recordPath: string
-  convoId: string
   tag: string
   expiresAt: string
   createdBy: string
