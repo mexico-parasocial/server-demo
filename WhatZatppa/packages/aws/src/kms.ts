@@ -5,7 +5,10 @@ import * as ui8 from 'uint8arrays'
 import * as crypto from '@atproto/crypto'
 
 // key-encoder is CJS with exports.default; Node ESM interop wraps it as { default: Class }
-const KeyEncoder = ((m) => m.default ?? m)(KeyEncoderModule)
+const KeyEncoder =
+  (KeyEncoderModule as typeof KeyEncoderModule & {
+    default?: typeof KeyEncoderModule
+  }).default ?? KeyEncoderModule
 
 const keyEncoder = new KeyEncoder('secp256k1')
 

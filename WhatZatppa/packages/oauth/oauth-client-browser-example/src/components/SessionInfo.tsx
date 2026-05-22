@@ -1,10 +1,10 @@
 import { com } from '../lexicons.ts'
 import { useLexQuery } from '../queries/use-lex-query.ts'
-import { Button } from './Button.tsx.js'
-import { JsonQueryResult } from './JsonQueryResult.tsx.js'
+import { Button } from './Button.tsx'
+import { JsonQueryResult } from './JsonQueryResult.tsx'
 
 export function SessionInfo() {
-  const result = useLexQuery(com.atproto.server.getSession)
+  const result = useLexQuery(com.atproto.server.getSession.main)
 
   return (
     <div>

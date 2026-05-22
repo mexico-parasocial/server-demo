@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react'
-import { Spinner } from './Spinner.tsx.js'
+import { Spinner } from './Spinner.tsx'
 
 export type ButtonProps = {
   action?: () => unknown | Promise<unknown>

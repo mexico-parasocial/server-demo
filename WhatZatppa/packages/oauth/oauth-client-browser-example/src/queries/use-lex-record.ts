@@ -1,6 +1,6 @@
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { GetOptions, GetOutput, XrpcError, l } from '@atproto/lex'
-import { useBskyClient } from '../providers/BskyClientProvider.tsx.js'
+import { useBskyClient } from '../providers/BskyClientProvider.tsx'
 
 export function useLexRecord<S extends l.RecordSchema>(
   ns: NonNullable<unknown> extends GetOptions<S>

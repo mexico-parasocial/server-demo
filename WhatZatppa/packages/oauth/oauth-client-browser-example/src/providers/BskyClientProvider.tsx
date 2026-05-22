@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo } from 'react'
 import { Client } from '@atproto/lex'
 import { asDid } from '@atproto/oauth-client-browser'
 import { BSKY_API_DID, BSKY_API_URL } from '../constants.ts'
-import { useAuthenticationContext } from './AuthenticationProvider.tsx.js'
+import { useAuthenticationContext } from './AuthenticationProvider.tsx'
 
 const BSKY_APPVIEW_DID_SERVICE = `${asDid(BSKY_API_DID)}#bsky_appview` as const
 

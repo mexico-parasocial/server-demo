@@ -2,7 +2,7 @@ import { JSX, useMemo } from 'react'
 import { getBlobCidString, l } from '@atproto/lex'
 import { app, com } from '../lexicons.ts'
 import { useBlobUrl } from '../lib/use-blob-url.ts'
-import { useBskyClient } from '../providers/BskyClientProvider.tsx.js'
+import { useBskyClient } from '../providers/BskyClientProvider.tsx'
 import { useLexQuery } from '../queries/use-lex-query.ts'
 import { useLexRecord } from '../queries/use-lex-record.ts'
 
@@ -16,7 +16,7 @@ export function ProfileInfo({
   // @NOTE for more detailed profile info, we should be using the
   // app.bsky.actor.getProfile query. This example uses the record for
   // demonstration purposes.
-  const profileQuery = useLexRecord(app.bsky.actor.profile)
+  const profileQuery = useLexRecord(app.bsky.actor.profile.main)
 
   const avatarUrl = useBlobRefUrl(profileQuery.data?.value?.avatar)
   const bannerUrl = useBlobRefUrl(profileQuery.data?.value?.banner)

@@ -1,6 +1,6 @@
 import { JSX } from 'react'
-import { Button } from '../components/Button.tsx.js'
-import { AtmosphereSignInForm } from './AtmosphereSignInForm.tsx.js'
+import { Button } from '../components/Button.tsx'
+import { AtmosphereSignInForm } from './AtmosphereSignInForm.tsx'
 
 export type AtmosphereSignInDialogProps = JSX.IntrinsicElements['div'] & {
   signIn: (input: string) => Promise<void>

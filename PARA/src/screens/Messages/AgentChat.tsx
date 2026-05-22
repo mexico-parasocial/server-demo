@@ -1,15 +1,15 @@
 import {useEffect, useRef, useState} from 'react'
-import {
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  TextInput,
-  View,
-} from 'react-native'
+import {Platform, Pressable, TextInput, View} from 'react-native'
 import {useKeyboardHandler} from 'react-native-keyboard-controller'
 import Animated, {
+  Easing,
+  Extrapolation,
+  interpolate,
+  type SharedValue,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
+  withTiming,
 } from 'react-native-reanimated'
 import {RichText as RichTextAPI} from '@atproto/api'
 import {msg} from '@lingui/core/macro'
@@ -30,6 +30,13 @@ import * as Layout from '#/components/Layout'
 import {RichText} from '#/components/RichText'
 import {Text} from '#/components/Typography'
 
+const PROMPT_STARTERS = [
+  'Resume los temas urgentes de esta comunidad.',
+  'Ayúdame a convertir una queja en propuesta de cabildeo.',
+  'Qué evidencia falta para tomar una buena decisión?',
+  'Redacta una respuesta civil y breve para este debate.',
+]
+
 export function AgentChatScreen() {
   const t = useTheme()
   const route = useRoute<RouteProp<CommonNavigatorParams, 'AgentChat'>>()
@@ -48,6 +55,12 @@ export function AgentChatScreen() {
   const onSendMessage = () => {
     if (!message.trim() || sendMutation.isPending) return
     const text = message.trim()
+    setMessage('')
+    sendMutation.mutate(text)
+  }
+
+  const onSendPromptStarter = (text: string) => {
+    if (sendMutation.isPending) return
     setMessage('')
     sendMutation.mutate(text)
   }
@@ -114,7 +127,7 @@ export function AgentChatScreen() {
           }>
           {isLoading && messages.length === 0 && (
             <View style={[a.align_center, a.mt_xl]}>
-              <ActivityIndicator />
+              <ThinkingIndicator color={t.palette.contrast_600} />
             </View>
           )}
 
@@ -146,6 +159,30 @@ export function AgentChatScreen() {
                   minute: '2-digit',
                 })}
               </Text>
+
+              <View style={[a.mt_md, a.gap_sm, {maxWidth: '92%'}]}>
+                {PROMPT_STARTERS.map(starter => (
+                  <Pressable
+                    key={starter}
+                    accessibilityRole="button"
+                    accessibilityLabel={starter}
+                    accessibilityHint="Envía esta pregunta al agente"
+                    onPress={() => onSendPromptStarter(starter)}
+                    disabled={sendMutation.isPending}
+                    style={[
+                      a.py_sm,
+                      a.px_md,
+                      {
+                        borderWidth: 1,
+                        borderColor: t.palette.contrast_200,
+                        borderRadius: 16,
+                        backgroundColor: t.palette.contrast_25,
+                      },
+                    ]}>
+                    <Text style={[a.text_sm, t.atoms.text]}>{starter}</Text>
+                  </Pressable>
+                ))}
+              </View>
             </View>
           )}
 
@@ -201,7 +238,27 @@ export function AgentChatScreen() {
                     borderBottomLeftRadius: 2,
                   },
                 ]}>
-                <ActivityIndicator size="small" />
+                <ThinkingIndicator color={t.palette.contrast_700} />
+              </View>
+            </View>
+          )}
+
+          {sendMutation.isError && (
+            <View style={[a.mb_md, a.align_start]}>
+              <View
+                style={[
+                  a.py_sm,
+                  a.px_md,
+                  {
+                    backgroundColor: t.palette.negative_50,
+                    borderRadius: 17,
+                    borderBottomLeftRadius: 2,
+                    maxWidth: '85%',
+                  },
+                ]}>
+                <Text style={[a.text_sm, {color: t.palette.negative_500}]}>
+                  No pude enviar el mensaje. Inténtalo de nuevo.
+                </Text>
               </View>
             </View>
           )}
@@ -248,7 +305,12 @@ export function AgentChatScreen() {
               placeholder={_(msg`Escribe un mensaje...`)}
               placeholderTextColor={t.palette.contrast_500}
               value={message}
-              onChangeText={setMessage}
+              onChangeText={nextMessage => {
+                if (sendMutation.isError) {
+                  sendMutation.reset()
+                }
+                setMessage(nextMessage)
+              }}
               multiline
               keyboardAppearance={t.scheme}
               editable={!sendMutation.isPending}
@@ -280,5 +342,77 @@ export function AgentChatScreen() {
         </Animated.View>
       </Layout.Center>
     </Layout.Screen>
+  )
+}
+
+function ThinkingIndicator({color}: {color: string}) {
+  const progress = useSharedValue(0)
+
+  useEffect(() => {
+    progress.set(
+      withRepeat(
+        withTiming(1, {
+          duration: 1400,
+          easing: Easing.inOut(Easing.cubic),
+        }),
+        -1,
+        true,
+      ),
+    )
+  }, [progress])
+
+  return (
+    <View style={[a.flex_row, a.align_center]}>
+      {'Pensando'.split('').map((letter, index) => (
+        <ThinkingLetter
+          key={`${letter}-${index}`}
+          color={color}
+          index={index}
+          progress={progress}
+          letter={letter}
+        />
+      ))}
+    </View>
+  )
+}
+
+function ThinkingLetter({
+  color,
+  index,
+  letter,
+  progress,
+}: {
+  color: string
+  index: number
+  letter: string
+  progress: SharedValue<number>
+}) {
+  const animatedStyle = useAnimatedStyle(() => {
+    const center = index / 8
+    const distance = Math.abs(progress.get() - center)
+    return {
+      opacity: interpolate(
+        distance,
+        [0, 0.35, 0.7],
+        [1, 0.62, 0.36],
+        Extrapolation.CLAMP,
+      ),
+      transform: [
+        {
+          translateY: interpolate(
+            distance,
+            [0, 0.5],
+            [-1.5, 0],
+            Extrapolation.CLAMP,
+          ),
+        },
+      ],
+    }
+  })
+
+  return (
+    <Animated.Text style={[a.text_sm, a.font_bold, {color}, animatedStyle]}>
+      {letter}
+    </Animated.Text>
   )
 }

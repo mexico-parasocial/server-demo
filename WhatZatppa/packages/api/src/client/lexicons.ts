@@ -2785,12 +2785,22 @@ export const schemaDict = {
             description:
               'StrongRefs (uri+cid) of the Atmosphere records that backed this view.',
           },
+          associatedProfiles: {
+            type: 'array',
+            items: {
+              type: 'ref',
+              ref: 'lex:app.bsky.actor.defs#profileViewDetailed',
+            },
+            description:
+              'Profiles of the owners of the Atmosphere records that backed this view.',
+          },
         },
       },
       viewExternalSource: {
         type: 'object',
         description:
           'The source of an external embed, such as a standard.site publication.',
+        required: ['uri', 'title'],
         properties: {
           uri: {
             type: 'string',
@@ -2919,6 +2929,15 @@ export const schemaDict = {
                   description:
                     'The raw record data of the Atmosphere records that backed this view. This is returned for convenience, to avoid the need for the client to separately fetch the record data for the associatedRefs. Example: the site.standard.document and site.standard.publication records that backed this view.',
                 },
+              },
+              associatedProfiles: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:app.bsky.actor.defs#profileViewBasic',
+                },
+                description:
+                  'Profiles of the owners of the Atmosphere records that backed this view.',
               },
             },
           },
@@ -12305,8 +12324,20 @@ export const schemaDict = {
       },
       joinLinkPreviewView: {
         type: 'object',
-        required: ['name', 'owner', 'memberCount', 'requireApproval'],
+        required: [
+          'code',
+          'name',
+          'owner',
+          'memberCount',
+          'memberLimit',
+          'requireApproval',
+          'joinRule',
+          'enabledStatus',
+        ],
         properties: {
+          code: {
+            type: 'string',
+          },
           name: {
             type: 'string',
           },
@@ -12317,14 +12348,38 @@ export const schemaDict = {
           memberCount: {
             type: 'integer',
           },
+          memberLimit: {
+            type: 'integer',
+          },
           requireApproval: {
             type: 'boolean',
+          },
+          joinRule: {
+            type: 'ref',
+            ref: 'lex:chat.bsky.group.defs#joinRule',
+          },
+          enabledStatus: {
+            type: 'ref',
+            ref: 'lex:chat.bsky.group.defs#linkEnabledStatus',
           },
           convo: {
             type: 'ref',
             ref: 'lex:chat.bsky.convo.defs#convoView',
             description:
               'Present only if the request is authenticated and the user is a member of the group.',
+          },
+          viewer: {
+            type: 'ref',
+            ref: 'lex:chat.bsky.group.defs#joinLinkViewerState',
+          },
+        },
+      },
+      joinLinkViewerState: {
+        type: 'object',
+        properties: {
+          requestedAt: {
+            type: 'string',
+            format: 'datetime',
           },
         },
       },
@@ -12608,25 +12663,25 @@ export const schemaDict = {
       },
     },
   },
-  ChatBskyGroupGetJoinLinkPreview: {
+  ChatBskyGroupGetJoinLinkPreviews: {
     lexicon: 1,
-    id: 'chat.bsky.group.getJoinLinkPreview',
+    id: 'chat.bsky.group.getJoinLinkPreviews',
     defs: {
       main: {
         type: 'query',
         description:
-          '[NOTE: This is under active development and should be considered unstable while this note is here]. Get public information about a group from an join link.',
-        errors: [
-          {
-            name: 'InvalidCode',
-          },
-        ],
+          '[NOTE: This is under active development and should be considered unstable while this note is here]. Get public information about groups from join links. Invalid or disabled codes are silently omitted from results.',
         parameters: {
           type: 'params',
-          required: ['code'],
+          required: ['codes'],
           properties: {
-            code: {
-              type: 'string',
+            codes: {
+              type: 'array',
+              minLength: 1,
+              maxLength: 50,
+              items: {
+                type: 'string',
+              },
             },
           },
         },
@@ -12634,11 +12689,14 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'object',
-            required: ['joinLinkPreview'],
+            required: ['joinLinkPreviews'],
             properties: {
-              joinLinkPreview: {
-                type: 'ref',
-                ref: 'lex:chat.bsky.group.defs#joinLinkPreviewView',
+              joinLinkPreviews: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:chat.bsky.group.defs#joinLinkPreviewView',
+                },
               },
             },
           },
@@ -34688,7 +34746,7 @@ export const ids = {
   ChatBskyGroupEditJoinLink: 'chat.bsky.group.editJoinLink',
   ChatBskyGroupEnableJoinLink: 'chat.bsky.group.enableJoinLink',
   ChatBskyGroupGetGroupPublicInfo: 'chat.bsky.group.getGroupPublicInfo',
-  ChatBskyGroupGetJoinLinkPreview: 'chat.bsky.group.getJoinLinkPreview',
+  ChatBskyGroupGetJoinLinkPreviews: 'chat.bsky.group.getJoinLinkPreviews',
   ChatBskyGroupListJoinRequests: 'chat.bsky.group.listJoinRequests',
   ChatBskyGroupRejectJoinRequest: 'chat.bsky.group.rejectJoinRequest',
   ChatBskyGroupRemoveMembers: 'chat.bsky.group.removeMembers',

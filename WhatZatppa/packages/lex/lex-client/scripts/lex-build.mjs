@@ -26,6 +26,7 @@ Promise.all([
     pretty: true,
     pureAnnotations: true,
     indexFile: true,
+    defaultExport: true,
   }),
 
   // For tests

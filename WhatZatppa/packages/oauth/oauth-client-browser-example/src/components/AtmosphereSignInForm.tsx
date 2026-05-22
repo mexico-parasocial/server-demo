@@ -1,5 +1,5 @@
 import { FormEvent, JSX, useEffect, useRef, useState } from 'react'
-import { Button } from './Button.tsx.js'
+import { Button } from './Button.tsx'
 
 export type AtmosphereSignInFormProps = JSX.IntrinsicElements['form'] & {
   placeholder?: string

@@ -191,7 +191,7 @@ import * as ChatBskyGroupEditGroup from './types/chat/bsky/group/editGroup.js'
 import * as ChatBskyGroupEditJoinLink from './types/chat/bsky/group/editJoinLink.js'
 import * as ChatBskyGroupEnableJoinLink from './types/chat/bsky/group/enableJoinLink.js'
 import * as ChatBskyGroupGetGroupPublicInfo from './types/chat/bsky/group/getGroupPublicInfo.js'
-import * as ChatBskyGroupGetJoinLinkPreview from './types/chat/bsky/group/getJoinLinkPreview.js'
+import * as ChatBskyGroupGetJoinLinkPreviews from './types/chat/bsky/group/getJoinLinkPreviews.js'
 import * as ChatBskyGroupListJoinRequests from './types/chat/bsky/group/listJoinRequests.js'
 import * as ChatBskyGroupRejectJoinRequest from './types/chat/bsky/group/rejectJoinRequest.js'
 import * as ChatBskyGroupRemoveMembers from './types/chat/bsky/group/removeMembers.js'
@@ -654,7 +654,7 @@ export * as ChatBskyGroupEditGroup from './types/chat/bsky/group/editGroup.js'
 export * as ChatBskyGroupEditJoinLink from './types/chat/bsky/group/editJoinLink.js'
 export * as ChatBskyGroupEnableJoinLink from './types/chat/bsky/group/enableJoinLink.js'
 export * as ChatBskyGroupGetGroupPublicInfo from './types/chat/bsky/group/getGroupPublicInfo.js'
-export * as ChatBskyGroupGetJoinLinkPreview from './types/chat/bsky/group/getJoinLinkPreview.js'
+export * as ChatBskyGroupGetJoinLinkPreviews from './types/chat/bsky/group/getJoinLinkPreviews.js'
 export * as ChatBskyGroupListJoinRequests from './types/chat/bsky/group/listJoinRequests.js'
 export * as ChatBskyGroupRejectJoinRequest from './types/chat/bsky/group/rejectJoinRequest.js'
 export * as ChatBskyGroupRemoveMembers from './types/chat/bsky/group/removeMembers.js'
@@ -4379,15 +4379,16 @@ export class ChatBskyGroupNS {
       })
   }
 
-  getJoinLinkPreview(
-    params?: ChatBskyGroupGetJoinLinkPreview.QueryParams,
-    opts?: ChatBskyGroupGetJoinLinkPreview.CallOptions,
-  ): Promise<ChatBskyGroupGetJoinLinkPreview.Response> {
-    return this._client
-      .call('chat.bsky.group.getJoinLinkPreview', params, undefined, opts)
-      .catch((e) => {
-        throw ChatBskyGroupGetJoinLinkPreview.toKnownErr(e)
-      })
+  getJoinLinkPreviews(
+    params?: ChatBskyGroupGetJoinLinkPreviews.QueryParams,
+    opts?: ChatBskyGroupGetJoinLinkPreviews.CallOptions,
+  ): Promise<ChatBskyGroupGetJoinLinkPreviews.Response> {
+    return this._client.call(
+      'chat.bsky.group.getJoinLinkPreviews',
+      params,
+      undefined,
+      opts,
+    )
   }
 
   listJoinRequests(

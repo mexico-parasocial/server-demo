@@ -11,6 +11,7 @@ import {
 } from '../../../../util.js'
 import type * as AppBskyEmbedExternal from './external.js'
 import type * as ComAtprotoRepoStrongRef from '../../../com/atproto/repo/strongRef.js'
+import type * as AppBskyActorDefs from '../actor/defs.js'
 
 const is$typed = _is$typed,
   validate = _validate
@@ -29,6 +30,8 @@ export interface OutputSchema {
   /** StrongRefs (URI+CID) of the Atmosphere records that backed this view, suitable for embedding into a post's external.associatedRefs. */
   associatedRefs?: ComAtprotoRepoStrongRef.Main[]
   associatedRecords?: { [_ in string]: unknown }[]
+  /** Profiles of the owners of the Atmosphere records that backed this view. */
+  associatedProfiles?: AppBskyActorDefs.ProfileViewBasic[]
 }
 
 export type HandlerInput = void

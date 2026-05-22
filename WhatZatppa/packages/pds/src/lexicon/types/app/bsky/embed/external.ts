@@ -11,6 +11,7 @@ import {
 } from '../../../../util.js'
 import type * as ComAtprotoRepoStrongRef from '../../../com/atproto/repo/strongRef.js'
 import type * as ComAtprotoLabelDefs from '../../../com/atproto/label/defs.js'
+import type * as AppBskyActorDefs from '../actor/defs.js'
 
 const is$typed = _is$typed,
   validate = _validate
@@ -83,6 +84,8 @@ export interface ViewExternal {
   source?: ViewExternalSource
   /** StrongRefs (uri+cid) of the Atmosphere records that backed this view. */
   associatedRefs?: ComAtprotoRepoStrongRef.Main[]
+  /** Profiles of the owners of the Atmosphere records that backed this view. */
+  associatedProfiles?: AppBskyActorDefs.ProfileViewDetailed[]
 }
 
 const hashViewExternal = 'viewExternal'
@@ -99,10 +102,10 @@ export function validateViewExternal<V>(v: V) {
 export interface ViewExternalSource {
   $type?: 'app.bsky.embed.external#viewExternalSource'
   /** URI of the source, if available. Example: the https:// URL of a site.standard.publication record. */
-  uri?: string
+  uri: string
   /** Fully-qualified URL where an icon representing the source can be fetched. For example, CDN location provided by the App View. */
   icon?: string
-  title?: string
+  title: string
   description?: string
   theme?: ViewExternalSourceTheme
 }

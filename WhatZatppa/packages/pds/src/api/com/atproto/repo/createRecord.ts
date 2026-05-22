@@ -51,6 +51,7 @@ export default function (server: Server, ctx: AppContext) {
         maxNestedLevels: MAX_CBOR_NESTED_LEVELS + 1,
         // Other limits will be derived from strict mode.
       },
+      jsonLimit: 1_000_000,
     },
     handler: async ({ input, auth }) => {
       const { repo, collection, rkey, record, swapCommit, validate } =

@@ -1,20 +1,14 @@
 # PARA — Civic Social Platform
 
-A civic-tech social platform for digital democracy, built on the AT Protocol. This monorepo contains the frontend website, React Native client, and AT Protocol backend services.
-
-> **m8 Identity Broker** lives in its own repository: [`mexico-parasocial/m8-app`](https://github.com/mexico-parasocial/m8-app.git)
-
----
-
-## What's in this repo
+A civic-tech social platform for digital democracy, built on the AT Protocol. This monorepo contains the full stack: React Native client, AT Protocol backend services, and the m8 identity broker.
 
 | Directory | What it is | Tech |
 |-----------|-----------|------|
-| `website/` | Public docs site, landing page, blog, and schema reference | SvelteKit / TypeScript / pnpm |
 | `PARA/` | Mobile & web client (iOS, Android, Web) | React Native / Expo / TypeScript |
 | `WhatZatppa/` | Backend monorepo (PDS, AppView, Ozone, PLC) | Node.js / TypeScript / pnpm |
-| `ansible/` | Infrastructure playbooks and deployment configs | Ansible |
-| `scripts/` | Shared deployment & ops scripts | Bash / Node.js |
+| `m8/` | Identity broker (PoP Wallet + Identity Manager) | React Native / Fastify / TypeScript |
+| `scripts/` | Deployment & ops scripts | Bash |
+| `docs/` | Architecture docs, runbooks, research | Markdown |
 
 ---
 
@@ -32,22 +26,6 @@ Install pnpm if you don't have it:
 ```bash
 npm install -g pnpm@8.15.9
 ```
-
----
-
-## Website (`website/`)
-
-The public docs site and landing page. Built with SvelteKit and deployed to Cloudflare Pages.
-
-```bash
-cd website
-pnpm install
-pnpm run build
-```
-
-**Structure:**
-- `apps/website/` — SvelteKit app (landing, docs, blog, schema reference)
-- `packages/content-schema/` — Schema fixtures and content validation
 
 ---
 
@@ -99,7 +77,7 @@ make pds-doctor    # PDS-specific health check
 
 ---
 
-## Mobile Client (`PARA/`)
+## Frontend (`PARA/`)
 
 The React Native / Expo client.
 
@@ -123,15 +101,34 @@ pnpm android    # Android emulator
 
 ---
 
-## Identity & Trust (`m8`)
+## m8 Identity Broker (`m8/`)
 
-The m8 identity broker — Proof-of-Personhood Wallet, credential management, and identity backend — is maintained as a **separate open-source project**.
+Proof-of-Personhood Wallet + Identity Manager backend.
 
-- **Repository:** [`mexico-parasocial/m8-app`](https://github.com/mexico-parasocial/m8-app.git)
-- **Stack:** React Native Expo (wallet) + AdonisJS (identity manager backend)
-- **Features:** INE verification, ZKP age proofs, persona management, grant consent, device trust
+### PoP Wallet (`m8/atmosphere-console-poc/`)
 
-PARA depends on m8 for citizen verification and anonymous identity issuance, but the two projects can be developed and deployed independently.
+React Native Expo app for ATProto sign-in, persona management, and credential wallet.
+
+```bash
+cd m8/atmosphere-console-poc
+pnpm install
+pnpm start       # Expo dev server
+pnpm ios
+pnpm android
+```
+
+### Identity Manager (`m8/identity-manager/`)
+
+Fastify service — proof broker, session management, trust policies.
+
+```bash
+cd m8/identity-manager
+pnpm install
+pnpm dev         # tsx watch dev mode
+pnpm build       # Compile to dist/
+pnpm start       # Run compiled output
+pnpm test:integration
+```
 
 ---
 
@@ -216,7 +213,9 @@ make build
 | File | What's in it |
 |------|-------------|
 | `AGENTS.md` | AI agent orientation — architecture, conventions, local quirks |
-| `website/CLOUDFLARE_PAGES.md` | Website deployment runbook |
+| `docs/CONTRIBUTING.md` | Contribution guidelines, PR workflow, type safety |
+| `docs/DEVOPS_PRIMER.md` | Infrastructure, deployment, environment setup |
+| `docs/PROVISION_VPS.md` | VPS provisioning step-by-step |
 | `WhatZatppa/PARA_BACKEND_DEVOPS.md` | Backend-specific ops runbook |
 | `WhatZatppa/TESTING.md` | Test strategy, jest/vitest configs |
 | `PARA/agents.md` | PARA-specific deep-dive (compass colors, iOS quirks, web layout) |
@@ -230,7 +229,7 @@ This project builds on and alongside the work of many open-source communities an
 - **[Bluesky](https://bsky.app/) & [AT Protocol](https://atproto.com/)** — For the protocol, reference implementations, and the social web ecosystem.
 - **Eurosky Social** — The [Eurosky Portal](https://github.com/eurosky-social/eurosky-portal) served as a reference for account management UI patterns.
 - **Bailey Townsend** — Author of [PDS MOOver](https://tangled.org/@baileytownsend.dev/pds-moover), a reference utility for PDS account migration that informed our PDS tooling.
-- **The m8 Identity Stack** — Published separately at [`mexico-parasocial/m8-app`](https://github.com/mexico-parasocial/m8-app.git). The identity broker, PoP Wallet, and credential systems are maintained as a standalone open-source project.
+- **The m8 Identity Stack** — Published separately at [`mexico-parasocial/m8-app`](https://github.com/mexico-parasocial/m8-app.git). The identity broker, PoP Wallet, and credential systems developed here are maintained as a standalone open-source project.
 
 ---
 

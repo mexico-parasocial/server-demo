@@ -40,11 +40,16 @@ export function validateJoinLinkView<V>(v: V) {
 
 export interface JoinLinkPreviewView {
   $type?: 'chat.bsky.group.defs#joinLinkPreviewView'
+  code: string
   name: string
   owner: ChatBskyActorDefs.ProfileViewBasic
   memberCount: number
+  memberLimit: number
   requireApproval: boolean
+  joinRule: JoinRule
+  enabledStatus: LinkEnabledStatus
   convo?: ChatBskyConvoDefs.ConvoView
+  viewer?: JoinLinkViewerState
 }
 
 const hashJoinLinkPreviewView = 'joinLinkPreviewView'
@@ -55,6 +60,21 @@ export function isJoinLinkPreviewView<V>(v: V) {
 
 export function validateJoinLinkPreviewView<V>(v: V) {
   return validate<JoinLinkPreviewView & V>(v, id, hashJoinLinkPreviewView)
+}
+
+export interface JoinLinkViewerState {
+  $type?: 'chat.bsky.group.defs#joinLinkViewerState'
+  requestedAt?: string
+}
+
+const hashJoinLinkViewerState = 'joinLinkViewerState'
+
+export function isJoinLinkViewerState<V>(v: V) {
+  return is$typed(v, id, hashJoinLinkViewerState)
+}
+
+export function validateJoinLinkViewerState<V>(v: V) {
+  return validate<JoinLinkViewerState & V>(v, id, hashJoinLinkViewerState)
 }
 
 export interface GroupPublicView {

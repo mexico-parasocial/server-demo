@@ -1,6 +1,6 @@
 import { Query, useQuery } from '@tanstack/react-query'
 import { TokenInfo } from '@atproto/oauth-client-browser'
-import { useOAuthSession } from '../providers/OAuthProvider.tsx.js'
+import { useOAuthSession } from '../providers/OAuthProvider.tsx'
 
 export function useGetTokenInfoQuery() {
   const session = useOAuthSession()

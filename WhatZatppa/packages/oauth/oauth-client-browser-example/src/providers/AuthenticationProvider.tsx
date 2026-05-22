@@ -7,13 +7,13 @@ import {
   useState,
 } from 'react'
 import { Client, DidString } from '@atproto/lex'
-import { AtmosphereSignInDialog } from '../components/AtmosphereSignInDialog.tsx.js'
-import { Layout } from '../components/Layout.tsx.js'
-import { Spinner } from '../components/Spinner.tsx.js'
+import { AtmosphereSignInDialog } from '../components/AtmosphereSignInDialog.tsx'
+import { Layout } from '../components/Layout.tsx'
+import { Spinner } from '../components/Spinner.tsx'
 import { SIGN_UP_URL } from '../constants.ts'
 import * as app from '../lexicons/app.ts'
 import { useAbortableEffect } from '../lib/use-abortable-effect.ts'
-import { OAuthProvider, useOAuthContext } from './OAuthProvider.tsx.js'
+import { OAuthProvider, useOAuthContext } from './OAuthProvider.tsx'
 
 export type AuthenticatedClient = Client & { did: DidString }
 export type AuthenticationContextType = {

@@ -1,12 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactNode, useEffect } from 'react'
-import { Home } from './Home.tsx.js'
+import { Home } from './Home.tsx'
 import * as lexicons from './lexicons.ts'
-import { AuthenticationProvider } from './providers/AuthenticationProvider.tsx.js'
+import { AuthenticationProvider } from './providers/AuthenticationProvider.tsx'
 import {
   BskyClientProvider,
   useBskyClient,
-} from './providers/BskyClientProvider.tsx.js'
+} from './providers/BskyClientProvider.tsx'
 
 const queryClient = new QueryClient()
 

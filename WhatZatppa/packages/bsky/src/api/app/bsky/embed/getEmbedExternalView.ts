@@ -1,7 +1,11 @@
 import { AtUriString, LexMap } from '@atproto/lex'
 import { Server } from '@atproto/xrpc-server'
 import { AppContext } from '../../../../context.js'
-import { parseSiteStandardRecordKey } from '../../../../hydration/external.js'
+import {
+  SiteStandardDocuments,
+  SiteStandardPublications,
+  getSiteStandardRecordsFromHydrationMapsByDocumentUri,
+} from '../../../../hydration/external.js'
 import { HydrateCtx, Hydrator } from '../../../../hydration/hydrator.js'
 import { app, com } from '../../../../lexicons/index.js'
 import {
@@ -14,6 +18,8 @@ import {
 import { Views } from '../../../../views/index.js'
 import { ExternalEmbedView, StrongRef } from '../../../../views/types.js'
 import { resHeaders } from '../../../util.js'
+import { AtUri, DidString } from '@atproto/syntax'
+import { dedupeStrs } from '@atproto/common'
 
 export default function (server: Server, ctx: AppContext) {
   const getEmbedExternalView = createPipeline(
@@ -41,7 +47,12 @@ export default function (server: Server, ctx: AppContext) {
 const skeleton = async (
   inputs: SkeletonFnInput<Context, Params>,
 ): Promise<Skeleton> => {
-  return { uris: inputs.params.uris as AtUriString[] }
+  const uris = inputs.params.uris as AtUriString[]
+  const dids = uris.map((uri) => new AtUri(uri).did)
+  return {
+    uris,
+    dids
+  }
 }
 
 const hydration = async (
@@ -50,6 +61,7 @@ const hydration = async (
   const { ctx, params, skeleton } = inputs
   return ctx.hydrator.hydrateEmbedExternalViewFromUris(
     skeleton.uris,
+    skeleton.dids,
     params.hydrateCtx,
   )
 }
@@ -57,53 +69,74 @@ const hydration = async (
 const presentation = (
   inputs: PresentationFnInput<Context, Params, Skeleton>,
 ): Output => {
+  const documents = inputs.hydration.siteStandardDocuments
+  const publications = inputs.hydration.siteStandardPublications
+  const profile = inputs.ctx.views.profileDetailed(inputs.skeleton.did, inputs.hydration)
+  // Dispatch by record type. Today site.standard is the only kind we know
+  // how to render; future record types get their own branch.
+  if (
+    (documents && documents.size > 0) ||
+    (publications && publications.size > 0)
+  ) {
+    return standardSitePresentation(inputs, documents, publications)
+  }
+  return {}
+}
+
+const standardSitePresentation = (
+  inputs: PresentationFnInput<Context, Params, Skeleton>,
+  documents: SiteStandardDocuments | undefined,
+  publications: SiteStandardPublications | undefined,
+): Output => {
   const { ctx, params, hydration } = inputs
 
-  // Walk the hydration maps once to build the response's parallel
-  // `associatedRefs` / `associatedRecords` arrays. We then hand
-  // `associatedRefs` back to `externalEmbedFromStandardSite`, which walks the
-  // same maps a second time to build the view; both passes are bounded by
-  // the lex's `uris.maxLength`.
+  // Pick the first hydrated doc, then pair it with the publication its
+  // `site` field points at (if any). Docs the dataplane auto-resolved a
+  // publication for end up matched; unrelated publications fall away.
+  const { document, publication } =
+    getSiteStandardRecordsFromHydrationMapsByDocumentUri(
+      documents,
+      publications,
+    )
+
+  // Emit response refs/records only for the records we actually selected.
+  // Anything else (e.g. extra publications the dataplane returned) is
+  // intentionally excluded so the strongRefs Cardy writes onto the post
+  // match the view we built.
   const associatedRefs: StrongRef[] = []
   const associatedRecords: LexMap[] = []
-  for (const [key, info] of hydration.siteStandardDocuments ?? []) {
-    if (!info) continue
-    const { uri } = parseSiteStandardRecordKey(key)
+  for (const slot of [document, publication]) {
+    if (!slot) continue
     associatedRefs.push(
-      com.atproto.repo.strongRef.$build({ uri, cid: info.cid }),
+      com.atproto.repo.strongRef.$build({
+        uri: slot.ref.uri,
+        cid: slot.info.cid,
+      }),
     )
-    associatedRecords.push(info.record as LexMap)
-  }
-  for (const [key, info] of hydration.siteStandardPublications ?? []) {
-    if (!info) continue
-    const { uri } = parseSiteStandardRecordKey(key)
-    associatedRefs.push(
-      com.atproto.repo.strongRef.$build({ uri, cid: info.cid }),
-    )
-    associatedRecords.push(info.record as LexMap)
+    associatedRecords.push(slot.info.record as LexMap)
   }
 
   if (!associatedRefs.length) return {}
 
-  const overlay = ctx.views.externalEmbedFromStandardSite(
-    associatedRefs,
-    hydration,
-  )
-  // viewExternal requires uri/title/description. We fall back to the
-  // request's `url` for `uri` and skip the view if the SS overlay didn't
-  // supply title/description.
-  const view: ExternalEmbedView | undefined =
-    overlay?.title && overlay?.description
-      ? app.bsky.embed.external.view.$build({
-          external: {
-            ...overlay,
-            uri: params.url,
-            title: overlay.title,
-            description: overlay.description,
-            associatedRefs,
-          },
-        })
-      : undefined
+  const overlay = ctx.views.externalEmbedFromStandardSiteRecords({
+    document,
+    publication,
+    state: hydration,
+    assumedUrl: params.url,
+  })
+  // The view builder rejected the records (validation failed, or the pair
+  // didn't produce the title viewExternal requires). Return nothing — Cardy
+  // falls back to its own card render and doesn't write strongRefs to the
+  // post.
+  if (!overlay) return {}
+
+  const view = app.bsky.embed.external.view.$build({
+    external: {
+      ...overlay,
+      uri: params.url,
+      associatedRefs,
+    },
+  })
 
   return { view, associatedRefs, associatedRecords }
 }
@@ -119,6 +152,7 @@ type Params = app.bsky.embed.getEmbedExternalView.$Params & {
 
 type Skeleton = {
   uris: AtUriString[]
+  dids: DidString[]
 }
 
 type Output = {

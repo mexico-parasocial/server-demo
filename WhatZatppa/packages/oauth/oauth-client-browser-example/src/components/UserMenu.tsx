@@ -2,18 +2,18 @@ import { app, com } from '../lexicons.ts'
 import {
   useOAuthContext,
   useOAuthSession,
-} from '../providers/OAuthProvider.tsx.js'
+} from '../providers/OAuthProvider.tsx'
 import { useLexQuery } from '../queries/use-lex-query.ts'
 import { useLexRecord } from '../queries/use-lex-record.ts'
-import { ButtonDropdown } from './ButtonDropdown.tsx.js'
-import { ClipboardIcon, SquareArrowTopRightIcon } from './Icons.tsx.js'
+import { ButtonDropdown } from './ButtonDropdown.tsx'
+import { ClipboardIcon, SquareArrowTopRightIcon } from './Icons.tsx'
 
 export function UserMenu() {
   const { signOut } = useOAuthContext()
   const session = useOAuthSession()
 
-  const profileQuery = useLexRecord(app.bsky.actor.profile)
-  const sessionQuery = useLexQuery(com.atproto.server.getSession)
+  const profileQuery = useLexRecord(app.bsky.actor.profile.main)
+  const sessionQuery = useLexQuery(com.atproto.server.getSession.main)
 
   const displayName = profileQuery.data?.value?.displayName
   const handle = sessionQuery.data?.body.handle

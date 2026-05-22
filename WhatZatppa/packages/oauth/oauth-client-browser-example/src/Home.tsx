@@ -1,8 +1,8 @@
-import { Layout } from './components/Layout.tsx.js'
-import { ProfileInfo } from './components/ProfileInfo.tsx.js'
-import { SessionInfo } from './components/SessionInfo.tsx.js'
-import { TokenInfo } from './components/TokenInfo.tsx.js'
-import { UserMenu } from './components/UserMenu.tsx.js'
+import { Layout } from './components/Layout.tsx'
+import { ProfileInfo } from './components/ProfileInfo.tsx'
+import { SessionInfo } from './components/SessionInfo.tsx'
+import { TokenInfo } from './components/TokenInfo.tsx'
+import { UserMenu } from './components/UserMenu.tsx'
 
 export function Home() {
   return (

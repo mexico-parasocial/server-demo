@@ -40,7 +40,41 @@ export function useSendAgentMessageMutation(agentId: string) {
       )
       return data.message as AgentChatMessage
     },
-    onSuccess: () => {
+    onMutate: async text => {
+      await queryClient.cancelQueries({queryKey: RQKEY(agentId)})
+
+      const previousMessages =
+        queryClient.getQueryData<AgentChatMessage[]>(RQKEY(agentId)) ?? []
+      const optimisticMessage: AgentChatMessage = {
+        id: `pending-${Date.now()}`,
+        text,
+        sender: 'user',
+        createdAt: new Date().toISOString(),
+      }
+
+      queryClient.setQueryData<AgentChatMessage[]>(RQKEY(agentId), [
+        ...previousMessages,
+        optimisticMessage,
+      ])
+
+      return {previousMessages}
+    },
+    onError: (_err, _text, context) => {
+      if (context?.previousMessages) {
+        queryClient.setQueryData(RQKEY(agentId), context.previousMessages)
+      }
+    },
+    onSuccess: message => {
+      queryClient.setQueryData<AgentChatMessage[]>(
+        RQKEY(agentId),
+        currentMessages => {
+          const nextMessages = currentMessages ?? []
+          if (nextMessages.some(item => item.id === message.id)) {
+            return nextMessages
+          }
+          return [...nextMessages, message]
+        },
+      )
       queryClient.invalidateQueries({queryKey: RQKEY(agentId)})
     },
   })

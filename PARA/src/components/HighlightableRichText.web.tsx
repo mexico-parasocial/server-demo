@@ -6,9 +6,7 @@ import {memo, useCallback, useEffect, useRef, useState} from 'react'
 import {View} from 'react-native'
 import {type RichText as RichTextAPI} from '@atproto/api'
 
-import {
-  getCrossGradientByColor,
-} from '#/lib/compass/compassColors'
+import {getCrossGradientByColor} from '#/lib/compass/compassColors'
 import {
   useHighlightMode,
   useHighlights,
@@ -21,8 +19,12 @@ import {
 } from '#/state/highlights/highlightTypes'
 import {useSession} from '#/state/session'
 import {useTheme} from '#/alf'
-import {HighlightOptionsModal} from '#/components/HighlightOptionsModal'
+import {
+  type HighlightActionPayload,
+  HighlightOptionsModal,
+} from '#/components/HighlightOptionsModal'
 import {RichText} from '#/components/RichText'
+import {useHighlightQuickActions} from '#/components/useHighlightQuickActions'
 
 interface HighlightableRichTextProps {
   postUri: string
@@ -61,6 +63,67 @@ let HighlightableRichText = ({
   } | null>(null)
   const [editingHighlight, setEditingHighlight] =
     useState<HighlightData | null>(null)
+
+  const persistSelectedHighlight = useCallback(
+    async (color: HighlightColor, isPublic: boolean, tag?: string) => {
+      if (editingHighlight) {
+        await updateHighlightData(editingHighlight.id, {color, isPublic, tag})
+        return {...editingHighlight, color, isPublic, tag}
+      }
+      if (pendingSelection) {
+        const highlightText = text.slice(
+          pendingSelection.start,
+          pendingSelection.end,
+        )
+        return await addHighlight(
+          pendingSelection.start,
+          pendingSelection.end,
+          color,
+          isPublic,
+          highlightText,
+          tag,
+        )
+      }
+      return null
+    },
+    [
+      addHighlight,
+      editingHighlight,
+      pendingSelection,
+      text,
+      updateHighlightData,
+    ],
+  )
+
+  const finishHighlightAction = useCallback(() => {
+    setPendingSelection(null)
+    setEditingHighlight(null)
+    setModalVisible(false)
+    exitHighlightMode()
+  }, [exitHighlightMode])
+
+  const persistHighlightAction = useCallback(
+    async (payload: HighlightActionPayload) => {
+      return persistSelectedHighlight(
+        payload.color,
+        payload.isPublic,
+        payload.note,
+      )
+    },
+    [persistSelectedHighlight],
+  )
+
+  const {sendToAgent, saveToCivicTree} = useHighlightQuickActions({
+    postUri,
+    persistHighlight: persistHighlightAction,
+    onDone: finishHighlightAction,
+  })
+
+  const activeHighlightText =
+    editingHighlight?.text ||
+    (pendingSelection
+      ? text.slice(pendingSelection.start, pendingSelection.end)
+      : undefined)
 
   // Cleanup: exit highlight mode when component unmounts
   useEffect(() => {
@@ -112,35 +175,10 @@ let HighlightableRichText = ({
   // Save new highlight
   const handleSave = useCallback(
     async (color: HighlightColor, isPublic: boolean, tag?: string) => {
-      if (editingHighlight) {
-        await updateHighlightData(editingHighlight.id, {color, isPublic, tag})
-      } else if (pendingSelection) {
-        const highlightText = text.slice(
-          pendingSelection.start,
-          pendingSelection.end,
-        )
-        await addHighlight(
-          pendingSelection.start,
-          pendingSelection.end,
-          color,
-          isPublic,
-          highlightText,
-          tag,
-        )
-      }
-      setPendingSelection(null)
-      setEditingHighlight(null)
-      setModalVisible(false)
-      exitHighlightMode()
+      await persistSelectedHighlight(color, isPublic, tag)
+      finishHighlightAction()
     },
-    [
-      pendingSelection,
-      addHighlight,
-      editingHighlight,
-      exitHighlightMode,
-      text,
-      updateHighlightData,
-    ],
+    [finishHighlightAction, persistSelectedHighlight],
   )
 
   // Highlight more text
@@ -289,6 +327,12 @@ let HighlightableRichText = ({
         onSave={(color, isPublic, tag) => {
           void handleSave(color, isPublic, tag)
         }}
+        onSendToAgent={payload => {
+          void sendToAgent(payload)
+        }}
+        onSaveToCivicTree={payload => {
+          void saveToCivicTree(payload)
+        }}
         onHighlightMore={() => {
           void handleHighlightMore()
         }}
@@ -304,6 +348,7 @@ let HighlightableRichText = ({
         existingTag={editingHighlight?.tag}
         existingColor={editingHighlight?.color}
         existingIsPublic={editingHighlight?.isPublic}
+        actionText={activeHighlightText}
       />
     </View>
   )

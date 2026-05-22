@@ -7,7 +7,7 @@ import {
   XrpcResponse,
   getMain,
 } from '@atproto/lex'
-import { useBskyClient } from '../providers/BskyClientProvider.tsx.js'
+import { useBskyClient } from '../providers/BskyClientProvider.tsx'
 
 export function useLexQuery<S extends Query>(
   ns: NonNullable<unknown> extends XrpcRequestParams<S>

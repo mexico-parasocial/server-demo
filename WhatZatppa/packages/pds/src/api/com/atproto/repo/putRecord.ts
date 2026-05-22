@@ -54,6 +54,9 @@ export default function (server: Server, ctx: AppContext) {
         calcPoints: () => 2,
       },
     ],
+    opts: {
+      jsonLimit: 1_000_000,
+    },
     handler: async ({ auth, input }) => {
       const {
         repo,

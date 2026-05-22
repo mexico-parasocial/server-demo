@@ -29,6 +29,8 @@ import {
 } from '#/state/highlights/highlightTypes'
 import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
+import {Macintosh_Stroke2_Corner2_Rounded as MacintoshIcon} from '#/components/icons/Macintosh'
+import {Tree_Stroke2_Corner0_Rounded as TreeIcon} from '#/components/icons/Tree'
 import {Text} from '#/components/Typography'
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -93,19 +95,34 @@ interface HighlightOptionsModalProps {
   visible: boolean
   onClose: () => void
   onSave: (color: HighlightColor, isPublic: boolean, tag?: string) => void
+  onSendToAgent?: (payload: HighlightActionPayload) => void
+  onSaveToCivicTree?: (payload: HighlightActionPayload) => void
   onHighlightMore: () => void
   onDelete?: () => void
+  actionText?: string
   existingTag?: string
   existingColor?: HighlightColor
   existingIsPublic?: boolean
+}
+
+export interface HighlightActionPayload {
+  color: HighlightColor
+  colorKey: HighlightColorKey
+  label: string
+  note?: string
+  isPublic: boolean
+  text?: string
 }
 
 let HighlightOptionsModal = ({
   visible,
   onClose,
   onSave,
+  onSendToAgent,
+  onSaveToCivicTree,
   onHighlightMore,
   onDelete,
+  actionText,
   existingTag,
   existingColor,
   existingIsPublic,
@@ -131,6 +148,25 @@ let HighlightOptionsModal = ({
   }, [onSave, selectedKey, isPublic, tag])
 
   const selectedColor = HIGHLIGHT_COLORS[selectedKey]
+  const actionPayload = useCallback(
+    (): HighlightActionPayload => ({
+      color: selectedColor,
+      colorKey: selectedKey,
+      label: KEY_TO_LABEL[selectedKey],
+      note: tag.trim() || undefined,
+      isPublic,
+      text: actionText?.trim() || undefined,
+    }),
+    [actionText, isPublic, selectedColor, selectedKey, tag],
+  )
+
+  const handleSendToAgent = useCallback(() => {
+    onSendToAgent?.(actionPayload())
+  }, [actionPayload, onSendToAgent])
+
+  const handleSaveToCivicTree = useCallback(() => {
+    onSaveToCivicTree?.(actionPayload())
+  }, [actionPayload, onSaveToCivicTree])
 
   return (
     <Modal
@@ -221,7 +257,9 @@ let HighlightOptionsModal = ({
                       key={colorKey}
                       onPress={() => setSelectedKey(colorKey)}
                       accessibilityLabel={_(msg`Select ${colorKey} color`)}
-                      accessibilityHint={_(msg`Selects the ${colorKey} highlight color`)}
+                      accessibilityHint={_(
+                        msg`Selects the ${colorKey} highlight color`,
+                      )}
                       accessibilityRole="button"
                       style={[
                         styles.cell,
@@ -236,13 +274,7 @@ let HighlightOptionsModal = ({
                       ]}>
                       {gradient && (
                         <LinearGradient
-                          colors={
-                            gradient.colors as unknown as readonly [
-                              string,
-                              string,
-                              ...string[],
-                            ]
-                          }
+                          colors={gradient.colors}
                           start={gradient.start}
                           end={gradient.end}
                           style={StyleSheet.absoluteFill}
@@ -266,7 +298,9 @@ let HighlightOptionsModal = ({
             onChangeText={setTag}
             placeholder={_(msg`Tag or note (optional)…`)}
             accessibilityLabel={_(msg`Highlight tag`)}
-            accessibilityHint={_(msg`Enter an optional tag or note for this highlight`)}
+            accessibilityHint={_(
+              msg`Enter an optional tag or note for this highlight`,
+            )}
             placeholderTextColor={t.atoms.text_contrast_low.color}
             style={[
               a.rounded_sm,
@@ -299,6 +333,53 @@ let HighlightOptionsModal = ({
               thumbColor="#fff"
             />
           </View>
+
+          {(onSendToAgent || onSaveToCivicTree) && (
+            <View style={[styles.actionCluster, a.mb_md]}>
+              {onSendToAgent && (
+                <Pressable
+                  accessibilityLabel={_(msg`Send highlight to agent`)}
+                  accessibilityHint={_(
+                    msg`Sends the highlighted text, color, and note to your civic agent`,
+                  )}
+                  accessibilityRole="button"
+                  onPress={handleSendToAgent}
+                  style={({pressed}) => [
+                    styles.quickActionButton,
+                    {
+                      backgroundColor: t.atoms.bg_contrast_25.backgroundColor,
+                      borderColor: t.atoms.border_contrast_low.borderColor,
+                      opacity: pressed ? 0.72 : 1,
+                    },
+                  ]}>
+                  <MacintoshIcon
+                    size="md"
+                    fill={t.atoms.text_contrast_medium.color}
+                  />
+                </Pressable>
+              )}
+
+              {onSaveToCivicTree && (
+                <Pressable
+                  accessibilityLabel={_(msg`Save highlight as Civic Tree note`)}
+                  accessibilityHint={_(
+                    msg`Saves the highlighted text, color, and note to your Civic Tree`,
+                  )}
+                  accessibilityRole="button"
+                  onPress={handleSaveToCivicTree}
+                  style={({pressed}) => [
+                    styles.quickActionButton,
+                    {
+                      backgroundColor: selectedColor,
+                      borderColor: t.atoms.border_contrast_low.borderColor,
+                      opacity: pressed ? 0.72 : 1,
+                    },
+                  ]}>
+                  <TreeIcon size="md" fill="#111111" />
+                </Pressable>
+              )}
+            </View>
+          )}
 
           {/* ── Buttons ──────────────────────────────────────── */}
 
@@ -375,5 +456,18 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.6)',
     borderRadius: 5,
+  },
+  actionCluster: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 14,
+  },
+  quickActionButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })
