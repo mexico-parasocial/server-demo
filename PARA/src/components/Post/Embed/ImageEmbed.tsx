@@ -9,7 +9,7 @@ import {
 import {Image} from 'expo-image'
 
 import {useLightboxControls} from '#/state/lightbox'
-import {type Dimensions} from '#/view/com/lightbox/ImageViewing/@types'
+import {type Dimensions} from '#/components/Lightbox/types'
 import {atoms as a} from '#/alf'
 import {AutoSizedImage} from '#/components/images/AutoSizedImage'
 import {ImageLayoutGrid} from '#/components/images/ImageLayoutGrid'

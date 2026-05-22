@@ -259,18 +259,38 @@ function LightboxGallery({
       )}
       <Menu.Root>
         <Menu.Trigger label={_(msg`Image options`)}>
-          {({props}) => (
-            <Pressable
-              {...props}
-              accessible={false}
-              style={[a.absolute, styles.menuBtn, delayedFadeInAnim]}>
-              <CircleChromeButton
-                icon={EllipsisIcon}
-                iconStyle={{transform: [{rotate: '90deg'}]}}
-                label={_(msg`Image options`)}
-              />
-            </Pressable>
-          )}
+          {({props}) => {
+            // Filter out React Native specific props that don't exist on HTML button
+            const {
+              onPress,
+              onPressIn,
+              onPressOut,
+              accessibilityRole,
+              accessibilityLabel,
+              accessibilityHint,
+              onPointerDown,
+              ...htmlProps
+            } = props as any
+            return (
+              <button
+                {...(htmlProps as any)}
+                aria-label={accessibilityLabel}
+                aria-describedby={accessibilityHint}
+                onClick={onPress}
+                style={flatten([
+                  a.absolute,
+                  styles.menuBtn,
+                  delayedFadeInAnim,
+                  {background: 'none', border: 'none', padding: 0, cursor: 'pointer'},
+                ])}>
+                <CircleChromeButton
+                  icon={EllipsisIcon}
+                  iconStyle={{transform: [{rotate: '90deg'}]}}
+                  label={_(msg`Image options`)}
+                />
+              </button>
+            )
+          }}
         </Menu.Trigger>
         <Menu.Outer>
           <Menu.Group>

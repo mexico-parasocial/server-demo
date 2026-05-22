@@ -107,6 +107,21 @@ export const atoms = {
   }),
 
   /**
+   * Screen-reader only. Visually hidden but accessible to assistive tech.
+   */
+  sr_only: web({
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    padding: 0,
+    margin: -1,
+    overflow: 'hidden',
+    clip: 'rect(0,0,0,0)',
+    whiteSpace: 'nowrap',
+    borderWidth: 0,
+  }),
+
+  /**
    * {@link Layout.SCROLLBAR_OFFSET}
    */
   scrollbar_offset: platform({
