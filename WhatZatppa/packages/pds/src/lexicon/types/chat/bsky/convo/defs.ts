@@ -510,6 +510,8 @@ export interface GroupConvo {
   /** The total number of members in the group conversation. */
   memberCount: number
   createdAt: string
+  /** The total number of pending join requests for the group conversation. Only present for the owner. Capped at 21. */
+  joinRequestCount?: number
   joinLink?: ChatBskyGroupDefs.JoinLinkView
   lockStatus: ConvoLockStatus
 }

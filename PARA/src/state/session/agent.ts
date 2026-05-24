@@ -10,10 +10,7 @@ import {
   type Did,
   type Un$Typed,
 } from '@atproto/api'
-import {type FetchHandler} from '@atproto/api/dist/agent'
-import {type SessionManager} from '@atproto/api/dist/session-manager'
 import {TID} from '@atproto/common-web'
-import {type FetchHandlerOptions} from '@atproto/xrpc'
 
 import {registerParaLexicons} from '#/lib/api/para-lexicons-registration'
 import {networkRetry} from '#/lib/async/retry'
@@ -405,9 +402,9 @@ export function sessionAccountToSession(
 export class Agent extends BaseAgent {
   constructor(
     proxyHeader: ProxyHeaderValue | null,
-    options: SessionManager | FetchHandler | FetchHandlerOptions,
+    ...options: ConstructorParameters<typeof BaseAgent>
   ) {
-    super(options)
+    super(...options)
     if (proxyHeader) {
       this.configureProxy(proxyHeader)
     }

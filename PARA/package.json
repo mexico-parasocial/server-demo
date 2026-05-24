@@ -3,14 +3,20 @@
   "version": "1.121.0",
   "private": true,
   "engines": {
-    "node": ">=24.15.0",
+    "node": ">=24.15.0"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.1.3",
+      "onFail": "warn"
+    },
     "runtime": {
       "name": "node",
       "version": "^24.15.0",
       "onFail": "download"
     }
   },
-  "packageManager": "pnpm@11.1.1+sha512.d1fdf5f73c617b64fa1a56a81c3c8dfe0e966e33a6010aa256b517ae77be21d93e05affc0de1a83b0e4f29d569f68b446ae8f068cd7247c0bb3df0fb4d7bdf9a",
   "expo": {
     "autolinking": {
       "android": {
@@ -90,8 +96,8 @@
     "icons:optimize": "svgo -f ./assets/icons"
   },
   "dependencies": {
-    "@atproto/api": "^0.19.19",
-    "@atproto/syntax": "^0.5.4",
+    "@atproto/api": "0.20.2",
+    "@atproto/syntax": "0.6.1",
     "@bitdrift/react-native": "^0.6.8",
     "@braintree/sanitize-url": "^6.0.2",
     "@bsky.app/alf": "^0.1.7",
@@ -120,7 +126,7 @@
     "@growthbook/growthbook": "^1.6.5",
     "@growthbook/growthbook-react": "^1.6.5",
     "@haileyok/bluesky-video": "0.3.2",
-    "@ipld/dag-cbor": "^9.2.0",
+    "@ipld/dag-cbor": "^9.2.7",
     "@lingui/core": "^5.9.2",
     "@lingui/react": "^5.9.2",
     "@miblanchard/react-native-slider": "^2.6.0",
@@ -170,7 +176,7 @@
     "expo-document-picker": "~14.0.8",
     "expo-file-system": "~19.0.21",
     "expo-font": "~14.0.11",
-    "expo-glass-effect": "^55.0.11",
+    "expo-glass-effect": "55.0.8",
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",
     "expo-image-manipulator": "~14.0.8",
@@ -210,7 +216,7 @@
     "lodash.shuffle": "^4.2.0",
     "lodash.throttle": "^4.1.1",
     "maplibre-gl": "^5.24.0",
-    "multiformats": "9.9.0",
+    "multiformats": "^13.4.2",
     "nanoid": "^5.0.5",
     "normalize-url": "^8.0.0",
     "psl": "^1.9.0",
@@ -284,8 +290,6 @@
     "babel-plugin-module-resolver": "^5.0.2",
     "babel-plugin-react-compiler": "^19.1.0-rc.3",
     "babel-preset-expo": "~54.0.10",
-    "eas-cli": "^18.13.0",
-    "eas-cli-local-build-plugin": "^18.12.3",
     "eslint": "^9.39.2",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-bsky-internal": "link:./eslint",
@@ -331,8 +335,19 @@
     "transform": {
       "\\.[jt]sx?$": "babel-jest"
     },
+    "moduleNameMapper": {
+      "^multiformats$": "<rootDir>/node_modules/multiformats/dist/src/index.js",
+      "^multiformats/cid$": "<rootDir>/node_modules/multiformats/dist/src/cid.js",
+      "^multiformats/bases/base32$": "<rootDir>/node_modules/multiformats/dist/src/bases/base32.js",
+      "^multiformats/hashes/digest$": "<rootDir>/node_modules/multiformats/dist/src/hashes/digest.js",
+      "^multiformats/hashes/sha2$": "<rootDir>/node_modules/multiformats/dist/src/hashes/sha2.js",
+      "^uint8arrays/from-string$": "<rootDir>/node_modules/uint8arrays/dist/src/from-string.js",
+      "^uint8arrays/to-string$": "<rootDir>/node_modules/uint8arrays/dist/src/to-string.js",
+      "^unicode-segmenter/grapheme$": "<rootDir>/node_modules/unicode-segmenter/grapheme.cjs",
+      "^await-lock$": "<rootDir>/node_modules/await-lock/build/AwaitLock.js"
+    },
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|@discord|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|nanoid|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|normalize-url|react-native-svg|@sentry/.*|sentry-expo|bcp-47-match)"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|@discord|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|nanoid|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|normalize-url|react-native-svg|@sentry/.*|sentry-expo|bcp-47-match|@atproto/.*|multiformats|uint8arrays|@ipld/.*|cborg|await-lock)"
     ],
     "modulePathIgnorePatterns": [
       "__tests__/.*/__mocks__",

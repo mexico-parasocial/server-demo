@@ -1,6 +1,22 @@
 {
   "name": "@atproto/api",
-  "version": "0.20.2",
+  "version": "0.20.6What changed:
+/v1/sessions/start no longer creates a real M8 session when OAuth is required. It now creates only a short-lived OAuth login attempt; sessions/tokens are issued only after a valid OAuth callback.
+Production dev-token bootstrap is now guarded by assertProductionFeatureSafety(), so GrowthBook overrides cannot force-enable demo/dev auth paths in production without explicit BREAK_GLASS_DEMO_PATHS=enabled.
+Added token issuance enforcement: tokens require an authenticated active session.
+Refresh tokens now rotate; reused refresh tokens are rejected and audited.
+Added OAuth attempt persistence in oauth_login_attempts.
+Added issuer revoked-key handling via IDENTITY_ISSUER_REVOKED_KEY_IDS.
+/v1/issuers now exposes current/previous/revoked/expired key status metadata.
+Credential issuance ledger entries now include credentialId, issuerDid, and issuerKeyId.
+Added npm run keys:generate and issuer-key-operations.md for generation, planned rotation, compromised-key handling, and audit expectations.
+Verification:
+tsc --noEmit passed.
+OpenAPI JSON parse passed.
+Full unit suite passed: 25/25.
+Full integration suite passed: 41/41.
+node ace build passed.
+git diff --check passed.",
   "license": "MIT",
   "description": "Client library for atproto and Bluesky",
   "keywords": [

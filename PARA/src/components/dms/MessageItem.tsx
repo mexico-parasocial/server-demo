@@ -76,7 +76,6 @@ function isWithinClusterBoundary({
   direction: 'prev' | 'next'
 }): boolean {
   if (!isFromSameSender) return true
-  if (isPending && adjacentMessage) return false
   if (ChatBskyConvoDefs.isMessageView(adjacentMessage)) {
     const thisDate = new Date(currentSentAt)
     const adjDate = new Date(adjacentMessage.sentAt)
@@ -84,8 +83,11 @@ function isWithinClusterBoundary({
       direction === 'next'
         ? adjDate.getTime() - thisDate.getTime()
         : thisDate.getTime() - adjDate.getTime()
-    return diff > CLUSTERED_MESSAGE_THRESHOLD_MS
-  }
+    const isOutsideThreshold = diff > CLUSTERED_MESSAGE_THRESHOLD_MS
+    // For pending messages, still check the time threshold
+    if (isPending) return isOutsideThreshold
+    return isOutsideThreshold
+    }
   return true
 }
 
@@ -433,7 +435,11 @@ let MessageItem = ({
           </Animated.View>
         )}
       </LayoutAnimationConfig>
-      <View style={[messageInset, isFirstInCluster && a.mt_md]}>
+      <View
+        style={[
+          messageInset,
+          isFirstInCluster ? a.mt_md : {marginTop: CLUSTERED_MESSAGE_GAP},
+        ]}>
         <View style={[a.relative]}>
           {showAvatar ? (
             <View
@@ -486,9 +492,7 @@ let MessageItem = ({
                           a.py_sm,
                           a.px_md,
                           {
-                            marginTop: isFirstInCluster
-                              ? 0
-                              : CLUSTERED_MESSAGE_GAP,
+                        marginTop: hasEmbedAndText ? CLUSTERED_MESSAGE_GAP : 0,
                             backgroundColor: isFromSelf
                               ? isPending
                                 ? pendingColor
@@ -529,6 +533,7 @@ let MessageItem = ({
                 <MessageItemEmbed
                   embed={message.embed}
                   isFromSelf={isFromSelf}
+                  isGroupChat={isGroupChat}
                   squaredBottomCorner={squaredBottomCorner}
                   squaredTopCorner={squaredTopCorner || hasEmbedAndText}
                 />

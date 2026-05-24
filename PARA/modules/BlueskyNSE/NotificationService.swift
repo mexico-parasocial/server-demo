@@ -2,7 +2,7 @@ import UserNotifications
 import UIKit
 import Intents
 
-let APP_GROUP = "group.com.parasocial.app"
+let APP_GROUP = "group.app.bsky"
 typealias ContentHandler = (UNNotificationContent) -> Void
 
 // This extension allows us to do some processing of the received notification
@@ -44,11 +44,26 @@ class NotificationService: UNNotificationServiceExtension {
 
     if reason == "chat-message" || reason == "chat-reaction" {
       mutateWithChatMessage(bestAttempt)
+      // Only apply the title->body swap for chat-message. For chat-reaction,
+      // `messageKind` refers to the reacted-to message, so we'd clobber the
+      // descriptive reaction body with the title for reactions on system
+      // messages.
+      if reason == "chat-message" {
+        mutateChatMessageBody(bestAttempt, userInfo: request.content.userInfo)
+      }
+      mutateWithGroupSubtitle(bestAttempt, userInfo: request.content.userInfo)
       let finalContent = createCommunicationNotification(
         from: bestAttempt,
         userInfo: request.content.userInfo
       )
       contentHandler(finalContent)
+    } else if reason == "chat-added-to-group"
+                || reason == "chat-removed-from-group"
+                || reason == "chat-join-request-rejected" {
+      mutateWithChatMessage(bestAttempt)
+      mutateWithGroupSubtitle(bestAttempt, userInfo: request.content.userInfo)
+      mutateWithBadge(bestAttempt)
+      contentHandler(bestAttempt)
     } else {
       mutateWithBadge(bestAttempt)
       contentHandler(bestAttempt)
@@ -87,16 +102,46 @@ class NotificationService: UNNotificationServiceExtension {
       customIdentifier: nil
     )
 
+    var speakableGroupName: INSpeakableString? = nil
+    if userInfo["convoKind"] as? String == "group",
+       let groupName = userInfo["groupName"] as? String,
+       !groupName.isEmpty {
+      speakableGroupName = INSpeakableString(spokenPhrase: groupName)
+    }
+
     let intent = INSendMessageIntent(
       recipients: nil,
       outgoingMessageType: .outgoingMessageText,
       content: content.body,
-      speakableGroupName: nil,
+      speakableGroupName: speakableGroupName,
       conversationIdentifier: convoId,
       serviceName: nil,
       sender: sender,
       attachments: nil
     )
+
+    // The push payload omits the full recipient list for group convos. Without
+    // any signal of multiple recipients, iOS classifies the notification as
+    // `MessagingDirect` and ignores `speakableGroupName`. Setting
+    // `recipientCount` on the donation metadata is Apple's documented escape
+    // hatch for this case, and overrides the (zero-length) recipients array.
+    if userInfo["convoKind"] as? String == "group",
+       let groupMemberCount = userInfo["groupMemberCount"] as? Int,
+       groupMemberCount > 0 {
+      let metadata = INSendMessageIntentDonationMetadata()
+      metadata.recipientCount = groupMemberCount
+      intent.donationMetadata = metadata
+    }
+
+    // For group convos, attach the composite group avatar (rendered by the
+    // ogcard service) to the `speakableGroupName` parameter so iOS shows it
+    // alongside the sender on the Communication Notification.
+    // Disabled: the composite avatar renders poorly at notification size.
+    // if userInfo["convoKind"] as? String == "group",
+    //    let convoAvatarUrlString = userInfo["convoAvatarUrl"] as? String,
+    //    let groupImage = downloadAvatarImage(from: convoAvatarUrlString) {
+    //   intent.setImage(groupImage, forParameterNamed: \.speakableGroupName)
+    // }
 
     let interaction = INInteraction(intent: intent, response: nil)
     interaction.direction = .incoming
@@ -155,6 +200,38 @@ class NotificationService: UNNotificationServiceExtension {
     if NSEUtil.shared.prefs?.bool(forKey: "playSoundChat") == true {
       mutateWithDmSound(content)
     }
+  }
+
+  // For group convos, surface the group name as the notification subtitle.
+  // The sender's display name is shown as the title (overridden by
+  // `INSendMessageIntent` for chat-message/chat-reaction).
+  func mutateWithGroupSubtitle(
+    _ content: UNMutableNotificationContent,
+    userInfo: [AnyHashable: Any]
+  ) {
+    guard userInfo["convoKind"] as? String == "group",
+          let groupName = userInfo["groupName"] as? String,
+          !groupName.isEmpty else {
+      return
+    }
+    content.subtitle = groupName
+  }
+
+  // System messages (`add_member`, `convo_locked`, `edit_group`, etc.) are
+  // delivered through `chat-message` but have a server-rendered description
+  // in `title`. iOS overrides the title with the sender name once we apply
+  // `INSendMessageIntent`, so we move the title text into the body before
+  // building the intent.
+  func mutateChatMessageBody(
+    _ content: UNMutableNotificationContent,
+    userInfo: [AnyHashable: Any]
+  ) {
+    guard let messageKind = userInfo["messageKind"] as? String,
+          messageKind != "message",
+          !content.title.isEmpty else {
+      return
+    }
+    content.body = content.title
   }
 
   func mutateWithDefaultSound(_ content: UNMutableNotificationContent) {

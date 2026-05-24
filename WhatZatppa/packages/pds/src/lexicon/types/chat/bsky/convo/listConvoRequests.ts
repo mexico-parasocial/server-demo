@@ -26,7 +26,7 @@ export interface OutputSchema {
   cursor?: string
   requests: (
     | $Typed<ChatBskyConvoDefs.ConvoView>
-    | $Typed<ChatBskyGroupDefs.JoinRequestView>
+    | $Typed<ChatBskyGroupDefs.JoinRequestConvoView>
     | { $type: string }
   )[]
 }

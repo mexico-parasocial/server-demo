@@ -157,7 +157,6 @@ function Inner({convoId}: {convoId: string}) {
           setHasScrolled={setHasScrolled}
           isActive={isConvoActive(convoState)}
           isDisabled={convoState.status === ConvoStatus.Disabled}
-          hasMessages={isConvoActive(convoState) && convoState.items.length > 0}
         />
         {!readyToShow && (
           <View
@@ -186,14 +185,12 @@ function InnerReady({
   convo,
   isActive,
   isDisabled,
-  hasMessages,
 }: {
   hasScrolled: boolean
   setHasScrolled: React.Dispatch<React.SetStateAction<boolean>>
   convo: ConvoWithDetails | null
   isActive: boolean
   isDisabled: boolean
-  hasMessages: boolean
 }) {
   const navigation = useNavigation<NavigationProp>()
 
@@ -257,7 +254,6 @@ function InnerReady({
       <MessagesListBlockedFooter
         recipient={primaryMember}
         convoId={convo.view.id}
-        hasMessages={hasMessages}
         moderation={primaryMemberModeration}
       />
     )

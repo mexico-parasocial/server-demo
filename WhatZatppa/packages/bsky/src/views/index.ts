@@ -22,6 +22,7 @@ import { Label } from '../hydration/label.js'
 import { RecordInfo, parseString } from '../hydration/util.js'
 import { ImageUriBuilder } from '../image/uri.js'
 import { app, site } from '../lexicons/index.js'
+import { viewsLogger } from '../logger.js'
 import { Notification } from '../proto/bsky_pb.js'
 import {
   postUriToPostgateUri,
@@ -121,6 +122,10 @@ import {
   SiteStandardPublication,
   siteStandardRecordKey,
 } from '../hydration/external.js'
+import {
+  estimateReadingTimeMinutes,
+  validateStandardSiteForUrl,
+} from '../util/standard-site.js'
 import { VideoUriBuilder, parsePostgate, parseThreadGate } from './util.js'
 
 const notificationDeletedRecord =
@@ -2154,8 +2159,9 @@ export class Views {
     const { uri, title, description, thumb, associatedRefs } = embed.external
     const ssView =
       state && associatedRefs
-        ? this.externalEmbedFromStandardSite(associatedRefs, state)
+        ? this.externalEmbedFromStandardSite(associatedRefs, state, uri)
         : undefined
+
     return app.bsky.embed.external.view.$build({
       external: {
         title: ssView?.title ?? title,
@@ -2192,12 +2198,23 @@ export class Views {
   externalEmbedFromStandardSite(
     associatedRefs: ExternalEmbed['external']['associatedRefs'],
     state: HydrationState,
+    assumedUrl: string,
   ): Partial<Omit<ExternalEmbedView['external'], 'uri'>> | undefined {
     const { document, publication } = lookupAssociatedSiteStandardRecords(
       associatedRefs,
       state,
     )
     if (!document && !publication) return undefined
+    if (!validateStandardSiteForUrl(document, publication, assumedUrl)) {
+      viewsLogger.warn(
+        {
+          documentUri: document?.ref.uri,
+          publicationUri: publication?.ref.uri,
+        },
+        'site.standard URL validation failed',
+      )
+      return undefined
+    }
 
     const overlay: Partial<Omit<ExternalEmbedView['external'], 'uri'>> = {}
 
@@ -2244,6 +2261,16 @@ export class Views {
       overlay.source = this.externalEmbedSource(publication)
     }
 
+    // Profiles of the owners of the records backing this embed. Hydrator
+    // covers these DIDs alongside post-author profiles, so misses here
+    // only happen when an actor is unavailable (suspended, deleted, etc.)
+    // — drop those rather than emit `undefined` slots.
+    const associatedProfiles = mapDefined(
+      [document?.ref.uri, publication?.ref.uri],
+      (uri) => (uri ? this.profileBasic(uriToDid(uri), state) : undefined),
+    ) as ProfileViewBasic[]
+    if (associatedProfiles.length)
+      overlay.associatedProfiles = associatedProfiles
     return overlay
   }
 
@@ -2641,19 +2668,6 @@ const lookupAssociatedSiteStandardRecords = (
   }
   return { document, publication }
 }
-
-/**
- * Estimate reading time in minutes from a plaintext document body. Returns
- * `undefined` when the input has no countable words. Uses a coarse 200 wpm
- * heuristic; swap in a more accurate library here if needed (e.g.
- * `reading-time`).
- */
-const estimateReadingTimeMinutes = (text: string): number | undefined => {
-  const words = text.trim().split(/\s+/).filter(Boolean).length
-  if (!words) return undefined
-  return Math.max(1, Math.ceil(words / WORDS_PER_MINUTE))
-}
-const WORDS_PER_MINUTE = 200
 
 const buildExternalEmbedSourceTheme = (
   theme: SiteStandardPublicationRecord['basicTheme'],

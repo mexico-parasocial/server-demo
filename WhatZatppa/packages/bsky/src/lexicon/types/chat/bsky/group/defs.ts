@@ -111,3 +111,24 @@ export function isJoinRequestView<V>(v: V) {
 export function validateJoinRequestView<V>(v: V) {
   return validate<JoinRequestView & V>(v, id, hashJoinRequestView)
 }
+
+/** A join request from the perspective of the requester, including enough group context to render the request in a list (e.g. group name, owner, member count). */
+export interface JoinRequestConvoView {
+  $type?: 'chat.bsky.group.defs#joinRequestConvoView'
+  convoId: string
+  name: string
+  owner: ChatBskyActorDefs.ProfileViewBasic
+  memberCount: number
+  memberLimit: number
+  requestedAt: string
+}
+
+const hashJoinRequestConvoView = 'joinRequestConvoView'
+
+export function isJoinRequestConvoView<V>(v: V) {
+  return is$typed(v, id, hashJoinRequestConvoView)
+}
+
+export function validateJoinRequestConvoView<V>(v: V) {
+  return validate<JoinRequestConvoView & V>(v, id, hashJoinRequestConvoView)
+}

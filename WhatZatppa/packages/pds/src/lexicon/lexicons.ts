@@ -10569,6 +10569,11 @@ export const schemaDict = {
             type: 'string',
             format: 'datetime',
           },
+          joinRequestCount: {
+            type: 'integer',
+            description:
+              'The total number of pending join requests for the group conversation. Only present for the owner. Capped at 21.',
+          },
           joinLink: {
             type: 'ref',
             ref: 'lex:chat.bsky.group.defs#joinLinkView',
@@ -11506,7 +11511,7 @@ export const schemaDict = {
       main: {
         type: 'query',
         description:
-          '[NOTE: This is under active development and should be considered unstable while this note is here]. Returns a page of incoming conversation requests for the user. Direct convo requests are returned as convoView; group join requests are returned as joinRequestView.',
+          '[NOTE: This is under active development and should be considered unstable while this note is here]. Returns a page of incoming conversation requests for the user. Direct convo requests are returned as convoView; group join requests mada by the user are returned as joinRequestConvoView.',
         parameters: {
           type: 'params',
           properties: {
@@ -11536,7 +11541,7 @@ export const schemaDict = {
                   type: 'union',
                   refs: [
                     'lex:chat.bsky.convo.defs#convoView',
-                    'lex:chat.bsky.group.defs#joinRequestView',
+                    'lex:chat.bsky.group.defs#joinRequestConvoView',
                   ],
                 },
               },
@@ -12412,6 +12417,41 @@ export const schemaDict = {
           requestedBy: {
             type: 'ref',
             ref: 'lex:chat.bsky.actor.defs#profileViewBasic',
+          },
+          requestedAt: {
+            type: 'string',
+            format: 'datetime',
+          },
+        },
+      },
+      joinRequestConvoView: {
+        description:
+          'A join request from the perspective of the requester, including enough group context to render the request in a list (e.g. group name, owner, member count).',
+        type: 'object',
+        required: [
+          'convoId',
+          'name',
+          'owner',
+          'memberCount',
+          'memberLimit',
+          'requestedAt',
+        ],
+        properties: {
+          convoId: {
+            type: 'string',
+          },
+          name: {
+            type: 'string',
+          },
+          owner: {
+            type: 'ref',
+            ref: 'lex:chat.bsky.actor.defs#profileViewBasic',
+          },
+          memberCount: {
+            type: 'integer',
+          },
+          memberLimit: {
+            type: 'integer',
           },
           requestedAt: {
             type: 'string',
