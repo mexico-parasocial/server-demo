@@ -10,6 +10,8 @@ import { RecordProcessor } from '../processor.js'
 interface OpenQuestionVoteRecord {
   subject: string
   value: number
+  voteNullifier?: string
+  eligibilityProofRef?: string
   createdAt: string
 }
 
@@ -36,30 +38,51 @@ const insertFn = async (
     creator: uri.host,
     subject: obj.subject,
     value: obj.value,
+    voteNullifier: normalizeOpaqueProofField(obj.voteNullifier, 128),
+    eligibilityProofRef: normalizeOpaqueProofField(obj.eligibilityProofRef, 512),
     createdAt: normalizeDatetimeAlways(obj.createdAt),
     indexedAt: timestamp,
   }
 
-  const inserted = await db
-    .insertInto('para_open_question_vote')
-    .values(row)
-    .onConflict((oc) =>
-      oc.columns(['creator', 'subject']).doUpdateSet({
-        uri: row.uri,
-        cid: row.cid,
-        value: row.value,
-        createdAt: row.createdAt,
-        indexedAt: row.indexedAt,
-      }),
-    )
-    .returningAll()
-    .executeTakeFirst()
+  const existing = row.voteNullifier
+    ? await db
+        .selectFrom('para_open_question_vote')
+        .where('subject', '=', row.subject)
+        .where('voteNullifier', '=', row.voteNullifier)
+        .select(['uri'])
+        .executeTakeFirst()
+    : await db
+        .selectFrom('para_open_question_vote')
+        .where('creator', '=', row.creator)
+        .where('subject', '=', row.subject)
+        .select(['uri'])
+        .executeTakeFirst()
+
+  const inserted = existing
+    ? await db
+        .updateTable('para_open_question_vote')
+        .set(row)
+        .where('uri', '=', existing.uri)
+        .returningAll()
+        .executeTakeFirst()
+    : await db
+        .insertInto('para_open_question_vote')
+        .values(row)
+        .returningAll()
+        .executeTakeFirst()
 
   return inserted ?? null
 }
 
 const findDuplicate = async (): Promise<AtUri | null> => {
   return null
+}
+
+const normalizeOpaqueProofField = (value: unknown, maxLength: number) => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (!trimmed || trimmed.length > maxLength) return null
+  return trimmed
 }
 
 const notifsForInsert = () => []

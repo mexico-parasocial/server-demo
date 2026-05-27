@@ -20316,6 +20316,18 @@ export const schemaDict = {
               description:
                 'Vote value: -1 = downvote, 0 = none (removal), 1 = upvote.',
             },
+            voteNullifier: {
+              type: 'string',
+              maxLength: 128,
+              description:
+                'Privacy-preserving one-person-one-vote nullifier for this open question reply, issued by m8.',
+            },
+            eligibilityProofRef: {
+              type: 'string',
+              maxLength: 512,
+              description:
+                'Opaque reference to the m8 eligibility/nullifier proof used to cast this vote.',
+            },
             createdAt: {
               type: 'string',
               format: 'datetime',
@@ -21948,6 +21960,18 @@ export const schemaDict = {
               type: 'string',
               enum: ['agree', 'disagree', 'pass'],
             },
+            voteNullifier: {
+              type: 'string',
+              maxLength: 128,
+              description:
+                'Privacy-preserving one-person-one-vote nullifier for this deliberation statement, issued by m8.',
+            },
+            eligibilityProofRef: {
+              type: 'string',
+              maxLength: 512,
+              description:
+                'Opaque reference to the m8 eligibility/nullifier proof used to cast this vote.',
+            },
             createdAt: {
               type: 'string',
               format: 'datetime',
@@ -23174,6 +23198,18 @@ export const schemaDict = {
               type: 'string',
               description:
                 'Computed effective weight after QV sqrt and correlation discounting. Stored for audit trail.',
+            },
+            voteNullifier: {
+              type: 'string',
+              maxLength: 128,
+              description:
+                'Privacy-preserving one-person-one-vote nullifier for this proposal intensity declaration, issued by m8.',
+            },
+            eligibilityProofRef: {
+              type: 'string',
+              maxLength: 512,
+              description:
+                'Opaque reference to the m8 eligibility/nullifier proof used to cast this intensity declaration.',
             },
             createdAt: {
               type: 'string',
@@ -24949,6 +24985,18 @@ export const schemaDict = {
               description:
                 'Base political signal: -3 strong against … +3 strong for. 0 = abstain.',
             },
+            voteNullifier: {
+              type: 'string',
+              maxLength: 128,
+              description:
+                'Privacy-preserving one-person-one-vote nullifier for this proposal, issued by m8.',
+            },
+            eligibilityProofRef: {
+              type: 'string',
+              maxLength: 512,
+              description:
+                'Opaque reference to the m8 eligibility/nullifier proof used to cast this vote.',
+            },
             createdAt: {
               type: 'string',
               format: 'datetime',
@@ -26700,6 +26748,18 @@ export const schemaDict = {
               maximum: 1,
               description: 'Vote direction: -1 oppose, 0 neutral, 1 support',
             },
+            voteNullifier: {
+              type: 'string',
+              maxLength: 128,
+              description:
+                'Privacy-preserving one-person-one-vote nullifier for this RAQ axis, issued by m8.',
+            },
+            eligibilityProofRef: {
+              type: 'string',
+              maxLength: 512,
+              description:
+                'Opaque reference to the m8 eligibility/nullifier proof used to cast this vote.',
+            },
             createdAt: {
               type: 'string',
               format: 'datetime',
@@ -27232,6 +27292,18 @@ export const schemaDict = {
               minimum: -1,
               maximum: 1,
               description: 'Vote direction: -1 downvote, 1 upvote',
+            },
+            voteNullifier: {
+              type: 'string',
+              maxLength: 128,
+              description:
+                'Privacy-preserving one-person-one-vote nullifier for this RAQ proposal, issued by m8.',
+            },
+            eligibilityProofRef: {
+              type: 'string',
+              maxLength: 512,
+              description:
+                'Opaque reference to the m8 eligibility/nullifier proof used to cast this vote.',
             },
             createdAt: {
               type: 'string',

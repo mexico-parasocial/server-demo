@@ -10,6 +10,8 @@ import { RecordProcessor } from '../processor.js'
 interface ProposalVoteRecord {
   subject: string
   value: number
+  voteNullifier?: string
+  eligibilityProofRef?: string
   createdAt: string
 }
 
@@ -27,28 +29,44 @@ const insertFn = async (
   obj: ProposalVoteRecord,
   timestamp: string,
 ): Promise<IndexedProposalVote | null> => {
-  const inserted = await db
-    .insertInto('raq_proposal_vote')
-    .values({
-      uri: uri.toString(),
-      cid: cid.toString(),
-      creator: uri.host,
-      subject: obj.subject,
-      value: obj.value,
-      createdAt: normalizeDatetimeAlways(obj.createdAt),
-      indexedAt: timestamp,
-    })
-    .onConflict((oc) =>
-      oc.doUpdateSet({
-        cid: cid.toString(),
-        subject: obj.subject,
-        value: obj.value,
-        createdAt: normalizeDatetimeAlways(obj.createdAt),
-        indexedAt: timestamp,
-      }),
-    )
-    .returningAll()
-    .executeTakeFirst()
+  const record = {
+    uri: uri.toString(),
+    cid: cid.toString(),
+    creator: uri.host,
+    subject: obj.subject,
+    value: obj.value,
+    voteNullifier: normalizeOpaqueProofField(obj.voteNullifier, 128),
+    eligibilityProofRef: normalizeOpaqueProofField(obj.eligibilityProofRef, 512),
+    createdAt: normalizeDatetimeAlways(obj.createdAt),
+    indexedAt: timestamp,
+  }
+
+  const existing = record.voteNullifier
+    ? await db
+        .selectFrom('raq_proposal_vote')
+        .where('subject', '=', record.subject)
+        .where('voteNullifier', '=', record.voteNullifier)
+        .select(['uri'])
+        .executeTakeFirst()
+    : await db
+        .selectFrom('raq_proposal_vote')
+        .where('creator', '=', record.creator)
+        .where('subject', '=', record.subject)
+        .select(['uri'])
+        .executeTakeFirst()
+
+  const inserted = existing
+    ? await db
+        .updateTable('raq_proposal_vote')
+        .set(record)
+        .where('uri', '=', existing.uri)
+        .returningAll()
+        .executeTakeFirst()
+    : await db
+        .insertInto('raq_proposal_vote')
+        .values(record)
+        .returningAll()
+        .executeTakeFirst()
 
   if (!inserted) return null
   return { record: inserted }
@@ -56,6 +74,13 @@ const insertFn = async (
 
 const findDuplicate = async (): Promise<AtUri | null> => {
   return null
+}
+
+const normalizeOpaqueProofField = (value: unknown, maxLength: number) => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (!trimmed || trimmed.length > maxLength) return null
+  return trimmed
 }
 
 const deleteFn = async (

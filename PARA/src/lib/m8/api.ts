@@ -230,7 +230,7 @@ export async function postIdentityVerify(requestId: string, presentation: M8Wall
 
 export async function postCivicVoteProof(payload: {
   subjectUri: string
-  subjectType: 'cabildeo' | 'policy' | 'matter' | 'governance'
+  subjectType: M8CivicVoteProof['subjectType']
   aliasDid?: string
 }): Promise<M8CivicVoteProof> {
   const res = await m8Fetch('/identity/civic-vote-proof', {

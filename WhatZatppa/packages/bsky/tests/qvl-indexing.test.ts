@@ -1,3 +1,8 @@
+import AtpAgent from '@atproto/api'
+import { TID, cidForCbor } from '@atproto/common'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { WriteOpAction } from '@atproto/repo'
+import { AtUri } from '@atproto/syntax'
 import {
   SeedClient,
   TestNetwork,
@@ -14,6 +19,7 @@ const maybeDescribe = process.env.DB_POSTGRES_URL ? describe : describe.skip
 
 maybeDescribe('QV-LD indexing', () => {
   let network: TestNetwork
+  let agent: AtpAgent
   let sc: SeedClient
   let db: any
 
@@ -23,7 +29,7 @@ maybeDescribe('QV-LD indexing', () => {
     })
     agent = network.bsky.getClient()
     sc = network.getSeedClient()
-    db = network.bsky.ctx.db
+    db = network.bsky.db
     await usersSeed(sc)
     await network.processAll()
   })
@@ -90,6 +96,42 @@ maybeDescribe('QV-LD indexing', () => {
     expect(rows[0].uri).toBe(voteRef2.uri) // uri updated to latest
   })
 
+  it('deduplicates community votes by m8 vote nullifier', async () => {
+    const proposal = 'at://did:example:proposal/nullifier-vote'
+    const community = 'at://did:example:community/nullifier-vote'
+    const voteNullifier = 'm8-qvl-vote-shared-person'
+
+    await writeParaFixture(network, async () => {
+      return createQvlVoteRecord(sc, sc.dids.alice, {
+        proposal,
+        community,
+        signal: 1,
+        voteNullifier,
+        eligibilityProofRef: 'm8:civic-vote-proof:qvl-vote-alice',
+      })
+    })
+    await writeParaFixture(network, async () => {
+      return createQvlVoteRecord(sc, sc.dids.bob, {
+        proposal,
+        community,
+        signal: -3,
+        voteNullifier,
+        eligibilityProofRef: 'm8:civic-vote-proof:qvl-vote-bob',
+      })
+    })
+
+    const rows = await db.db
+      .selectFrom('para_qvld_vote')
+      .selectAll()
+      .where('proposal', '=', proposal)
+      .where('voteNullifier', '=', voteNullifier)
+      .execute()
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0].creator).toBe(sc.dids.bob)
+    expect(rows[0].signal).toBe(-3)
+  })
+
   it('indexes an intensity record into para_qvld_intensity', async () => {
     const proposal = 'at://did:example:proposal/intensity'
     const intensityRef = await writeParaFixture(network, async () => {
@@ -120,6 +162,45 @@ maybeDescribe('QV-LD indexing', () => {
     expect(row?.delegatedFrom).toEqual([sc.dids.alice])
     expect(row?.delegationDepth).toBe(1)
     expect(row?.effectiveWeight).toBe('4.0')
+  })
+
+  it('deduplicates community intensity declarations by m8 vote nullifier', async () => {
+    const proposal = 'at://did:example:proposal/nullifier-intensity'
+    const voteNullifier = 'm8-qvl-intensity-shared-person'
+
+    await writeParaFixture(network, async () => {
+      return createQvlIntensityRecord(sc, sc.dids.alice, {
+        proposal,
+        voter: sc.dids.alice,
+        signal: 1,
+        units: 1,
+        voteNullifier,
+        eligibilityProofRef: 'm8:civic-vote-proof:qvl-intensity-alice',
+      })
+    })
+    await writeParaFixture(network, async () => {
+      return createQvlIntensityRecord(sc, sc.dids.bob, {
+        proposal,
+        voter: sc.dids.bob,
+        signal: 1,
+        units: 16,
+        creditsSpent: 16,
+        voteNullifier,
+        eligibilityProofRef: 'm8:civic-vote-proof:qvl-intensity-bob',
+      })
+    })
+
+    const rows = await db.db
+      .selectFrom('para_qvld_intensity')
+      .selectAll()
+      .where('proposal', '=', proposal)
+      .where('voteNullifier', '=', voteNullifier)
+      .execute()
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0].creator).toBe(sc.dids.bob)
+    expect(rows[0].units).toBe(16)
+    expect(rows[0].creditsSpent).toBe(16)
   })
 
   it('indexes a delegation record into para_qvld_delegation', async () => {
@@ -232,6 +313,62 @@ maybeDescribe('QV-LD indexing', () => {
 
     expect(rows).toHaveLength(1)
     expect(rows[0].vote).toBe('disagree')
+  })
+
+  it('deduplicates deliberation votes by m8 vote nullifier', async () => {
+    const deliberation = `at://${sc.dids.alice}/com.para.community.deliberation/nullifier`
+    const voteNullifier = 'm8-qvl-deliberation-shared-person'
+
+    await indexDeliberationVote(sc.dids.alice, {
+      $type: 'com.para.community.deliberationVote',
+      deliberation,
+      voter: sc.dids.alice,
+      direction: 'agree',
+      voteNullifier,
+      eligibilityProofRef: 'm8:civic-vote-proof:qvl-delib-alice',
+      createdAt: new Date().toISOString(),
+    })
+    await indexDeliberationVote(sc.dids.bob, {
+      $type: 'com.para.community.deliberationVote',
+      deliberation,
+      voter: sc.dids.bob,
+      direction: 'pass',
+      voteNullifier,
+      eligibilityProofRef: 'm8:civic-vote-proof:qvl-delib-bob',
+      createdAt: new Date().toISOString(),
+    })
+
+    async function indexDeliberationVote(
+      did: string,
+      record: {
+        $type: 'com.para.community.deliberationVote'
+        deliberation: string
+        voter: string
+        direction: 'agree' | 'disagree' | 'pass'
+        voteNullifier: string
+        eligibilityProofRef: string
+        createdAt: string
+      },
+    ) {
+      await network.bsky.sub.indexingSvc.indexRecord(
+        AtUri.make(did, 'com.para.community.deliberationVote', TID.nextStr()),
+        await cidForCbor(record),
+        record,
+        WriteOpAction.Create,
+        new Date().toISOString(),
+      )
+    }
+
+    const rows = await db.db
+      .selectFrom('para_qvld_deliberation_vote')
+      .selectAll()
+      .where('statement', '=', deliberation)
+      .where('voteNullifier', '=', voteNullifier)
+      .execute()
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0].creator).toBe(sc.dids.bob)
+    expect(rows[0].vote).toBe('pass')
   })
 
   it('unindexes actor removes all QV-LD records', async () => {

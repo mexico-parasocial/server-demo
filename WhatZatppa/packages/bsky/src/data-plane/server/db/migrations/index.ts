@@ -93,3 +93,4 @@ export * as _20260518T190519000Z from './20260518T190519000Z-add-role-assignment
 export * as _20260518T195000000Z from './20260518T195000000Z-add-governance-mode-to-board.js'
 export * as _20260518T200000000Z from './20260518T200000000Z-add-para-community-shared-content.js'
 export * as _20260526T120000000Z from './20260526T120000000Z-add-civic-vote-nullifiers.js'
+export * as _20260527T120000000Z from './20260527T120000000Z-add-multi-identity-vote-nullifiers.js'

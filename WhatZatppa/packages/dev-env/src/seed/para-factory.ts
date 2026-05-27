@@ -598,6 +598,8 @@ export const createQvlVoteRecord = async (
     proposal: string
     community: string
     signal: number
+    voteNullifier?: string
+    eligibilityProofRef?: string
   },
 ): Promise<ParaStrongRef> => {
   const { data } = await sc.agent.com.atproto.repo.createRecord(
@@ -610,6 +612,8 @@ export const createQvlVoteRecord = async (
         community: opts.community,
         voter: by,
         signal: opts.signal,
+        voteNullifier: opts.voteNullifier,
+        eligibilityProofRef: opts.eligibilityProofRef,
         createdAt: new Date().toISOString(),
       },
     },
@@ -633,6 +637,8 @@ export const createQvlIntensityRecord = async (
     delegatedFrom?: string[]
     delegationDepth?: number
     effectiveWeight?: string
+    voteNullifier?: string
+    eligibilityProofRef?: string
   },
 ): Promise<ParaStrongRef> => {
   const { data } = await sc.agent.com.atproto.repo.createRecord(
@@ -649,6 +655,8 @@ export const createQvlIntensityRecord = async (
         delegatedFrom: opts.delegatedFrom,
         delegationDepth: opts.delegationDepth ?? 0,
         effectiveWeight: opts.effectiveWeight,
+        voteNullifier: opts.voteNullifier,
+        eligibilityProofRef: opts.eligibilityProofRef,
         createdAt: new Date().toISOString(),
       },
     },
@@ -739,6 +747,8 @@ export const createQvlDeliberationVoteRecord = async (
     deliberation: string
     voter: string
     direction: 'agree' | 'disagree' | 'pass'
+    voteNullifier?: string
+    eligibilityProofRef?: string
   },
 ): Promise<ParaStrongRef> => {
   const { data } = await sc.agent.com.atproto.repo.createRecord(
@@ -750,6 +760,8 @@ export const createQvlDeliberationVoteRecord = async (
         deliberation: opts.deliberation,
         voter: opts.voter,
         direction: opts.direction,
+        voteNullifier: opts.voteNullifier,
+        eligibilityProofRef: opts.eligibilityProofRef,
         createdAt: new Date().toISOString(),
       },
     },
@@ -829,6 +841,8 @@ export const createRaqAxisVoteRecord = async (
   opts: {
     axisId: string
     value?: number
+    voteNullifier?: string
+    eligibilityProofRef?: string
   },
 ): Promise<ParaStrongRef> => {
   const { data } = await sc.agent.com.atproto.repo.createRecord(
@@ -839,6 +853,8 @@ export const createRaqAxisVoteRecord = async (
         $type: COM_PARA_RAQ_AXIS_VOTE,
         axisId: opts.axisId,
         value: opts.value ?? 1,
+        voteNullifier: opts.voteNullifier,
+        eligibilityProofRef: opts.eligibilityProofRef,
         createdAt: new Date().toISOString(),
       },
     },

@@ -99,6 +99,8 @@ export interface ParaOpenQuestionRecord {
 export interface ParaOpenQuestionVoteRecord {
   subject: string
   value: -1 | 0 | 1
+  voteNullifier?: string
+  eligibilityProofRef?: string
   createdAt: string
 }
 
@@ -563,6 +565,8 @@ export interface ParaRaqAssessmentRecord {
 export interface ParaRaqAxisVoteRecord {
   axisId: string
   value?: number
+  voteNullifier?: string
+  eligibilityProofRef?: string
   createdAt: string
 }
 
@@ -576,6 +580,8 @@ export interface ParaRaqProposalRecord {
 export interface ParaRaqProposalVoteRecord {
   subject: string
   value: number
+  voteNullifier?: string
+  eligibilityProofRef?: string
   createdAt: string
 }
 

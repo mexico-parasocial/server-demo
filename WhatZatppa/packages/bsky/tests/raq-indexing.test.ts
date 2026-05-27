@@ -1,4 +1,5 @@
 import AtpAgent from '@atproto/api'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
   SeedClient,
   TestNetwork,
@@ -23,7 +24,7 @@ maybeDescribe('RAQ indexing and queries', () => {
     })
     agent = network.bsky.getClient()
     sc = network.getSeedClient()
-    db = network.bsky.ctx.db
+    db = network.bsky.db
     await usersSeed(sc)
     await network.processAll()
   })
@@ -92,6 +93,37 @@ maybeDescribe('RAQ indexing and queries', () => {
     expect(row?.value).toBe(1)
   })
 
+  it('deduplicates RAQ axis votes by m8 vote nullifier', async () => {
+    const voteNullifier = 'm8-raq-axis-shared-person'
+    await writeParaFixture(network, async () => {
+      return createRaqAxisVoteRecord(sc, sc.dids.bob, {
+        axisId: 'housing-density',
+        value: 1,
+        voteNullifier,
+        eligibilityProofRef: 'm8:civic-vote-proof:axis-bob',
+      })
+    })
+    await writeParaFixture(network, async () => {
+      return createRaqAxisVoteRecord(sc, sc.dids.carol, {
+        axisId: 'housing-density',
+        value: -1,
+        voteNullifier,
+        eligibilityProofRef: 'm8:civic-vote-proof:axis-carol',
+      })
+    })
+
+    const rows = await db.db
+      .selectFrom('raq_axis_vote')
+      .selectAll()
+      .where('axisId', '=', 'housing-density')
+      .where('voteNullifier', '=', voteNullifier)
+      .execute()
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0].creator).toBe(sc.dids.carol)
+    expect(rows[0].value).toBe(-1)
+  })
+
   it('indexes a proposal record into raq_proposal', async () => {
     const proposalRef = await writeParaFixture(network, async () => {
       return createRaqProposalRecord(sc, sc.dids.carla, {
@@ -110,6 +142,61 @@ maybeDescribe('RAQ indexing and queries', () => {
     expect(row?.creator).toBe(sc.dids.carla)
     expect(row?.text).toBe('Should public transportation be free?')
     expect(row?.targetCommunity).toBe('jalisco')
+  })
+
+  it('deduplicates RAQ proposal votes by m8 vote nullifier', async () => {
+    const proposalRef = await writeParaFixture(network, async () => {
+      return createRaqProposalRecord(sc, sc.dids.alice, {
+        text: 'Should parks stay open late?',
+        targetCommunity: 'jalisco',
+      })
+    })
+    const voteNullifier = 'm8-raq-proposal-shared-person'
+    await writeParaFixture(network, async () => {
+      return sc.agent.com.atproto.repo.createRecord(
+        {
+          repo: sc.dids.bob,
+          collection: 'com.para.raq.proposalVote',
+          record: {
+            $type: 'com.para.raq.proposalVote',
+            subject: proposalRef.uri,
+            value: 1,
+            voteNullifier,
+            eligibilityProofRef: 'm8:civic-vote-proof:proposal-bob',
+            createdAt: new Date().toISOString(),
+          },
+        },
+        { encoding: 'application/json', headers: sc.getHeaders(sc.dids.bob) },
+      )
+    })
+    await writeParaFixture(network, async () => {
+      return sc.agent.com.atproto.repo.createRecord(
+        {
+          repo: sc.dids.carol,
+          collection: 'com.para.raq.proposalVote',
+          record: {
+            $type: 'com.para.raq.proposalVote',
+            subject: proposalRef.uri,
+            value: -1,
+            voteNullifier,
+            eligibilityProofRef: 'm8:civic-vote-proof:proposal-carol',
+            createdAt: new Date().toISOString(),
+          },
+        },
+        { encoding: 'application/json', headers: sc.getHeaders(sc.dids.carol) },
+      )
+    })
+
+    const rows = await db.db
+      .selectFrom('raq_proposal_vote')
+      .selectAll()
+      .where('subject', '=', proposalRef.uri)
+      .where('voteNullifier', '=', voteNullifier)
+      .execute()
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0].creator).toBe(sc.dids.carol)
+    expect(rows[0].value).toBe(-1)
   })
 
   it('returns user alignment via getUserAlignment', async () => {

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Selectable } from 'kysely'
+import { Selectable, sql } from 'kysely'
 import { CID } from 'multiformats/cid'
 import { AtUri, normalizeDatetimeAlways } from '@atproto/syntax'
 import { BackgroundQueue } from '../../background.js'
@@ -11,6 +11,8 @@ interface DeliberationVoteRecord {
   deliberation: string
   voter: string
   direction: string
+  voteNullifier?: string
+  eligibilityProofRef?: string
   createdAt: string
 }
 
@@ -27,34 +29,57 @@ const insertFn = async (
   obj: DeliberationVoteRecord,
   timestamp: string,
 ): Promise<ParaQvldDeliberationVote | null> => {
-  const inserted = await db
-    .insertInto('para_qvld_deliberation_vote')
-    .values({
-      uri: uri.toString(),
-      cid: cid.toString(),
-      creator: uri.host,
-      statement: obj.deliberation,
-      voter: obj.voter,
-      vote: obj.direction,
-      createdAt: normalizeDatetimeAlways(obj.createdAt),
-      indexedAt: timestamp,
-    })
-    .onConflict((oc) =>
-      oc.columns(['creator', 'statement']).doUpdateSet({
-        uri: uri.toString(),
-        cid: cid.toString(),
-        vote: obj.direction,
-        createdAt: normalizeDatetimeAlways(obj.createdAt),
-        indexedAt: timestamp,
-      }),
-    )
-    .returningAll()
-    .executeTakeFirst()
+  const record = {
+    uri: uri.toString(),
+    cid: cid.toString(),
+    creator: uri.host,
+    statement: obj.deliberation,
+    voter: obj.voter,
+    vote: obj.direction,
+    voteNullifier: normalizeOpaqueProofField(obj.voteNullifier, 128),
+    eligibilityProofRef: normalizeOpaqueProofField(obj.eligibilityProofRef, 512),
+    createdAt: normalizeDatetimeAlways(obj.createdAt),
+    indexedAt: timestamp,
+  }
+
+  const existing = record.voteNullifier
+    ? await db
+        .selectFrom('para_qvld_deliberation_vote')
+        .where('statement', '=', record.statement)
+        .where('voteNullifier', '=', record.voteNullifier)
+        .select(['uri'])
+        .executeTakeFirst()
+    : await db
+        .selectFrom('para_qvld_deliberation_vote')
+        .where('creator', '=', record.creator)
+        .where('statement', '=', record.statement)
+        .select(['uri'])
+        .executeTakeFirst()
+
+  const inserted = existing
+    ? await db
+        .updateTable('para_qvld_deliberation_vote')
+        .set(record)
+        .where('uri', '=', existing.uri)
+        .returningAll()
+        .executeTakeFirst()
+    : await db
+        .insertInto('para_qvld_deliberation_vote')
+        .values(record)
+        .returningAll()
+        .executeTakeFirst()
 
   return inserted ?? null
 }
 
 const findDuplicate = async (): Promise<AtUri | null> => null
+
+const normalizeOpaqueProofField = (value: unknown, maxLength: number) => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (!trimmed || trimmed.length > maxLength) return null
+  return trimmed
+}
 
 const notifsForInsert = () => []
 
@@ -81,10 +106,10 @@ const recomputeStatementCounts = async (
   const counts = await db
     .selectFrom('para_qvld_deliberation_vote')
     .where('statement', '=', statementUri)
-    .select((eb) => [
-      eb.fn.countAll().filterWhere('vote', '=', 'agree').as('agree'),
-      eb.fn.countAll().filterWhere('vote', '=', 'disagree').as('disagree'),
-      eb.fn.countAll().filterWhere('vote', '=', 'pass').as('pass'),
+    .select([
+      sql<number>`count(*) filter (where vote = 'agree')`.as('agree'),
+      sql<number>`count(*) filter (where vote = 'disagree')`.as('disagree'),
+      sql<number>`count(*) filter (where vote = 'pass')`.as('pass'),
     ])
     .executeTakeFirst()
 
@@ -132,8 +157,8 @@ export const makePlugin = (
 
   plugin.insertRecord = async (uri, cid, obj, timestamp, opts) => {
     const result = await originalInsert(uri, cid, obj, timestamp, opts)
-    if (result && 'statement' in obj) {
-      await recomputeStatementCounts(db.db, obj.statement)
+    if (obj && typeof obj === 'object' && 'deliberation' in obj) {
+      await recomputeStatementCounts(db.db, obj.deliberation)
     }
     return result
   }

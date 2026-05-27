@@ -19,6 +19,7 @@ import {
   type ParaRaqProposalView,
   type ParaRaqProposalVoteRecord,
 } from '#/lib/api/para-lexicons'
+import {issueParaVoteProof} from '#/lib/api/vote-proof'
 import {RAQ_AXES} from '#/lib/mock-data'
 import {type PaginationParams, type ServiceResponse} from './types'
 
@@ -135,9 +136,15 @@ export async function submitAxisVote(
   axisId: string,
   value: number,
 ) {
+  const proof = await issueParaVoteProof(agent, {
+    subjectUri: axisId,
+    subjectType: 'raq_axis',
+  })
   const record: ParaRaqAxisVoteRecord = {
     axisId,
     value,
+    voteNullifier: proof?.voteNullifier,
+    eligibilityProofRef: proof?.eligibilityProofRef,
     createdAt: new Date().toISOString(),
   }
 
@@ -155,9 +162,15 @@ export async function submitProposalVote(
   subject: string,
   value: number,
 ) {
+  const proof = await issueParaVoteProof(agent, {
+    subjectUri: subject,
+    subjectType: 'raq_proposal',
+  })
   const record: ParaRaqProposalVoteRecord = {
     subject,
     value: value > 0 ? 1 : value < 0 ? -1 : 0,
+    voteNullifier: proof?.voteNullifier,
+    eligibilityProofRef: proof?.eligibilityProofRef,
     createdAt: new Date().toISOString(),
   }
 

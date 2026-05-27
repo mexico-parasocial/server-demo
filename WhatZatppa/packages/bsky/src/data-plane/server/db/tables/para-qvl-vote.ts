@@ -9,6 +9,8 @@ export interface ParaQvldVote {
   proposal: string
   community: string
   signal: number
+  voteNullifier: string | null
+  eligibilityProofRef: string | null
   createdAt: string
   indexedAt: string
   sortAt: GeneratedAlways<string>

@@ -16,6 +16,8 @@ interface IntensityRecord {
   delegatedFrom?: string[]
   delegationDepth?: number
   effectiveWeight?: string
+  voteNullifier?: string
+  eligibilityProofRef?: string
   createdAt: string
 }
 
@@ -30,48 +32,64 @@ const insertFn = async (
   obj: IntensityRecord,
   timestamp: string,
 ): Promise<ParaQvldIntensity | null> => {
-  const inserted = await db
-    .insertInto('para_qvld_intensity')
-    .values({
-      uri: uri.toString(),
-      cid: cid.toString(),
-      creator: uri.host,
-      proposal: obj.proposal,
-      voter: obj.voter,
-      signal: obj.signal,
-      units: obj.units,
-      creditsSpent: obj.creditsSpent ?? obj.units,
-      delegatedFrom: obj.delegatedFrom?.length
-        ? sql<string[]>`${JSON.stringify(obj.delegatedFrom)}`
-        : null,
-      delegationDepth: obj.delegationDepth ?? 0,
-      effectiveWeight: obj.effectiveWeight ?? null,
-      createdAt: normalizeDatetimeAlways(obj.createdAt),
-      indexedAt: timestamp,
-    })
-    .onConflict((oc) =>
-      oc.columns(['creator', 'proposal']).doUpdateSet({
-        uri: uri.toString(),
-        cid: cid.toString(),
-        signal: obj.signal,
-        units: obj.units,
-        creditsSpent: obj.creditsSpent ?? obj.units,
-        delegatedFrom: obj.delegatedFrom?.length
-          ? sql<string[]>`${JSON.stringify(obj.delegatedFrom)}`
-          : null,
-        delegationDepth: obj.delegationDepth ?? 0,
-        effectiveWeight: obj.effectiveWeight ?? null,
-        createdAt: normalizeDatetimeAlways(obj.createdAt),
-        indexedAt: timestamp,
-      }),
-    )
-    .returningAll()
-    .executeTakeFirst()
+  const record = {
+    uri: uri.toString(),
+    cid: cid.toString(),
+    creator: uri.host,
+    proposal: obj.proposal,
+    voter: obj.voter,
+    signal: obj.signal,
+    units: obj.units,
+    creditsSpent: obj.creditsSpent ?? obj.units,
+    delegatedFrom: obj.delegatedFrom?.length
+      ? sql<string[]>`${JSON.stringify(obj.delegatedFrom)}`
+      : null,
+    delegationDepth: obj.delegationDepth ?? 0,
+    effectiveWeight: obj.effectiveWeight ?? null,
+    voteNullifier: normalizeOpaqueProofField(obj.voteNullifier, 128),
+    eligibilityProofRef: normalizeOpaqueProofField(obj.eligibilityProofRef, 512),
+    createdAt: normalizeDatetimeAlways(obj.createdAt),
+    indexedAt: timestamp,
+  }
+
+  const existing = record.voteNullifier
+    ? await db
+        .selectFrom('para_qvld_intensity')
+        .where('proposal', '=', record.proposal)
+        .where('voteNullifier', '=', record.voteNullifier)
+        .select(['uri'])
+        .executeTakeFirst()
+    : await db
+        .selectFrom('para_qvld_intensity')
+        .where('creator', '=', record.creator)
+        .where('proposal', '=', record.proposal)
+        .select(['uri'])
+        .executeTakeFirst()
+
+  const inserted = existing
+    ? await db
+        .updateTable('para_qvld_intensity')
+        .set(record)
+        .where('uri', '=', existing.uri)
+        .returningAll()
+        .executeTakeFirst()
+    : await db
+        .insertInto('para_qvld_intensity')
+        .values(record)
+        .returningAll()
+        .executeTakeFirst()
 
   return inserted ?? null
 }
 
 const findDuplicate = async (): Promise<AtUri | null> => null
+
+const normalizeOpaqueProofField = (value: unknown, maxLength: number) => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (!trimmed || trimmed.length > maxLength) return null
+  return trimmed
+}
 
 const notifsForInsert = () => []
 

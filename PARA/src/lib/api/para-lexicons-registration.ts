@@ -1495,6 +1495,8 @@ const proposalVote = {
         properties: {
           subject: {type: 'string' as const, format: 'at-uri'},
           value: {type: 'integer' as const, minimum: -1, maximum: 1},
+          voteNullifier: {type: 'string' as const, maxLength: 128},
+          eligibilityProofRef: {type: 'string' as const, maxLength: 512},
           createdAt: {type: 'string' as const, format: 'datetime'},
         },
       },

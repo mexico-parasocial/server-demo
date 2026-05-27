@@ -48,6 +48,16 @@
             "type": "string",
             "description": "Computed effective weight after QV sqrt and correlation discounting. Stored for audit trail."
           },
+          "voteNullifier": {
+            "type": "string",
+            "maxLength": 128,
+            "description": "Privacy-preserving one-person-one-vote nullifier for this proposal intensity declaration, issued by m8."
+          },
+          "eligibilityProofRef": {
+            "type": "string",
+            "maxLength": 512,
+            "description": "Opaque reference to the m8 eligibility/nullifier proof used to cast this intensity declaration."
+          },
           "createdAt": {
             "type": "string",
             "format": "datetime"

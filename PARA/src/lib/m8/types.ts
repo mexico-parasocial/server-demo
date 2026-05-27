@@ -86,7 +86,16 @@ export type M8IdentityVerificationResult = {
 
 export type M8CivicVoteProof = {
   subjectUri: string
-  subjectType: 'cabildeo' | 'policy' | 'matter' | 'governance'
+  subjectType:
+    | 'cabildeo'
+    | 'policy'
+    | 'matter'
+    | 'governance'
+    | 'raq_axis'
+    | 'raq_proposal'
+    | 'community_proposal'
+    | 'community_deliberation'
+    | 'open_question_reply'
   aliasDid: string
   voteNullifier: string
   eligibilityProofRef: string

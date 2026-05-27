@@ -10,7 +10,7 @@ import {
   type CabildeoVoteRecord,
   type CabildeoVoteVisibility,
 } from '#/lib/api/para-lexicons'
-import {postCivicVoteProof} from '#/lib/m8'
+import {issueParaVoteProof} from '#/lib/api/vote-proof'
 
 /**
  * Cabildeo API service for writes + AppView-backed reads.
@@ -63,10 +63,9 @@ export async function castCabildeoVote(
 ) {
   if (!agent.session) throw new Error('Not logged in')
 
-  const proof = await maybeIssueCivicVoteProof({
+  const proof = await issueParaVoteProof(agent, {
     subjectUri: record.cabildeo,
     subjectType: 'cabildeo',
-    aliasDid: agent.session.did,
   })
 
   return await agent.call(
@@ -80,18 +79,6 @@ export async function castCabildeoVote(
     },
     {encoding: 'application/json'},
   )
-}
-
-async function maybeIssueCivicVoteProof(input: {
-  subjectUri: string
-  subjectType: 'cabildeo' | 'policy' | 'matter' | 'governance'
-  aliasDid: string
-}) {
-  try {
-    return await postCivicVoteProof(input)
-  } catch {
-    return null
-  }
 }
 
 export async function delegateCabildeoVote(

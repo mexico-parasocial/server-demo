@@ -1,6 +1,7 @@
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 
 import {PARA_OPEN_QUESTION_VOTE_COLLECTION} from '#/lib/api/para-lexicons'
+import {issueParaVoteProof} from '#/lib/api/vote-proof'
 import {getOpenQuestionSearchQuery} from '#/lib/tags'
 import {useAgent} from '#/state/session'
 
@@ -98,12 +99,18 @@ export function useOpenQuestionVoteMutation(questionUri: string) {
       value: -1 | 0 | 1
     }) => {
       if (!agent.session) throw new Error('Not logged in')
+      const proof = await issueParaVoteProof(agent, {
+        subjectUri: subject,
+        subjectType: 'open_question_reply',
+      })
       return agent.com.atproto.repo.createRecord({
         repo: agent.session.did,
         collection: PARA_OPEN_QUESTION_VOTE_COLLECTION,
         record: {
           subject,
           value,
+          voteNullifier: proof?.voteNullifier,
+          eligibilityProofRef: proof?.eligibilityProofRef,
           createdAt: new Date().toISOString(),
         },
       })

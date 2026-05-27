@@ -10,6 +10,8 @@ import { RecordProcessor } from '../processor.js'
 interface AxisVoteRecord {
   axisId: string
   value?: number
+  voteNullifier?: string
+  eligibilityProofRef?: string
   createdAt: string
 }
 
@@ -27,28 +29,44 @@ const insertFn = async (
   obj: AxisVoteRecord,
   timestamp: string,
 ): Promise<IndexedAxisVote | null> => {
-  const inserted = await db
-    .insertInto('raq_axis_vote')
-    .values({
-      uri: uri.toString(),
-      cid: cid.toString(),
-      creator: uri.host,
-      axisId: obj.axisId,
-      value: obj.value ?? 0,
-      createdAt: normalizeDatetimeAlways(obj.createdAt),
-      indexedAt: timestamp,
-    })
-    .onConflict((oc) =>
-      oc.doUpdateSet({
-        cid: cid.toString(),
-        axisId: obj.axisId,
-        value: obj.value ?? 0,
-        createdAt: normalizeDatetimeAlways(obj.createdAt),
-        indexedAt: timestamp,
-      }),
-    )
-    .returningAll()
-    .executeTakeFirst()
+  const record = {
+    uri: uri.toString(),
+    cid: cid.toString(),
+    creator: uri.host,
+    axisId: obj.axisId,
+    value: obj.value ?? 0,
+    voteNullifier: normalizeOpaqueProofField(obj.voteNullifier, 128),
+    eligibilityProofRef: normalizeOpaqueProofField(obj.eligibilityProofRef, 512),
+    createdAt: normalizeDatetimeAlways(obj.createdAt),
+    indexedAt: timestamp,
+  }
+
+  const existing = record.voteNullifier
+    ? await db
+        .selectFrom('raq_axis_vote')
+        .where('axisId', '=', record.axisId)
+        .where('voteNullifier', '=', record.voteNullifier)
+        .select(['uri'])
+        .executeTakeFirst()
+    : await db
+        .selectFrom('raq_axis_vote')
+        .where('creator', '=', record.creator)
+        .where('axisId', '=', record.axisId)
+        .select(['uri'])
+        .executeTakeFirst()
+
+  const inserted = existing
+    ? await db
+        .updateTable('raq_axis_vote')
+        .set(record)
+        .where('uri', '=', existing.uri)
+        .returningAll()
+        .executeTakeFirst()
+    : await db
+        .insertInto('raq_axis_vote')
+        .values(record)
+        .returningAll()
+        .executeTakeFirst()
 
   if (!inserted) return null
   return { record: inserted }
@@ -56,6 +74,13 @@ const insertFn = async (
 
 const findDuplicate = async (): Promise<AtUri | null> => {
   return null
+}
+
+const normalizeOpaqueProofField = (value: unknown, maxLength: number) => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (!trimmed || trimmed.length > maxLength) return null
+  return trimmed
 }
 
 const deleteFn = async (

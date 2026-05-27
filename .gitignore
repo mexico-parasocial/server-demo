@@ -5,6 +5,9 @@ Thumbs.db
 # Logs
 *.log
 logs/
+lerna-debug.log
+npm-debug.log
+yarn-error.log
 
 # IDEs
 .idea/
@@ -15,6 +18,7 @@ logs/
 # Env files (security)
 .env
 .env.*
+.*.env
 !.env.example
 !.env.*.example
 
@@ -26,7 +30,20 @@ temp/
 # Global build artifacts (subprojects have their own .gitignore)
 *.tsbuildinfo
 node_modules
+packages/**/dist
+packages/*/coverage
 
 # Unused reference projects (kept locally but not tracked)
 m8/pds-moover-main/
 m8/eurosky-portal-main/
+
+# Editor backups
+\#*\#
+*~
+
+# Claude
+.claude/
+
+# Test artifacts
+test.sqlite
+coverage

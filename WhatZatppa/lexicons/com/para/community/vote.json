@@ -28,6 +28,16 @@
             "maximum": 3,
             "description": "Base political signal: -3 strong against … +3 strong for. 0 = abstain."
           },
+          "voteNullifier": {
+            "type": "string",
+            "maxLength": 128,
+            "description": "Privacy-preserving one-person-one-vote nullifier for this proposal, issued by m8."
+          },
+          "eligibilityProofRef": {
+            "type": "string",
+            "maxLength": 512,
+            "description": "Opaque reference to the m8 eligibility/nullifier proof used to cast this vote."
+          },
           "createdAt": {
             "type": "string",
             "format": "datetime"

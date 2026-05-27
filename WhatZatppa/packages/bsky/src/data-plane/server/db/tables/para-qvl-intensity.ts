@@ -14,6 +14,8 @@ export interface ParaQvldIntensity {
   delegatedFrom: string[] | null
   delegationDepth: number
   effectiveWeight: string | null
+  voteNullifier: string | null
+  eligibilityProofRef: string | null
   createdAt: string
   indexedAt: string
   sortAt: GeneratedAlways<string>

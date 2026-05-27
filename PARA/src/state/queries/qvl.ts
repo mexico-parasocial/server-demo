@@ -1,5 +1,6 @@
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 
+import {issueParaVoteProof} from '#/lib/api/vote-proof'
 import {STALE} from '#/state/queries'
 import {useAgent} from '#/state/session'
 
@@ -277,6 +278,10 @@ export function useCastVoteMutation() {
       signal: number
     }) => {
       if (!agent.session) throw new Error('Not logged in')
+      const proof = await issueParaVoteProof(agent, {
+        subjectUri: proposal,
+        subjectType: 'community_proposal',
+      })
       return agent.com.atproto.repo.createRecord({
         repo: agent.session.did,
         collection: 'com.para.community.vote',
@@ -286,6 +291,8 @@ export function useCastVoteMutation() {
           community,
           voter: agent.session.did,
           signal,
+          voteNullifier: proof?.voteNullifier,
+          eligibilityProofRef: proof?.eligibilityProofRef,
           createdAt: new Date().toISOString(),
         },
       })
@@ -314,8 +321,12 @@ export function useCastIntensityMutation() {
       proposal: string
       signal: number
       units: number
-    }) => {
+      }) => {
       if (!agent.session) throw new Error('Not logged in')
+      const proof = await issueParaVoteProof(agent, {
+        subjectUri: proposal,
+        subjectType: 'community_proposal',
+      })
       return agent.com.atproto.repo.createRecord({
         repo: agent.session.did,
         collection: 'com.para.community.intensity',
@@ -326,6 +337,8 @@ export function useCastIntensityMutation() {
           signal,
           units,
           creditsSpent: units * units,
+          voteNullifier: proof?.voteNullifier,
+          eligibilityProofRef: proof?.eligibilityProofRef,
           createdAt: new Date().toISOString(),
         },
       })
@@ -435,6 +448,10 @@ export function useCastDeliberationVoteMutation() {
       direction: 'agree' | 'disagree' | 'pass'
     }) => {
       if (!agent.session) throw new Error('Not logged in')
+      const proof = await issueParaVoteProof(agent, {
+        subjectUri: deliberation,
+        subjectType: 'community_deliberation',
+      })
       return agent.com.atproto.repo.createRecord({
         repo: agent.session.did,
         collection: 'com.para.community.deliberationVote',
@@ -443,6 +460,8 @@ export function useCastDeliberationVoteMutation() {
           deliberation,
           voter: agent.session.did,
           direction,
+          voteNullifier: proof?.voteNullifier,
+          eligibilityProofRef: proof?.eligibilityProofRef,
           createdAt: new Date().toISOString(),
         },
       })

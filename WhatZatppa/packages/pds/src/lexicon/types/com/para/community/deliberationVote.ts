@@ -19,6 +19,10 @@ export interface Main {
   deliberation: string
   voter: string
   direction: 'agree' | 'disagree' | 'pass'
+  /** Privacy-preserving one-person-one-vote nullifier for this deliberation statement, issued by m8. */
+  voteNullifier?: string
+  /** Opaque reference to the m8 eligibility/nullifier proof used to cast this vote. */
+  eligibilityProofRef?: string
   createdAt?: string
   [k: string]: unknown
 }

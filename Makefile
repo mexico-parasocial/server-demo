@@ -2,6 +2,9 @@
 # Delegates backend commands to WhatZatppa/Makefile
 # Frontend and other commands can be added here.
 
+SHELL = /bin/bash
+.SHELLFLAGS = -o pipefail -c
+
 .PHONY: help
 help: ## Print info about all commands
 	@echo "PARA Project Commands"
@@ -11,6 +14,34 @@ help: ## Print info about all commands
 	@echo ""
 	@echo "Root commands:"
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "    \033[01;32m%-20s\033[0m %s\n", $$1, $$2}'
+
+# =============================================================================
+# Build & Test
+# =============================================================================
+
+.PHONY: build
+build: codegen ## Compile all modules
+	cd WhatZatppa && pnpm build
+
+.PHONY: test
+test: ## Run all tests
+	cd WhatZatppa && pnpm test
+
+.PHONY: codegen
+codegen: ## Re-generate packages from lexicon/ files
+	cd WhatZatppa && pnpm codegen
+
+.PHONY: lint
+lint: ## Run style checks and verify syntax
+	cd WhatZatppa && pnpm verify
+
+.PHONY: fmt
+fmt: ## Run syntax re-formatting
+	cd WhatZatppa && pnpm format
+
+.PHONY: deps
+deps: ## Installs dependent libs using 'pnpm install'
+	cd WhatZatppa && pnpm install --frozen-lockfile
 
 # =============================================================================
 # Doctor Commands (delegated to backend)

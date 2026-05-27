@@ -8,6 +8,8 @@ export interface Main {
   creator: string
   subject: string
   value: number
+  voteNullifier: string | null
+  eligibilityProofRef: string | null
   createdAt: string
   indexedAt: string
   sortAt: GeneratedAlways<string>
