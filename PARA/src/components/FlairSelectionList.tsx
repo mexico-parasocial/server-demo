@@ -459,7 +459,7 @@ export function FlairSelectionList({
                         isSelected={selectedFlairs.some(f => f.id === flair.id)}
                         onPress={() => toggleFlair(flair)}
                         activeColor={
-                          mode === 'policy' ? POLICY_COLOR : '#6B7280'
+                          mode === 'policy' ? POLICY_COLOR : MATTER_COLOR
                         }
                       />
                     ))
@@ -500,7 +500,7 @@ export function FlairSelectionList({
                       </TouchableOpacity>
 
                       {expandedCategories[key] && (
-                        <View style={[a.gap_xs, a.mt_xs, a.pl_sm]}>
+                        <View style={[a.gap_2xs, a.mt_xs, a.pl_sm]}>
                           {(groups as Record<string, PostFlair[]>)[key]?.map(
                             (flair: PostFlair) => (
                               <FlairItem
@@ -511,7 +511,7 @@ export function FlairSelectionList({
                                 )}
                                 onPress={() => toggleFlair(flair)}
                                 activeColor={
-                                  mode === 'policy' ? POLICY_COLOR : '#6B7280'
+                                  mode === 'policy' ? POLICY_COLOR : MATTER_COLOR
                                 }
                               />
                             ),
@@ -591,7 +591,7 @@ export function FlairSelectionList({
                                 )}
                                 onPress={() => toggleFlair(flair)}
                                 activeColor={
-                                  mode === 'policy' ? POLICY_COLOR : '#6B7280'
+                                  mode === 'policy' ? POLICY_COLOR : MATTER_COLOR
                                 }
                               />
                             ),
@@ -649,43 +649,51 @@ function FlairItem({
       accessibilityState={{checked: isSelected}}
       onPress={onPress}
       style={[
-        a.p_md,
+        a.p_sm,
         a.rounded_sm,
         a.flex_row,
         a.align_center,
         a.justify_between,
         isSelected ? t.atoms.bg_contrast_50 : t.atoms.bg_contrast_25,
       ]}>
-      <View style={[a.flex_row, a.align_center, a.gap_md]}>
+      <View style={[a.flex_row, a.align_center, a.gap_sm, a.flex_1, a.pr_sm]}>
         {/* Radio Circle */}
         <View
           style={[
             {
-              width: 20,
-              height: 20,
-              borderRadius: 10,
+              width: 18,
+              height: 18,
+              borderRadius: 9,
               borderWidth: 2,
               borderColor: activeColor,
               justifyContent: 'center',
               alignItems: 'center',
+              flexShrink: 0,
             },
           ]}>
           {isSelected && (
             <View
               style={[
                 {
-                  width: 10,
-                  height: 10,
-                  borderRadius: 5,
+                  width: 9,
+                  height: 9,
+                  borderRadius: 4.5,
                   backgroundColor: activeColor,
                 },
               ]}
             />
           )}
         </View>
-        <Text style={[a.text_md, a.font_semi_bold]}>{flair.label}</Text>
+        <Text
+          style={[a.text_sm, a.font_semi_bold, a.flex_1]}
+          numberOfLines={1}
+          ellipsizeMode="tail">
+          {flair.label}
+        </Text>
       </View>
-      {isSelected && <CheckIcon size="sm" fill={activeColor} />}
+      {isSelected && (
+        <CheckIcon size="sm" fill={activeColor} style={{flexShrink: 0}} />
+      )}
     </TouchableOpacity>
   )
 }

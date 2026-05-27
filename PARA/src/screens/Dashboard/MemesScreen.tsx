@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {
   Animated,
+  type GestureResponderEvent,
   PanResponder,
   Pressable,
   useWindowDimensions,
@@ -11,10 +12,10 @@ import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
 
+import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
 import {MEMES as MOCK_MEMES} from '#/lib/mock-data'
 import {type NavigationProp} from '#/lib/routes/types'
 import {useBaseFilter} from '#/state/shell/base-filter'
-import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
 import {Text} from '#/view/com/util/text/Text'
 import {useTheme} from '#/alf'
 import {ActiveFiltersStackButton} from '#/components/BaseFilterControls'
@@ -253,6 +254,10 @@ function DeckChain({
   const animation = useMemo(() => new Animated.Value(0), [])
   const [startIndex, setStartIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
+  const isAnimatingRef = useRef(isAnimating)
+  useEffect(() => {
+    isAnimatingRef.current = isAnimating
+  }, [isAnimating])
   const [boundaryNotice, setBoundaryNotice] = useState<string | null>(null)
   const [topLayer, setTopLayer] = useState<'current' | 'next'>('current')
   const progressRef = useRef(0)
@@ -276,22 +281,6 @@ function DeckChain({
       }
     }
   }, [])
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-        e.preventDefault()
-        advance()
-      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-        e.preventDefault()
-        retreat()
-      }
-    }
-    if (typeof document !== 'undefined') {
-      document.addEventListener('keydown', handleKeyDown)
-      return () => document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [advance, retreat])
 
   useEffect(() => {
     const index = anchorId
@@ -333,7 +322,7 @@ function DeckChain({
 
   const advance = useCallback(
     (releaseVelocity = 0) => {
-      if (!next || isAnimating) return
+      if (!next || isAnimatingRef.current) return
       setIsAnimating(true)
       springTo(1, releaseVelocity, () => {
         setStartIndex(prevIndex =>
@@ -345,12 +334,12 @@ function DeckChain({
         setTopLayer('current')
       })
     },
-    [animation, isAnimating, items.length, next, onFocusChange, springTo],
+    [animation, items.length, next, onFocusChange, springTo],
   )
 
   const retreat = useCallback(
     (releaseVelocity = 0) => {
-      if (!prev || isAnimating) return
+      if (!prev || isAnimatingRef.current) return
       setIsAnimating(true)
       springTo(-1, releaseVelocity, () => {
         setStartIndex(prevIndex => Math.max(prevIndex - 1, 0))
@@ -360,8 +349,24 @@ function DeckChain({
         setTopLayer('current')
       })
     },
-    [animation, isAnimating, onFocusChange, prev, springTo],
+    [animation, onFocusChange, prev, springTo],
   )
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault()
+        advance()
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault()
+        retreat()
+      }
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [advance, retreat])
 
   const resetPosition = useCallback(
     (releaseVelocity = 0) => {
@@ -388,7 +393,7 @@ function DeckChain({
       PanResponder.create({
         onMoveShouldSetPanResponderCapture: (_, gestureState) => {
           return (
-            !isAnimating &&
+            !isAnimatingRef.current &&
             (Boolean(next) || Boolean(prev)) &&
             Math.abs(gestureState.dy) > 4 &&
             Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
@@ -396,7 +401,7 @@ function DeckChain({
         },
         onMoveShouldSetPanResponder: (_, gestureState) => {
           return (
-            !isAnimating &&
+            !isAnimatingRef.current &&
             (Boolean(next) || Boolean(prev)) &&
             Math.abs(gestureState.dy) > 4 &&
             Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
@@ -439,13 +444,40 @@ function DeckChain({
     [
       advance,
       animation,
-      isAnimating,
       next,
       prev,
       resetPosition,
       retreat,
       showBoundaryMessage,
     ],
+  )
+
+  const handleDeckPress = useCallback(
+    (e: GestureResponderEvent) => {
+      if (typeof e?.nativeEvent?.locationY !== 'number') return
+      const tapY = e.nativeEvent.locationY
+      const stageHeight = DECK_CARD_HEIGHT + DECK_SECONDARY_TOP
+      if (tapY > stageHeight * 0.55 && next) {
+        advance()
+      } else if (tapY < stageHeight * 0.25 && prev) {
+        retreat()
+      }
+    },
+    [advance, retreat, next, prev],
+  )
+
+  const handleWebClick = useCallback(
+    (e: React.MouseEvent) => {
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+      const clickY = e.clientY - rect.top
+      const stageHeight = DECK_CARD_HEIGHT + DECK_SECONDARY_TOP
+      if (clickY > stageHeight * 0.55 && next) {
+        advance()
+      } else if (clickY < stageHeight * 0.25 && prev) {
+        retreat()
+      }
+    },
+    [advance, retreat, next, prev],
   )
 
   if (!current) return null
@@ -557,38 +589,11 @@ function DeckChain({
     transform: nextStyle.transform,
   }
 
-  const handleDeckPress = useCallback(
-    (e: any) => {
-      if (typeof e?.nativeEvent?.locationY !== 'number') return
-      const tapY = e.nativeEvent.locationY
-      const stageHeight = DECK_CARD_HEIGHT + DECK_SECONDARY_TOP
-      if (tapY > stageHeight * 0.55 && next) {
-        advance()
-      } else if (tapY < stageHeight * 0.25 && prev) {
-        retreat()
-      }
-    },
-    [advance, retreat, next, prev],
-  )
-
-  const handleWebClick = useCallback(
-    (e: React.MouseEvent) => {
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-      const clickY = e.clientY - rect.top
-      const stageHeight = DECK_CARD_HEIGHT + DECK_SECONDARY_TOP
-      if (clickY > stageHeight * 0.55 && next) {
-        advance()
-      } else if (clickY < stageHeight * 0.25 && prev) {
-        retreat()
-      }
-    },
-    [advance, retreat, next, prev],
-  )
-
   return (
     <View
       {...panResponder.panHandlers}
       onTouchEnd={handleDeckPress}
+      // @ts-expect-error web only
       onClick={handleWebClick}
       style={[
         styles.deckStage,

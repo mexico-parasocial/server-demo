@@ -69,6 +69,7 @@ import {
 } from '#/components/icons/Message'
 import {SettingsGear2_Stroke2_Corner0_Rounded as Settings} from '#/components/icons/SettingsGear2'
 import {Shapes_Stroke2_Corner0_Rounded as Shapes} from '#/components/icons/Shapes'
+import {Tree_Stroke2_Corner0_Rounded as Tree} from '#/components/icons/Tree'
 import {
   UserCircle_Filled_Corner0_Rounded as UserCircleFilled,
   UserCircle_Stroke2_Corner0_Rounded as UserCircle,
@@ -191,6 +192,7 @@ let DrawerContent = ({}: React.PropsWithoutRef<{}>): React.ReactNode => {
     currentRoute.name === 'DelegateVote' ||
     currentRoute.name === 'CreateCabildeo' ||
     currentRoute.name === 'CreatePosition'
+  const isAtCivicTree = currentRoute.name === 'CivicTree'
   const isAtDeliberation = currentRoute.name === 'DeliberationGraph'
   const isAtMyBase = currentRoute.name === 'MyBase'
   const isAtIdentityHub =
@@ -347,6 +349,11 @@ let DrawerContent = ({}: React.PropsWithoutRef<{}>): React.ReactNode => {
     navigation.navigate('DataTab', {screen: 'MyBase'})
   }, [navigation, setDrawerOpen])
 
+  const onPressCivicTree = useCallback(() => {
+    setDrawerOpen(false)
+    navigation.navigate('DataTab', {screen: 'CivicTree'})
+  }, [navigation, setDrawerOpen])
+
   const onPressIdentityHub = useCallback(() => {
     setDrawerOpen(false)
     navigation.navigate('IdentityHub')
@@ -409,6 +416,7 @@ let DrawerContent = ({}: React.PropsWithoutRef<{}>): React.ReactNode => {
             <FeedsMenuItem isActive={isAtFeeds} onPress={onPressMyFeeds} />
             <BaseMenuItem isActive={isAtData} onPress={onPressData} />
             <MyBaseMenuItem isActive={isAtMyBase} onPress={onPressMyBase} />
+            <CivicTreeMenuItem isActive={isAtCivicTree} onPress={onPressCivicTree} />
             <IdentityHubMenuItem isActive={isAtIdentityHub} onPress={onPressIdentityHub} />
             <CommunitiesMenuItem
               isActive={isAtCommunities}
@@ -801,7 +809,7 @@ let DeliberationMenuItem = ({
   return (
     <MenuItem
       icon={<Shapes style={[t.atoms.text]} width={iconWidth} />}
-      label={_(msg`Civic Tree`)}
+      label={_(msg`Community Tree`)}
       bold={isActive}
       onPress={onPress}
     />
@@ -859,6 +867,26 @@ let MyBaseMenuItem = ({
   )
 }
 MyBaseMenuItem = memo(MyBaseMenuItem)
+
+let CivicTreeMenuItem = ({
+  isActive,
+  onPress,
+}: {
+  isActive: boolean
+  onPress: () => void
+}): React.ReactNode => {
+  const t = useTheme()
+  const {_} = useLingui()
+  return (
+    <MenuItem
+      icon={<Tree style={[t.atoms.text]} width={iconWidth} />}
+      label={_(msg`Personal Civic Tree`)}
+      bold={isActive}
+      onPress={onPress}
+    />
+  )
+}
+CivicTreeMenuItem = memo(CivicTreeMenuItem)
 
 let IdentityHubMenuItem = ({
   isActive,

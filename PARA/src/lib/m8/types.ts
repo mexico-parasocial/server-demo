@@ -84,6 +84,16 @@ export type M8IdentityVerificationResult = {
   warnings: string[]
 }
 
+export type M8CivicVoteProof = {
+  subjectUri: string
+  subjectType: 'cabildeo' | 'policy' | 'matter' | 'governance'
+  aliasDid: string
+  voteNullifier: string
+  eligibilityProofRef: string
+  issuedAt: string
+  aliasDids: string[]
+}
+
 export type IneAddress = {
   street: string
   neighborhood: string

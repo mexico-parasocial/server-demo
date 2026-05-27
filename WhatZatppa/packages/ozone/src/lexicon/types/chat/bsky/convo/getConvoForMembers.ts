@@ -38,6 +38,7 @@ export interface HandlerError {
   error?:
     | 'AccountSuspended'
     | 'BlockedActor'
+    | 'BlockedSubject'
     | 'MessagesDisabled'
     | 'NotFollowedBySender'
     | 'RecipientNotFound'

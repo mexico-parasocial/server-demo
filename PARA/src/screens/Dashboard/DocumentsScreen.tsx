@@ -9,7 +9,7 @@ import {DOCUMENTS as MOCK_DOCS} from '#/lib/mock-data'
 import {type Document as DocItem} from '#/lib/mock-data/types'
 import {useBaseFilter} from '#/state/shell/base-filter'
 import {Text} from '#/view/com/util/text/Text'
-import {atoms as a, useBreakpoints, useTheme} from '#/alf'
+import {useTheme} from '#/alf'
 import {ActiveFiltersStackButton} from '#/components/BaseFilterControls'
 import {SearchInput} from '#/components/forms/SearchInput'
 import {CalendarDays_Stroke2_Corner0_Rounded as CalendarIcon} from '#/components/icons/CalendarDays'
@@ -493,6 +493,7 @@ function UploadButton({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Subir documento"
+      accessibilityHint={_(msg`Upload a new document`)}
       onPress={handlePress}
       style={[
         styles.headerSearchButton,

@@ -1,4 +1,4 @@
-import {useCallback, useEffect} from 'react'
+import {useCallback, useEffect, useMemo} from 'react'
 import {type StyleProp, View, type ViewStyle} from 'react-native'
 import Animated, {
   Easing,
@@ -9,6 +9,11 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated'
+import {
+  moderateProfile,
+  type ModerationOpts,
+  type ModerationUI,
+} from '@atproto/api'
 
 import {useSession} from '#/state/session'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
@@ -20,18 +25,26 @@ type Props = {
   animate?: boolean
   profiles: bsky.profile.AnyProfileView[]
   size?: 'small' | 'medium' | 'large' | number
+  moderationOpts?: ModerationOpts
 }
 
 export function AvatarBubbles({
   animate = false,
   profiles: allProfiles,
   size = 'large',
+  moderationOpts,
 }: Props) {
   const {currentAccount} = useSession()
   const profiles =
     allProfiles.length > 2
       ? allProfiles.filter(p => p.did !== currentAccount?.did)
       : allProfiles
+  const moderations = useMemo(() => {
+    if (!moderationOpts) return []
+    return profiles.map(p => {
+      return moderateProfile(p, moderationOpts)
+    })
+  }, [profiles, moderationOpts])
   const containerSize =
     typeof size === 'number'
       ? size
@@ -96,6 +109,7 @@ export function AvatarBubbles({
         y={-2}
         style={[a.z_20]}
         includeProfileBorder
+        moderation={moderations[0]?.ui('avatar')}
       />
       <AvatarBubble
         profile={profiles[1]}
@@ -105,6 +119,7 @@ export function AvatarBubbles({
         y={42}
         style={[a.z_10]}
         includeProfileBorder
+        moderation={moderations[1]?.ui('avatar')}
       />
     </>
   )
@@ -118,6 +133,7 @@ export function AvatarBubbles({
           size={68}
           x={-2}
           y={-2}
+          moderation={moderations[0]?.ui('avatar')}
         />
         <AvatarBubble
           profile={profiles[1]}
@@ -125,6 +141,7 @@ export function AvatarBubbles({
           size={56}
           x={38}
           y={62}
+          moderation={moderations[1]?.ui('avatar')}
         />
         <AvatarBubble
           profile={profiles[2]}
@@ -132,6 +149,7 @@ export function AvatarBubbles({
           size={46}
           x={71}
           y={18}
+          moderation={moderations[2]?.ui('avatar')}
         />
       </>
     )
@@ -146,6 +164,7 @@ export function AvatarBubbles({
           size={68}
           x={-2}
           y={-2}
+          moderation={moderations[0]?.ui('avatar')}
         />
         <AvatarBubble
           profile={profiles[1]}
@@ -153,6 +172,7 @@ export function AvatarBubbles({
           size={56}
           x={60}
           y={49}
+          moderation={moderations[1]?.ui('avatar')}
         />
         <AvatarBubble
           profile={profiles[2]}
@@ -160,8 +180,16 @@ export function AvatarBubbles({
           size={42}
           x={14}
           y={74}
+          moderation={moderations[2]?.ui('avatar')}
         />
-        <AvatarBubble profile={profiles[3]} scale={p3} size={32} x={72} y={9} />
+        <AvatarBubble
+          profile={profiles[3]}
+          scale={p3}
+          size={32}
+          x={72}
+          y={9}
+          moderation={moderations[3]?.ui('avatar')}
+        />
       </>
     )
   }
@@ -198,6 +226,7 @@ function AvatarBubble({
   x,
   y,
   includeProfileBorder,
+  moderation,
 }: {
   profile?: bsky.profile.AnyProfileView
   scale: SharedValue<number>
@@ -206,6 +235,7 @@ function AvatarBubble({
   x: number
   y: number
   includeProfileBorder?: boolean
+  moderation?: ModerationUI
 }) {
   const t = useTheme()
 
@@ -231,7 +261,7 @@ function AvatarBubble({
         animatedStyle,
       ]}>
       {profile ? (
-        <Avatar profile={profile} size={size} />
+        <Avatar profile={profile} size={size} moderation={moderation} />
       ) : (
         <AvatarPlaceholder size={size} />
       )}
@@ -242,9 +272,11 @@ function AvatarBubble({
 function Avatar({
   profile,
   size = 76,
+  moderation,
 }: {
   profile: bsky.profile.AnyProfileView
   size?: number
+  moderation?: ModerationUI
 }) {
   return (
     <UserAvatar
@@ -253,6 +285,7 @@ function Avatar({
       type="user"
       hideLiveBadge
       noBorder
+      moderation={moderation}
     />
   )
 }

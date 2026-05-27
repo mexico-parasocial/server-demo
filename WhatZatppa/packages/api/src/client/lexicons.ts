@@ -2789,7 +2789,7 @@ export const schemaDict = {
             type: 'array',
             items: {
               type: 'ref',
-              ref: 'lex:app.bsky.actor.defs#profileViewDetailed',
+              ref: 'lex:app.bsky.actor.defs#profileViewBasic',
             },
             description:
               'Profiles of the owners of the Atmosphere records that backed this view.',
@@ -10000,6 +10000,41 @@ export const schemaDict = {
       },
     },
   },
+  ChatBskyActorGetStatus: {
+    lexicon: 1,
+    id: 'chat.bsky.actor.getStatus',
+    defs: {
+      main: {
+        type: 'query',
+        description:
+          "Get the authenticated viewer's chat status: whether their account is chat-disabled and whether their group-membership additions are restricted to accounts they follow.",
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['chatDisabled', 'canCreateGroups', 'groupMemberLimit'],
+            properties: {
+              chatDisabled: {
+                type: 'boolean',
+                description:
+                  "True when the viewer's account is disabled and cannot actively participate in chat.",
+              },
+              canCreateGroups: {
+                type: 'boolean',
+                description:
+                  "Whether the viewer's account is allowed to create group chats. New accounts are restricted from creating groups.",
+              },
+              groupMemberLimit: {
+                type: 'integer',
+                description:
+                  'The maximum number of members allowed in a group conversation.',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   ChatBskyConvoAcceptConvo: {
     lexicon: 1,
     id: 'chat.bsky.convo.acceptConvo',
@@ -10552,7 +10587,13 @@ export const schemaDict = {
         description:
           '[NOTE: This is under active development and should be considered unstable while this note is here].',
         type: 'object',
-        required: ['name', 'lockStatus', 'memberCount', 'createdAt'],
+        required: [
+          'name',
+          'lockStatus',
+          'memberCount',
+          'memberLimit',
+          'createdAt',
+        ],
         properties: {
           name: {
             type: 'string',
@@ -10577,6 +10618,11 @@ export const schemaDict = {
           joinLink: {
             type: 'ref',
             ref: 'lex:chat.bsky.group.defs#joinLinkView',
+          },
+          memberLimit: {
+            type: 'integer',
+            description:
+              'The maximum number of members allowed in the group conversation.',
           },
           lockStatus: {
             description: 'The lock status of the conversation.',
@@ -11241,6 +11287,9 @@ export const schemaDict = {
           },
           {
             name: 'BlockedActor',
+          },
+          {
+            name: 'BlockedSubject',
           },
           {
             name: 'MessagesDisabled',
@@ -12056,6 +12105,9 @@ export const schemaDict = {
             name: 'BlockedActor',
           },
           {
+            name: 'BlockedSubject',
+          },
+          {
             name: 'UserForbidsGroups',
           },
           {
@@ -12178,6 +12230,9 @@ export const schemaDict = {
           },
           {
             name: 'BlockedActor',
+          },
+          {
+            name: 'BlockedSubject',
           },
           {
             name: 'UserForbidsGroups',
@@ -16860,9 +16915,9 @@ export const schemaDict = {
           properties: {
             aud: {
               type: 'string',
-              format: 'did',
+              maxLength: 2048,
               description:
-                'The DID of the service that the token will be used to authenticate with',
+                'The DID or `did#serviceId` reference of the service that the token will be used to authenticate with.',
             },
             exp: {
               type: 'integer',
@@ -19153,6 +19208,18 @@ export const schemaDict = {
                 type: 'integer',
                 minimum: 0,
               },
+              voteNullifier: {
+                type: 'string',
+                maxLength: 128,
+                description:
+                  'Privacy-preserving one-person-one-vote nullifier for this cabildeo.',
+              },
+              eligibilityProofRef: {
+                type: 'string',
+                maxLength: 512,
+                description:
+                  'Opaque m8 proof reference for the vote nullifier.',
+              },
             },
           },
         },
@@ -20491,6 +20558,18 @@ export const schemaDict = {
                 format: 'did',
               },
               maxLength: 10000,
+            },
+            voteNullifier: {
+              type: 'string',
+              maxLength: 128,
+              description:
+                'Privacy-preserving one-person-one-vote nullifier for this subject, issued by m8.',
+            },
+            eligibilityProofRef: {
+              type: 'string',
+              maxLength: 512,
+              description:
+                'Opaque reference to the m8 eligibility/nullifier proof used to cast this vote.',
             },
             createdAt: {
               type: 'string',
@@ -34864,6 +34943,7 @@ export const ids = {
   ChatBskyActorDefs: 'chat.bsky.actor.defs',
   ChatBskyActorDeleteAccount: 'chat.bsky.actor.deleteAccount',
   ChatBskyActorExportAccountData: 'chat.bsky.actor.exportAccountData',
+  ChatBskyActorGetStatus: 'chat.bsky.actor.getStatus',
   ChatBskyConvoAcceptConvo: 'chat.bsky.convo.acceptConvo',
   ChatBskyConvoAddReaction: 'chat.bsky.convo.addReaction',
   ChatBskyConvoDefs: 'chat.bsky.convo.defs',

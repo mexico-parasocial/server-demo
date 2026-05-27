@@ -1,7 +1,7 @@
 import {useMemo} from 'react'
 
-import {Features} from '#/analytics/features'
 import {useAnalytics} from '#/analytics'
+import {Features} from '#/analytics/features'
 
 export function useHorizontalGovernanceEnabled(): boolean {
   const ax = useAnalytics()

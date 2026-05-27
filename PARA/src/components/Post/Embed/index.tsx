@@ -35,6 +35,8 @@ import {ModeratedFeedEmbed} from './FeedEmbed'
 import {ImageEmbed} from './ImageEmbed'
 import {ModeratedListEmbed} from './ListEmbed'
 import {PostPlaceholder as PostPlaceholderText} from './PostPlaceholder'
+import {StandardSiteEmbed} from './StandardSiteEmbed'
+import {isStandardSiteEmbed} from './StandardSiteEmbed/utils'
 import {
   type CommonProps,
   type EmbedProps,
@@ -99,11 +101,19 @@ function MediaEmbed({
         <ContentHider
           modui={rest.moderation?.ui('contentMedia')}
           activeStyle={[a.mt_sm]}>
-          <ExternalEmbed
-            link={embed.view.external}
-            onOpen={rest.onOpen}
-            style={[a.mt_sm, rest.style]}
-          />
+          {isStandardSiteEmbed(embed.view.external) ? (
+            <StandardSiteEmbed
+              view={embed.view.external}
+              onOpen={rest.onOpen}
+              style={[a.mt_sm, rest.style]}
+            />
+          ) : (
+            <ExternalEmbed
+              link={embed.view.external}
+              onOpen={rest.onOpen}
+              style={[a.mt_sm, rest.style]}
+            />
+          )}
         </ContentHider>
       )
     }

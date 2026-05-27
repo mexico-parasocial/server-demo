@@ -8,6 +8,24 @@ import {useSession} from '#/state/session'
 import {SplitViewProvider} from '#/screens/Messages/components/splitView/context'
 import {atoms as a, useLayoutBreakpoints, useTheme, web} from '#/alf'
 import {Menu_Stroke2_Corner0_Rounded as MenuIcon} from '#/components/icons/Menu'
+
+const scrollbarStyles = web({
+  scrollbarWidth: 'thin',
+  scrollbarColor: 'rgba(128,128,128,0.3) transparent',
+  '::-webkit-scrollbar': {
+    width: '6px',
+  },
+  '::-webkit-scrollbar-track': {
+    background: 'transparent',
+  },
+  '::-webkit-scrollbar-thumb': {
+    backgroundColor: 'rgba(128,128,128,0.3)',
+    borderRadius: '3px',
+  },
+  '::-webkit-scrollbar-thumb:hover': {
+    backgroundColor: 'rgba(128,128,128,0.5)',
+  },
+})
 import {LockScroll} from '#/components/LockScroll'
 import {Text} from '#/components/Typography'
 
@@ -196,7 +214,7 @@ export function MapSidebarPanel({
   if (scrollable) {
     return (
       <ScrollView
-        style={[a.flex_1]}
+        style={[a.flex_1, scrollbarStyles]}
         contentContainerStyle={[a.gap_md, a.pb_xl]}
         showsVerticalScrollIndicator={false}>
         {content}

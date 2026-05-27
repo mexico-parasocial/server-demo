@@ -1,4 +1,5 @@
-import {AccessibilityInfo} from 'react-native'
+// Shim for expo-bluesky-swiss-army native module
+// AccessibilityInfo imported lazily when needed
 
 export const PlatformInfo = {
   getIsReducedMotionEnabled: () => {

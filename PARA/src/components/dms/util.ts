@@ -1,7 +1,15 @@
-import {type $Typed, ChatBskyActorDefs, ChatBskyConvoDefs} from '@atproto/api'
+import {
+  type $Typed,
+  ChatBskyActorDefs,
+  ChatBskyConvoDefs,
+  moderateProfile,
+  type ModerationOpts,
+} from '@atproto/api'
 
 import {EMOJI_REACTION_LIMIT} from '#/lib/constants'
 import {logger} from '#/logger'
+import {type Shadow} from '#/state/cache/types'
+import {type ConvoState, ConvoStatus} from '#/state/messages/convo/types'
 import * as bsky from '#/types/bsky'
 
 export const CLUSTERED_MESSAGE_THRESHOLD_MS = 5 * 60 * 1000
@@ -57,6 +65,55 @@ export function hasReachedReactionLimit(
     reaction => reaction.sender.did === myDid,
   )
   return myReactions.length >= EMOJI_REACTION_LIMIT
+}
+
+/**
+ * Whether the active conversation accepts emoji reactions. Reactions are
+ * unavailable when:
+ * - the convo is in the disabled state
+ * - a group convo is locked or permanently locked
+ * - 1-1: the other user is blocked or is blocking us
+ * - group: we are blocking the primary member (the owner)
+ */
+export function canReact({
+  convoState,
+  primaryMember,
+  moderationOpts,
+}: {
+  convoState: ConvoState
+  primaryMember: Shadow<bsky.profile.AnyProfileView> | undefined
+  moderationOpts: ModerationOpts | undefined
+}): boolean {
+  if (convoState.status === ConvoStatus.Disabled) {
+    return false
+  }
+
+  if (!convoState.convo) {
+    return true
+  }
+
+  if (convoState.convo.kind === 'group') {
+    const {lockStatus} = convoState.convo.details
+    if (lockStatus === 'locked' || lockStatus === 'locked-permanently') {
+      return false
+    }
+  }
+
+  if (primaryMember && moderationOpts) {
+    const moderation = moderateProfile(primaryMember, moderationOpts)
+    if (convoState.convo.kind === 'direct') {
+      // Either direction (blocking or blocked-by) hides reactions in 1-1s
+      if (moderation.blocked) return false
+    } else {
+      // In groups, only "we are blocking" the owner hides reactions
+      const isBlockingPrimary = moderation
+        .ui('profileView')
+        .alerts.some(alert => alert.type === 'blocking')
+      if (isBlockingPrimary) return false
+    }
+  }
+
+  return true
 }
 
 export type GroupConvoMember = ChatBskyActorDefs.ProfileViewBasic & {

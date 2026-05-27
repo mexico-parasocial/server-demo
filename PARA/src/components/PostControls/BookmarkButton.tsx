@@ -143,7 +143,7 @@ export const BookmarkButton = memo(function BookmarkButton({
       onPress={onHandlePress}
       hitSlop={hitSlop}>
       <PostControlButtonIcon
-        fill={isBookmarked ? t.palette.primary_500 : undefined}
+        fill={isBookmarked ? t.palette.primary_500 : t.palette.contrast_500}
         icon={isBookmarked ? BookmarkFilled : Bookmark}
       />
     </PostControlButton>

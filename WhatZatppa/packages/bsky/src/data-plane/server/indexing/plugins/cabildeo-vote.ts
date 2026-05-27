@@ -19,6 +19,8 @@ interface VoteRecord {
   reason?: string
   isDirect: boolean
   delegatedFrom?: string[]
+  voteNullifier?: string
+  eligibilityProofRef?: string
   createdAt: string
 }
 
@@ -43,39 +45,60 @@ const insertFn = async (
     obj.subject &&
     typeof obj.signal === 'number'
   ) {
-    const inserted = await db
-      .insertInto('para_policy_vote')
-      .values({
-        uri: uri.toString(),
-        cid: cid.toString(),
-        creator: uri.host,
-        subject: obj.subject,
-        subjectType: obj.subjectType,
-        signal: obj.signal,
-        isDirect: obj.isDirect ? (1 as const) : (0 as const),
-        delegatedFrom: obj.delegatedFrom?.length
-          ? sql<string[]>`${JSON.stringify(obj.delegatedFrom)}`
-          : null,
-        reason: obj.reason ?? null,
-        createdAt: normalizeDatetimeAlways(obj.createdAt),
-        indexedAt: timestamp,
-      })
-      .onConflict((oc) =>
-        oc.columns(['creator', 'subjectType', 'subject']).doUpdateSet({
-          uri: uri.toString(),
-          cid: cid.toString(),
-          signal: obj.signal,
-          isDirect: obj.isDirect ? (1 as const) : (0 as const),
-          delegatedFrom: obj.delegatedFrom?.length
-            ? sql<string[]>`${JSON.stringify(obj.delegatedFrom)}`
-            : null,
-          reason: obj.reason ?? null,
-          createdAt: normalizeDatetimeAlways(obj.createdAt),
-          indexedAt: timestamp,
-        }),
-      )
-      .returningAll()
-      .executeTakeFirst()
+    const record = {
+      uri: uri.toString(),
+      cid: cid.toString(),
+      creator: uri.host,
+      subject: obj.subject,
+      subjectType: obj.subjectType,
+      signal: obj.signal,
+      isDirect: obj.isDirect ? (1 as const) : (0 as const),
+      delegatedFrom: obj.delegatedFrom?.length
+        ? sql<string[]>`${JSON.stringify(obj.delegatedFrom)}`
+        : null,
+      voteNullifier: normalizeOpaqueProofField(obj.voteNullifier, 128),
+      eligibilityProofRef: normalizeOpaqueProofField(obj.eligibilityProofRef, 512),
+      reason: obj.reason ?? null,
+      createdAt: normalizeDatetimeAlways(obj.createdAt),
+      indexedAt: timestamp,
+    }
+
+    const existingByNullifier = record.voteNullifier
+      ? await db
+          .selectFrom('para_policy_vote')
+          .where('subjectType', '=', record.subjectType)
+          .where('subject', '=', record.subject)
+          .where('voteNullifier', '=', record.voteNullifier)
+          .select(['uri'])
+          .executeTakeFirst()
+      : null
+
+    const inserted = existingByNullifier
+      ? await db
+          .updateTable('para_policy_vote')
+          .set(record)
+          .where('uri', '=', existingByNullifier.uri)
+          .returningAll()
+          .executeTakeFirst()
+      : await db
+          .insertInto('para_policy_vote')
+          .values(record)
+          .onConflict((oc) =>
+            oc.columns(['creator', 'subjectType', 'subject']).doUpdateSet({
+              uri: record.uri,
+              cid: record.cid,
+              signal: record.signal,
+              isDirect: record.isDirect,
+              delegatedFrom: record.delegatedFrom,
+              voteNullifier: record.voteNullifier,
+              eligibilityProofRef: record.eligibilityProofRef,
+              reason: record.reason,
+              createdAt: record.createdAt,
+              indexedAt: record.indexedAt,
+            }),
+          )
+          .returningAll()
+          .executeTakeFirst()
 
     return inserted ? { policyRecord: inserted } : null
   }
@@ -110,26 +133,46 @@ const insertFn = async (
     delegatedFrom: obj.delegatedFrom?.length
       ? sql<string[]>`${JSON.stringify(obj.delegatedFrom)}`
       : null,
+    voteNullifier: normalizeOpaqueProofField(obj.voteNullifier, 128),
+    eligibilityProofRef: normalizeOpaqueProofField(obj.eligibilityProofRef, 512),
     createdAt: normalizeDatetimeAlways(obj.createdAt),
     indexedAt: timestamp,
   }
 
-  const inserted = await db
-    .insertInto('cabildeo_vote')
-    .values(record)
-    .onConflict((oc) =>
-      oc.columns(['creator', 'cabildeo']).doUpdateSet({
-        uri: record.uri,
-        cid: record.cid,
-        selectedOption: record.selectedOption,
-        isDirect: record.isDirect,
-        delegatedFrom: record.delegatedFrom,
-        createdAt: record.createdAt,
-        indexedAt: record.indexedAt,
-      }),
-    )
-    .returningAll()
-    .executeTakeFirst()
+  const existingByNullifier = record.voteNullifier
+    ? await db
+        .selectFrom('cabildeo_vote')
+        .where('cabildeo', '=', record.cabildeo)
+        .where('voteNullifier', '=', record.voteNullifier)
+        .select(['uri'])
+        .executeTakeFirst()
+    : null
+
+  const inserted = existingByNullifier
+    ? await db
+        .updateTable('cabildeo_vote')
+        .set(record)
+        .where('uri', '=', existingByNullifier.uri)
+        .returningAll()
+        .executeTakeFirst()
+    : await db
+        .insertInto('cabildeo_vote')
+        .values(record)
+        .onConflict((oc) =>
+          oc.columns(['creator', 'cabildeo']).doUpdateSet({
+            uri: record.uri,
+            cid: record.cid,
+            selectedOption: record.selectedOption,
+            isDirect: record.isDirect,
+            delegatedFrom: record.delegatedFrom,
+            voteNullifier: record.voteNullifier,
+            eligibilityProofRef: record.eligibilityProofRef,
+            createdAt: record.createdAt,
+            indexedAt: record.indexedAt,
+          }),
+        )
+        .returningAll()
+        .executeTakeFirst()
 
   if (!inserted) {
     return null
@@ -209,6 +252,13 @@ const normalizeCommunitySlug = (value: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
+
+const normalizeOpaqueProofField = (value: unknown, maxLength: number) => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (!trimmed || trimmed.length > maxLength) return null
+  return trimmed
+}
 
 const notifsForInsert = () => {
   return []

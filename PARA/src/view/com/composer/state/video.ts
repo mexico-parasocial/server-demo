@@ -263,6 +263,7 @@ export async function processVideo(
   did: string,
   signal: AbortSignal,
   _: I18n['_'],
+  TEMP_enableLargeVideoUploads: boolean,
 ) {
   let video: CompressedVideo | undefined
   try {
@@ -271,9 +272,14 @@ export async function processVideo(
         dispatch({type: 'update_progress', progress: trunc2dp(num), signal})
       },
       signal,
+      TEMP_enableLargeVideoUploads,
     })
   } catch (e) {
-    const message = getCompressErrorMessage(e, _)
+    const message = getCompressErrorMessage(
+      e,
+      _,
+      TEMP_enableLargeVideoUploads,
+    )
     if (message !== null) {
       dispatch({
         type: 'to_error',
@@ -302,7 +308,7 @@ export async function processVideo(
       },
     })
   } catch (e) {
-    const message = getUploadErrorMessage(e, _)
+    const message = getUploadErrorMessage(e, _, TEMP_enableLargeVideoUploads)
     if (message !== null) {
       dispatch({
         type: 'to_error',
@@ -386,20 +392,30 @@ export async function processVideo(
   }
 }
 
-function getCompressErrorMessage(e: unknown, _: I18n['_']): string | null {
+function getCompressErrorMessage(
+  e: unknown,
+  _: I18n['_'],
+  TEMP_enableLargeVideoUploads: boolean,
+): string | null {
+  const videoSize = TEMP_enableLargeVideoUploads ? 300 : 100
   if (e instanceof AbortError) {
     return null
   }
   if (e instanceof VideoTooLargeError) {
     return _(
-      msg`The selected video is larger than 100 MB. Please try again with a smaller file.`,
+      msg`The selected video is larger than ${videoSize} MB. Please try again with a smaller file.`,
     )
   }
   logger.error('Error compressing video', {safeMessage: e})
   return _(msg`An error occurred while compressing the video.`)
 }
 
-function getUploadErrorMessage(e: unknown, _: I18n['_']): string | null {
+function getUploadErrorMessage(
+  e: unknown,
+  _: I18n['_'],
+  TEMP_enableLargeVideoUploads: boolean,
+): string | null {
+  const videoSize = TEMP_enableLargeVideoUploads ? 300 : 100
   if (e instanceof AbortError) {
     return null
   }
@@ -411,7 +427,7 @@ function getUploadErrorMessage(e: unknown, _: I18n['_']): string | null {
         return _(msg`You are not allowed to upload videos.`)
       case 'Uploading is disabled at the moment':
         return _(
-          msg`Hold up! We’re gradually giving access to video, and you’re still waiting in line. Check back soon!`,
+          msg`Hold up! We're gradually giving access to video, and you're still waiting in line. Check back soon!`,
         )
       case "Failed to get user's upload stats":
         return _(
@@ -430,9 +446,12 @@ function getUploadErrorMessage(e: unknown, _: I18n['_']): string | null {
           msg`Your account is not yet old enough to upload videos. Please try again later.`,
         )
       case 'file size (100000001 bytes) is larger than the maximum allowed size (100000000 bytes)':
+      case 'file size (300000001 bytes) is larger than the maximum allowed size (300000000 bytes)':
         return _(
-          msg`The selected video is larger than 100 MB. Please try again with a smaller file.`,
+          msg`The selected video is larger than ${videoSize} MB. Please try again with a smaller file.`,
         )
+      case 'Confirm your email address to upload videos':
+        return _(msg`Please confirm your email address to upload videos.`)
       default:
         return e.message
     }

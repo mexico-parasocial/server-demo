@@ -1,9 +1,9 @@
 import {useCallback, useMemo, useRef} from 'react'
 import {useWindowDimensions, View} from 'react-native'
 import Animated, {useAnimatedStyle} from 'react-native-reanimated'
+import {type AppBskyActorDefs} from '@atproto/api'
 import {Trans} from '@lingui/react/macro'
 import {type RouteProp, useRoute} from '@react-navigation/native'
-import {type AppBskyActorDefs} from '@atproto/api'
 
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {type OpenQuestion} from '#/lib/mock-data'
@@ -27,8 +27,8 @@ import {
   OpenQuestionAnchor,
   OpenQuestionAnchorSkeleton,
   OpenQuestionReply,
-  OpenQuestionReplySkeleton,
   type OpenQuestionReplyData,
+  OpenQuestionReplySkeleton,
   type OQThreadItem,
 } from './components/OpenQuestionItem'
 

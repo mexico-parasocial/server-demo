@@ -47,7 +47,7 @@ const MetricCard = ({
   value: string
   subLabel?: string
   description?: string
-  icon?: React.ComponentType<any>
+  icon?: React.ComponentType<{size?: string; style?: unknown}>
 }) => {
   const t = useTheme()
   return (
@@ -78,7 +78,7 @@ const SectionHeader = ({
   icon: Icon,
 }: {
   title: string
-  icon?: React.ComponentType<any>
+  icon?: React.ComponentType<{size?: string; style?: unknown}>
 }) => {
   const t = useTheme()
   return (

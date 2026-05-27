@@ -159,6 +159,7 @@ import * as ChatBskyActorDeclaration from './types/chat/bsky/actor/declaration.j
 import * as ChatBskyActorDefs from './types/chat/bsky/actor/defs.js'
 import * as ChatBskyActorDeleteAccount from './types/chat/bsky/actor/deleteAccount.js'
 import * as ChatBskyActorExportAccountData from './types/chat/bsky/actor/exportAccountData.js'
+import * as ChatBskyActorGetStatus from './types/chat/bsky/actor/getStatus.js'
 import * as ChatBskyConvoAcceptConvo from './types/chat/bsky/convo/acceptConvo.js'
 import * as ChatBskyConvoAddReaction from './types/chat/bsky/convo/addReaction.js'
 import * as ChatBskyConvoDefs from './types/chat/bsky/convo/defs.js'
@@ -625,6 +626,7 @@ export * as ChatBskyActorDeclaration from './types/chat/bsky/actor/declaration.j
 export * as ChatBskyActorDefs from './types/chat/bsky/actor/defs.js'
 export * as ChatBskyActorDeleteAccount from './types/chat/bsky/actor/deleteAccount.js'
 export * as ChatBskyActorExportAccountData from './types/chat/bsky/actor/exportAccountData.js'
+export * as ChatBskyActorGetStatus from './types/chat/bsky/actor/getStatus.js'
 export * as ChatBskyConvoAcceptConvo from './types/chat/bsky/convo/acceptConvo.js'
 export * as ChatBskyConvoAddReaction from './types/chat/bsky/convo/addReaction.js'
 export * as ChatBskyConvoDefs from './types/chat/bsky/convo/defs.js'
@@ -3945,6 +3947,18 @@ export class ChatBskyActorNS {
   ): Promise<ChatBskyActorExportAccountData.Response> {
     return this._client.call(
       'chat.bsky.actor.exportAccountData',
+      params,
+      undefined,
+      opts,
+    )
+  }
+
+  getStatus(
+    params?: ChatBskyActorGetStatus.QueryParams,
+    opts?: ChatBskyActorGetStatus.CallOptions,
+  ): Promise<ChatBskyActorGetStatus.Response> {
+    return this._client.call(
+      'chat.bsky.actor.getStatus',
       params,
       undefined,
       opts,

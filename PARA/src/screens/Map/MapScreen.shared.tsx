@@ -44,7 +44,12 @@ const MexicoGeoJSONNative = !IS_WEB
   ? require('#/lib/constants/mexicoGeoJSON.json')
   : null
 import {type CommonNavigatorParams} from '#/lib/routes/types'
-import {POST_FLAIRS, type PostFlair} from '#/lib/tags'
+import {POST_FLAIRS} from '#/lib/tags'
+import {
+  addMapSearchHistoryItem,
+  clearMapSearchHistory,
+  getMapSearchHistory,
+} from '#/state/map'
 import {useCabildeosQuery} from '#/state/queries/cabildeo'
 import {
   atoms as a,
@@ -53,7 +58,6 @@ import {
   useTheme,
   web,
 } from '#/alf'
-import {FlairSelectionList} from '#/components/FlairSelectionList'
 import {Filter_Stroke2_Corner0_Rounded as FilterIcon} from '#/components/icons/Filter'
 import {PinLocation_Stroke2_Corner0_Rounded as PinLocationIcon} from '#/components/icons/PinLocation'
 import {Header, Screen} from '#/components/Layout'
@@ -73,6 +77,7 @@ import {
   MapSearchControls,
   SelectedStateOverlay,
 } from './MapComponents'
+import {MapDiscourseLensContent} from './MapDiscourseLensContent'
 import {
   MapSidebarLayers,
   MapSidebarSearch,
@@ -118,8 +123,30 @@ export type MapViewProps = {
   provider?: string | null
   polygonsData?: PolygonData[]
   civicPointsData?: CivicPoint[]
+  cityMarkersData?: Array<{
+    name: string
+    stateName: string
+    coordinate: Coordinate
+    color: string
+    onPress?: () => void
+  }>
+  districtPolygonsData?: Array<{
+    districtKey: string
+    boundary: Coordinate[]
+    fillColor: string
+    strokeColor: string
+    strokeWidth: number
+    onPress?: () => void
+  }>
+  districtCentroidsData?: Array<{
+    districtKey: string
+    coordinate: Coordinate
+    color: string
+    onPress?: () => void
+  }>
   onRegionChangeComplete?: (region: MapRegion) => void
   onPress?: () => void
+  onCivicPointPress?: (uri: string) => void
   children?: ReactNode
 }
 
@@ -265,6 +292,11 @@ function getCitiesForState(stateName: string) {
   return match?.[1] || []
 }
 
+function getDiscourseFlairId(label: string): string | null {
+  const flair = Object.values(POST_FLAIRS).find(f => f.label === label)
+  return flair?.id ?? null
+}
+
 function getPartyColor(party: string) {
   switch (party) {
     case 'Morena':
@@ -282,7 +314,7 @@ function getPartyColor(party: string) {
     case 'PRD':
       return '#FFD700'
     default:
-      return '#5B6B84'
+      return '#666666'
   }
 }
 
@@ -386,7 +418,6 @@ function getLayerFillColor({
   activeLayer,
   isSelected,
   selectedDiscourseItem,
-  stateName,
   theme,
   civicCount,
   maxCivicCount,
@@ -394,21 +425,18 @@ function getLayerFillColor({
   activeLayer: MapLayer
   isSelected: boolean
   selectedDiscourseItem: string
-  stateName: string
   theme: ReturnType<typeof useTheme>
   civicCount?: number
   maxCivicCount?: number
 }) {
-  if (selectedDiscourseItem && selectedDiscourseItem !== 'Any') {
-    const seed = `${stateName}:${selectedDiscourseItem}:${activeLayer}`
-    let hash = 0
+  const hasDiscourseFilter =
+    selectedDiscourseItem && selectedDiscourseItem !== 'Any'
 
-    for (let i = 0; i < seed.length; i++) {
-      hash = seed.charCodeAt(i) + ((hash << 5) - hash)
-    }
-
-    const intensity = Math.abs(hash) % 140
-    const alpha = (95 + intensity).toString(16).padStart(2, '0')
+  if (hasDiscourseFilter && maxCivicCount && maxCivicCount > 0) {
+    const density = (civicCount || 0) / maxCivicCount
+    const alpha = Math.round(20 + density * 100)
+      .toString(16)
+      .padStart(2, '0')
     return `#FF5A36${alpha}`
   }
 
@@ -532,10 +560,19 @@ export function MapScreenImpl({
     'Matter',
   )
   const [selectedDiscourseItem, setSelectedDiscourseItem] = useState('')
+
+  const filteredCabildeos = useMemo(() => {
+    if (!selectedDiscourseItem || selectedDiscourseItem === 'Any') {
+      return cabildeos || []
+    }
+    const flairId = getDiscourseFlairId(selectedDiscourseItem)
+    if (!flairId) return cabildeos || []
+    return (cabildeos || []).filter(c => c.flairs?.includes(flairId))
+  }, [cabildeos, selectedDiscourseItem])
   const [mapRegion, setMapRegion] = useState<MapRegion>(INITIAL_REGION)
   const [recentSearchResults, setRecentSearchResults] = useState<
     SearchResult[]
-  >([])
+  >(() => getMapSearchHistory())
   const [isLocating, setIsLocating] = useState(false)
   const [mexicoGeoJSON, setMexicoGeoJSON] =
     useState<unknown>(MexicoGeoJSONNative)
@@ -640,6 +677,8 @@ export function MapScreenImpl({
       if (options.resetSearch) {
         setSearchQuery('')
         setSearchExpanded(false)
+        clearMapSearchHistory()
+        setRecentSearchResults([])
       }
 
       setMapRouteParams({})
@@ -650,11 +689,13 @@ export function MapScreenImpl({
   const rememberSearchResult = useCallback((result: SearchResult) => {
     setRecentSearchResults(current => {
       const key = getSearchResultKey(result)
-      return [
+      const next = [
         result,
         ...current.filter(item => getSearchResultKey(item) !== key),
       ].slice(0, 5)
+      return next
     })
+    addMapSearchHistoryItem(result)
   }, [])
 
   const focusCity = useCallback(
@@ -984,7 +1025,7 @@ export function MapScreenImpl({
   const {cabildeosPerState, maxCivicCount} = useMemo(() => {
     const counts = new Map<string, number>()
     let max = 0
-    for (const c of cabildeos || []) {
+    for (const c of filteredCabildeos) {
       if (!c.region) continue
       const normalized = normalizeMexicoStateName(c.region)
       const count = (counts.get(normalized) || 0) + 1
@@ -992,7 +1033,7 @@ export function MapScreenImpl({
       if (count > max) max = count
     }
     return {cabildeosPerState: counts, maxCivicCount: max}
-  }, [cabildeos])
+  }, [filteredCabildeos])
 
   const polygonsData = useMemo<MapViewProps['polygonsData']>(() => {
     return preparedStateFeatures.flatMap(feature => {
@@ -1003,7 +1044,6 @@ export function MapScreenImpl({
         activeLayer,
         isSelected,
         selectedDiscourseItem,
-        stateName: feature.name,
         theme: t,
         civicCount,
         maxCivicCount,
@@ -1049,6 +1089,7 @@ export function MapScreenImpl({
         strokeColor={polygon.strokeColor}
         strokeWidth={polygon.strokeWidth}
         zIndex={polygon.zIndex}
+        onPress={polygon.onPress}
       />
     ))
   }, [PolygonComponent, polygonsData])
@@ -1080,6 +1121,19 @@ export function MapScreenImpl({
             strokeColor={d.accent}
             strokeWidth={isSelected ? 1.5 : 0.8}
             zIndex={isSelected ? 11 : 2}
+            onPress={() => {
+              setSelectedDistrictId(d.id)
+              if (!showDistricts) {
+                setShowDistricts(true)
+                setActiveLayer('districts')
+              }
+              if (d.boundary && d.boundary.length > 0) {
+                mapRef.current?.fitToCoordinates?.(d.boundary, {
+                  edgePadding: {top: 60, right: 60, bottom: 60, left: 60},
+                  animated: true,
+                })
+              }
+            }}
           />
         )
       })
@@ -1253,7 +1307,7 @@ export function MapScreenImpl({
   // Raw civic point data for native MapLibre heatmap + clustering (web only)
   const civicPointsData = useMemo(() => {
     if (activeLayer !== 'civic') return []
-    return (cabildeos || [])
+    return filteredCabildeos
       .filter(
         (c): c is CabildeoView & {geo: {latE7: number; lngE7: number}} =>
           !!c.geo,
@@ -1265,45 +1319,137 @@ export function MapScreenImpl({
         uri: c.uri,
         title: c.title,
       }))
-  }, [activeLayer, cabildeos])
+  }, [activeLayer, filteredCabildeos])
 
   const civicMarkers = useMemo(() => {
     if (!MarkerComponent || activeLayer !== 'civic') return []
 
-    return civicPointsData.map(cabildeo => (
-      <MarkerComponent
-        key={`civic:${cabildeo.uri}`}
-        coordinate={{
-          latitude: cabildeo.latitude,
-          longitude: cabildeo.longitude,
-        }}
-        title={cabildeo.title}
-        anchor={{x: 0.5, y: 0.5}}
-        tappable
-        tracksViewChanges={false}
-        zIndex={15}
-        onPress={() => {
-          navigation.navigate('CabildeoDetail', {
-            cabildeoUri: cabildeo.uri!,
-          })
-        }}>
-        <View style={styles.civicMarkerWrap}>
-          <View
-            style={[
-              styles.civicMarkerDot,
-              {backgroundColor: t.palette.primary_500},
-            ]}
-          />
-        </View>
-      </MarkerComponent>
-    ))
+    return civicPointsData.map(cabildeo => {
+      const cab = filteredCabildeos.find(c => c.uri === cabildeo.uri)
+      return (
+        <MarkerComponent
+          key={`civic:${cabildeo.uri}`}
+          coordinate={{
+            latitude: cabildeo.latitude,
+            longitude: cabildeo.longitude,
+          }}
+          title={cabildeo.title}
+          anchor={{x: 0.5, y: 0.5}}
+          tappable
+          tracksViewChanges={false}
+          zIndex={15}
+          onPress={() => {
+            navigation.navigate('CabildeoDetail', {
+              cabildeoUri: cabildeo.uri!,
+            })
+          }}>
+          <View style={styles.civicMarkerWrap}>
+            <View
+              style={[
+                styles.civicMarkerDot,
+                {backgroundColor: t.palette.primary_500},
+              ]}
+            />
+            {cab && (
+              <View
+                style={[
+                  a.absolute,
+                  a.px_xs,
+                  a.py_2xs,
+                  a.rounded_xs,
+                  t.atoms.bg,
+                  a.border,
+                  t.atoms.border_contrast_low,
+                  {bottom: 18, minWidth: 120, maxWidth: 180},
+                ]}>
+                <Text
+                  style={[a.text_2xs, a.font_bold, t.atoms.text]}
+                  numberOfLines={1}>
+                  {cab.title}
+                </Text>
+                <Text
+                  style={[
+                    a.text_xs,
+                    t.atoms.text_contrast_medium,
+                    a.mt_xs,
+                  ]}>
+                  {cab.phase} · {cab.voteTotals.total} votes
+                </Text>
+              </View>
+            )}
+          </View>
+        </MarkerComponent>
+      )
+    })
   }, [
     MarkerComponent,
     activeLayer,
     civicPointsData,
+    filteredCabildeos,
     navigation,
-    t.palette.primary_500,
+    t,
   ])
+
+  // Data arrays for MapLibre imperative rendering (web)
+  const cityMarkersData = useMemo(() => {
+    if (!showCities || !selectedState) return []
+    return selectedStateCities.map(city => ({
+      name: city.name,
+      stateName: city.stateName,
+      coordinate: city.coordinate,
+      color: getPartyColor(city.dominantParty),
+      onPress: () => {
+        setSelectedCityName(city.name)
+        focusCity(city.stateName, city.name)
+      },
+    }))
+  }, [showCities, selectedState, selectedStateCities, focusCity])
+
+  const districtPolygonsData = useMemo(() => {
+    if (activeLayer !== 'districts' || !selectedState) return []
+    return getDistrictsByState(selectedState.name)
+      .filter(d => d.boundary && d.boundary.length >= 4)
+      .map(d => {
+        const isSelected = selectedDistrictId === d.id
+        return {
+          districtKey: d.districtKey,
+          boundary: d.boundary!,
+          fillColor: `${d.accent}${isSelected ? '60' : '30'}`,
+          strokeColor: d.accent,
+          strokeWidth: isSelected ? 1.5 : 0.8,
+          onPress: () => {
+            setSelectedDistrictId(d.id)
+            setMapRouteParams({
+              state: selectedState.name,
+              layer: 'districts',
+              districtId: d.id,
+            })
+          },
+        }
+      })
+  }, [activeLayer, selectedDistrictId, selectedState, setMapRouteParams])
+
+  const districtCentroidsData = useMemo(() => {
+    if (activeLayer !== 'districts' || !selectedState) return []
+    return getDistrictsByState(selectedState.name)
+      .filter(d => d.centroid)
+      .map(d => {
+        const isSelected = selectedDistrictId === d.id
+        return {
+          districtKey: d.districtKey,
+          coordinate: d.centroid!,
+          color: `${d.accent}${isSelected ? 'CC' : '80'}`,
+          onPress: () => {
+            setSelectedDistrictId(d.id)
+            setMapRouteParams({
+              state: selectedState.name,
+              layer: 'districts',
+              districtId: d.id,
+            })
+          },
+        }
+      })
+  }, [activeLayer, selectedDistrictId, selectedState, setMapRouteParams])
 
   const hasSplitPane = DesktopLayout && DesktopSidebarComponents
   const isDesktopSplitPane = !!hasSplitPane && rightNavVisible
@@ -1317,6 +1463,9 @@ export function MapScreenImpl({
         provider={web('google')}
         polygonsData={polygonsData}
         civicPointsData={civicPointsData}
+        cityMarkersData={cityMarkersData}
+        districtPolygonsData={districtPolygonsData}
+        districtCentroidsData={districtCentroidsData}
         onRegionChangeComplete={(region: MapRegion) => {
           if (
             region &&
@@ -1329,7 +1478,17 @@ export function MapScreenImpl({
           }
         }}
         onPress={() => {
-          clearMapSelection()
+          // Only clear if no state is selected — otherwise tapping a state
+          // polygon fires both polygon.onPress AND map onPress, which
+          // immediately deselects the newly selected state.
+          if (!selectedState) {
+            clearMapSelection()
+          }
+        }}
+        onCivicPointPress={(uri: string) => {
+          navigation.navigate('CabildeoDetail', {
+            cabildeoUri: uri,
+          })
         }}>
         {renderedPolygons}
         {renderedDistrictPolygons}
@@ -1348,7 +1507,7 @@ export function MapScreenImpl({
 
   const floatingControls = (
     <>
-      {!gtMobile && MapViewComponent && (
+      {MapViewComponent && (!gtMobile || isDesktopSplitPane) && (
         <View
           style={[
             a.absolute,
@@ -1509,8 +1668,8 @@ export function MapScreenImpl({
       <BigCitiesDataOverlay
         selectedState={selectedState}
         showCities={showCities}
+        selectedCityName={selectedCityName}
         onClose={() => {
-          setActiveLayer('states')
           setShowCities(false)
           setSelectedCityName(null)
           if (selectedState) {
@@ -1579,6 +1738,10 @@ export function MapScreenImpl({
           discourseType={discourseType}
           selectedDiscourseItem={selectedDiscourseItem}
           onSelectDiscourseType={setDiscourseType}
+          onSelectDiscourseItem={(item, type) => {
+            setSelectedDiscourseItem(item === 'Any' ? '' : item)
+            setDiscourseType(type)
+          }}
           onClear={() => setSelectedDiscourseItem('')}
           onOpenPicker={() => setShowDiscourseModal(true)}
         />
@@ -1771,108 +1934,20 @@ export function MapScreenImpl({
                 ]}
               />
 
-              <View style={[a.mb_md]}>
-                <Text
-                  style={[
-                    a.text_xs,
-                    a.font_bold,
-                    t.atoms.text_contrast_medium,
-                  ]}>
-                  DISCUSSION HEAT
-                </Text>
-                <Text style={[a.text_lg, a.font_bold, t.atoms.text, a.mt_xs]}>
-                  <Trans>Choose a discourse lens</Trans>
-                </Text>
-                <Text
-                  style={[a.text_sm, t.atoms.text_contrast_medium, a.mt_xs]}>
-                  <Trans>
-                    This is a visual layer only. It changes how states are
-                    tinted across the map.
-                  </Trans>
-                </Text>
-              </View>
-
-              <View style={[a.flex_row, a.gap_sm, a.mb_md]}>
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  onPress={() => setDiscourseType('Matter')}
-                  style={[
-                    styles.pillButton(t),
-                    discourseType === 'Matter'
-                      ? styles.pillButtonActive(t)
-                      : null,
-                  ]}>
-                  <Text
-                    style={[
-                      a.text_sm,
-                      discourseType === 'Matter'
-                        ? [a.font_bold, {color: t.palette.primary_500}]
-                        : t.atoms.text_contrast_medium,
-                    ]}>
-                    Matter
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  onPress={() => setDiscourseType('Policy')}
-                  style={[
-                    styles.pillButton(t),
-                    discourseType === 'Policy'
-                      ? styles.pillButtonActive(t)
-                      : null,
-                  ]}>
-                  <Text
-                    style={[
-                      a.text_sm,
-                      discourseType === 'Policy'
-                        ? [a.font_bold, {color: t.palette.primary_500}]
-                        : t.atoms.text_contrast_medium,
-                    ]}>
-                    Policy
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <FlairSelectionList
-                selectedFlairs={
-                  selectedDiscourseItem && selectedDiscourseItem !== 'Any'
-                    ? Object.values(POST_FLAIRS).filter(
-                        (f: PostFlair) => f.label === selectedDiscourseItem,
-                      )
-                    : []
-                }
-                setSelectedFlairs={flairs => {
-                  if (flairs.length > 0) {
-                    const flair = flairs[0]
-                    setDiscourseType(
-                      flair.id.startsWith('policy_') ? 'Policy' : 'Matter',
-                    )
-                    setSelectedDiscourseItem(flair.label)
-                  } else {
-                    setSelectedDiscourseItem('Any')
-                  }
+              <MapDiscourseLensContent
+                discourseType={discourseType}
+                onChangeDiscourseType={setDiscourseType}
+                selectedDiscourseItem={selectedDiscourseItem}
+                onSelectDiscourseItem={(item, type) => {
+                  setSelectedDiscourseItem(item === 'Any' ? '' : item)
+                  setDiscourseType(type)
                   setShowDiscourseModal(false)
                 }}
-                mode={discourseType.toLowerCase() as 'matter' | 'policy'}
-                onClose={() => setShowDiscourseModal(false)}
-              />
-
-              <TouchableOpacity
-                accessibilityRole="button"
-                onPress={() => {
+                onClear={() => {
                   setSelectedDiscourseItem('')
                   setShowDiscourseModal(false)
                 }}
-                style={[a.mt_md, a.align_center]}>
-                <Text
-                  style={[
-                    a.text_sm,
-                    a.font_bold,
-                    t.atoms.text_contrast_medium,
-                  ]}>
-                  <Trans>Clear heatmap</Trans>
-                </Text>
-              </TouchableOpacity>
+              />
             </ScrollView>
           </View>
         </View>

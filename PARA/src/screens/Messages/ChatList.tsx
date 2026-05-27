@@ -6,7 +6,22 @@ import {Trans, useLingui} from '@lingui/react/macro'
 import {useFocusEffect, useIsFocused} from '@react-navigation/native'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 
-import {useAgeAssurance} from '#/ageAssurance'
+import {useAppState} from '#/lib/appState'
+import {useInitialNumToRender} from '#/lib/hooks/useInitialNumToRender'
+import {useRequireEmailVerification} from '#/lib/hooks/useRequireEmailVerification'
+import {type MessagesTabNavigatorParams} from '#/lib/routes/types'
+import {cleanError} from '#/lib/strings/errors'
+import {logger} from '#/logger'
+import {listenSoftReset} from '#/state/events'
+import {MESSAGE_SCREEN_POLL_INTERVAL} from '#/state/messages/convo/const'
+import {useMessagesEventBus} from '#/state/messages/events'
+import {useUnreadCountQuery} from '#/state/queries/matrix'
+import {useLeftConvos} from '#/state/queries/messages/leave-conversation'
+import {useListConvosQuery} from '#/state/queries/messages/list-conversations'
+import {useSession} from '#/state/session'
+import {EmptyState} from '#/view/com/util/EmptyState'
+import {List, type ListRef} from '#/view/com/util/List'
+import {ChatListLoadingPlaceholder} from '#/view/com/util/LoadingPlaceholder'
 import {atoms as a, useBreakpoints, useTheme, web} from '#/alf'
 import {AgeRestrictedScreen} from '#/components/ageAssurance/AgeRestrictedScreen'
 import {useAgeAssuranceCopy} from '#/components/ageAssurance/useAgeAssuranceCopy'
@@ -24,24 +39,8 @@ import * as Layout from '#/components/Layout'
 import {Link} from '#/components/Link'
 import {ListFooter} from '#/components/Lists'
 import {Text} from '#/components/Typography'
+import {useAgeAssurance} from '#/ageAssurance'
 import {IS_NATIVE} from '#/env'
-import {useAppState} from '#/lib/appState'
-import {useInitialNumToRender} from '#/lib/hooks/useInitialNumToRender'
-import {useRequireEmailVerification} from '#/lib/hooks/useRequireEmailVerification'
-import {type MessagesTabNavigatorParams} from '#/lib/routes/types'
-import {cleanError} from '#/lib/strings/errors'
-import {logger} from '#/logger'
-import {listenSoftReset} from '#/state/events'
-import {MESSAGE_SCREEN_POLL_INTERVAL} from '#/state/messages/convo/const'
-import {useMessagesEventBus} from '#/state/messages/events'
-import {useUnreadCountQuery} from '#/state/queries/matrix'
-import {useLeftConvos} from '#/state/queries/messages/leave-conversation'
-import {useListConvosQuery} from '#/state/queries/messages/list-conversations'
-import {useSession} from '#/state/session'
-import {EmptyState} from '#/view/com/util/EmptyState'
-import {List, type ListRef} from '#/view/com/util/List'
-import {ChatListLoadingPlaceholder} from '#/view/com/util/LoadingPlaceholder'
-
 import {AgentSelection} from './components/AgentSelection'
 import {ChatListItem} from './components/ChatListItem'
 import {InboxRequests} from './components/InboxRequests'
@@ -153,6 +152,19 @@ export function MessagesScreenInner({navigation, route}: Props) {
     [navigation],
   )
 
+    const openChatControl = useCallback(() => {
+    newChatControl.open()
+  }, [newChatControl])
+
+  const requireEmailVerification = useRequireEmailVerification()
+  const wrappedOpenChatControl = requireEmailVerification(openChatControl, {
+    instructions: [
+      <Trans key="new-chat">
+        Before you can message another user, you must first verify your email.
+      </Trans>,
+    ],
+  })
+
   if (isWithinSplitView) {
     return (
       <>
@@ -165,7 +177,7 @@ export function MessagesScreenInner({navigation, route}: Props) {
           button={{
             label: l`New chat`,
             text: l`New chat`,
-            onPress: newChatControl.open,
+            onPress: wrappedOpenChatControl,
             size: 'small',
             color: 'primary',
             icon: MessagePlusIcon,
@@ -194,7 +206,6 @@ export function ChatList({
   newChatControl: DialogControlProps
 }) {
   const t = useTheme()
-  const {t: l} = useLingui()
   const {currentAccount} = useSession()
   const scrollElRef: ListRef = useAnimatedRef()
   const {isWithinSplitView} = useIsWithinSplitView()
@@ -288,7 +299,7 @@ export function ChatList({
       })
     }
     setIsPTRing(false)
-  }, [currentAccount?.did, refetch, refetchInbox, refetchMatrixUnread])
+  }, [currentAccount, refetch, refetchInbox, refetchMatrixUnread])
 
   const onEndReached = useCallback(async () => {
     if (isFetchingNextPage || !hasNextPage || isError) return
@@ -318,7 +329,7 @@ export function ChatList({
         message: err instanceof Error ? err.message : String(err),
       })
     }
-  }, [currentAccount?.did, scrollElRef, refetch, refetchMatrixUnread])
+  }, [currentAccount, scrollElRef, refetch, refetchMatrixUnread])
 
   const isScreenFocused = useIsFocused()
   useEffect(() => {
@@ -451,11 +462,11 @@ function ChatListEmptyState({
 
   return (
     <EmptyState
-      message={l`No chats yet`}
-      icon={InboxLargeIcon}
-      iconSize="4xl"
+      message={l`Say hi to someone`}
+      icon={BubbleSmileIcon}
       textStyle={t.atoms.text}
       iconColor={t.atoms.text.color}
+      iconSize="4xl"
       button={{
         label: l`New chat`,
         text: l`New chat`,
@@ -464,8 +475,8 @@ function ChatListEmptyState({
         color: 'primary',
         icon: MessagePlusIcon,
       }}
-      style={web([a.h_full, a.justify_center, {paddingBottom: 120}])}
-    />
+      style={[a.h_full, {paddingTop: '20%'}]}
+      />
   )
 }
 

@@ -48,6 +48,12 @@ export class BlockedActorError extends XRPCError {
   }
 }
 
+export class BlockedSubjectError extends XRPCError {
+  constructor(src: XRPCError) {
+    super(src.status, src.error, src.message, src.headers, { cause: src })
+  }
+}
+
 export class MessagesDisabledError extends XRPCError {
   constructor(src: XRPCError) {
     super(src.status, src.error, src.message, src.headers, { cause: src })
@@ -70,6 +76,7 @@ export function toKnownErr(e: any) {
   if (e instanceof XRPCError) {
     if (e.error === 'AccountSuspended') return new AccountSuspendedError(e)
     if (e.error === 'BlockedActor') return new BlockedActorError(e)
+    if (e.error === 'BlockedSubject') return new BlockedSubjectError(e)
     if (e.error === 'MessagesDisabled') return new MessagesDisabledError(e)
     if (e.error === 'NotFollowedBySender')
       return new NotFollowedBySenderError(e)

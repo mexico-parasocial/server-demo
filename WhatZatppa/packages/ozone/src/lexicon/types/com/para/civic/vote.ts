@@ -28,6 +28,10 @@ export interface Main {
   reason?: string
   isDirect: boolean
   delegatedFrom?: string[]
+  /** Privacy-preserving one-person-one-vote nullifier for this subject, issued by m8. */
+  voteNullifier?: string
+  /** Opaque reference to the m8 eligibility/nullifier proof used to cast this vote. */
+  eligibilityProofRef?: string
   createdAt: string
   [k: string]: unknown
 }

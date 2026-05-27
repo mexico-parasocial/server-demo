@@ -1,6 +1,5 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {
-  PanResponder,
   Platform,
   StyleSheet,
   TouchableOpacity,
@@ -12,6 +11,7 @@ import Svg, {Circle, G, Line, Rect, Text as SvgText} from 'react-native-svg'
 import {useTheme} from '#/alf'
 import {Text} from '#/components/Typography'
 import {useGraphLayout} from './useGraphLayout'
+import {useNativeGraphGestures} from './useNativeGraphGestures'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -85,9 +85,16 @@ export function GraphCanvas({
 
   const [pan, setPan] = useState({x: 0, y: 0})
   const [scale, setScale] = useState(1)
-  const panOffsetRef = useRef({x: 0, y: 0})
   const lastTapRef = useRef(0)
-  const hasTriggeredRefreshRef = useRef(false)
+
+  const {panResponder, panOffsetRef} = useNativeGraphGestures({
+    panX: pan.x,
+    panY: pan.y,
+    scale,
+    onPanChange: (x, y) => setPan({x, y}),
+    onScaleChange: s => setScale(s),
+    onRefresh,
+  })
 
   // Build simulation edges
   const simEdges = useMemo(
@@ -162,51 +169,6 @@ export function GraphCanvas({
       return sourceVisible && targetVisible
     },
     [hasFilters, nodeMap, isNodeVisible],
-  )
-
-  // Pan responder
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => false,
-        onMoveShouldSetPanResponder: (_, gestureState) => {
-          return Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2
-        },
-        onPanResponderGrant: () => {
-          hasTriggeredRefreshRef.current = false
-        },
-        onPanResponderMove: (_, gestureState) => {
-          const isHorizontal =
-            Math.abs(gestureState.dx) >= Math.abs(gestureState.dy)
-          const isFastDownwardPull =
-            gestureState.dy > 60 && gestureState.vy > 0.3
-
-          if (
-            !isHorizontal &&
-            isFastDownwardPull &&
-            onRefresh &&
-            !hasTriggeredRefreshRef.current
-          ) {
-            hasTriggeredRefreshRef.current = true
-            onRefresh()
-            return
-          }
-
-          if (!hasTriggeredRefreshRef.current) {
-            setPan({
-              x: panOffsetRef.current.x + gestureState.dx,
-              y: panOffsetRef.current.y + gestureState.dy,
-            })
-          }
-        },
-        onPanResponderRelease: (_, gestureState) => {
-          if (!hasTriggeredRefreshRef.current) {
-            panOffsetRef.current.x = panOffsetRef.current.x + gestureState.dx
-            panOffsetRef.current.y = panOffsetRef.current.y + gestureState.dy
-          }
-        },
-      }),
-    [onRefresh],
   )
 
   // Double-tap zoom

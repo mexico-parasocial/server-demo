@@ -1,4 +1,4 @@
-import {useCallback, useSyncExternalStore} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 
 import * as persisted from '#/state/persisted'
 import {useSession} from '#/state/session'
@@ -17,22 +17,32 @@ export type MapViewMode = 'standard' | 'satellite' | 'terrain' | 'hybrid'
 export function useMapProvider() {
   const {hasSession} = useSession()
 
-  const provider = useSyncExternalStore(
-    cb => persisted.onUpdate('mapProvider', cb),
-    () => persisted.get('mapProvider'),
-  )
+  const [storedProvider, setStoredProvider] = useState<
+    persisted.Schema['mapProvider']
+  >(() => persisted.get('mapProvider'))
 
-  const viewMode = useSyncExternalStore(
-    cb => persisted.onUpdate('mapViewMode', cb),
-    () => persisted.get('mapViewMode'),
-  )
+  const [storedViewMode, setStoredViewMode] = useState<
+    persisted.Schema['mapViewMode']
+  >(() => persisted.get('mapViewMode'))
+
+  useEffect(() => {
+    return persisted.onUpdate('mapProvider', next => {
+      setStoredProvider(next)
+    })
+  }, [])
+
+  useEffect(() => {
+    return persisted.onUpdate('mapViewMode', next => {
+      setStoredViewMode(next)
+    })
+  }, [])
 
   // Anonymous → always MapLibre for privacy
   const resolvedProvider: MapProvider = hasSession
-    ? provider ?? 'google'
+    ? storedProvider ?? 'google'
     : 'maplibre'
 
-  const resolvedViewMode: MapViewMode = viewMode ?? 'standard'
+  const resolvedViewMode: MapViewMode = storedViewMode ?? 'standard'
 
   // In anonymous mode, the toggle is locked to MapLibre
   const canChangeProvider = hasSession

@@ -448,6 +448,8 @@ export const createCabildeoVoteRecord = async (
     cabildeo: string
     selectedOption: number
     isDirect: boolean
+    voteNullifier?: string
+    eligibilityProofRef?: string
   },
 ): Promise<ParaStrongRef> => {
   const { data } = await sc.agent.com.atproto.repo.createRecord(
@@ -461,6 +463,8 @@ export const createCabildeoVoteRecord = async (
         cabildeo: opts.cabildeo,
         selectedOption: opts.selectedOption,
         isDirect: opts.isDirect,
+        voteNullifier: opts.voteNullifier,
+        eligibilityProofRef: opts.eligibilityProofRef,
         createdAt: new Date().toISOString(),
       },
     },

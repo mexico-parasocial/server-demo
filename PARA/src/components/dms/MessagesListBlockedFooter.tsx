@@ -22,10 +22,12 @@ export function MessagesListBlockedFooter({
   recipient: initialRecipient,
   convoId,
   moderation,
+  isGroup,
 }: {
   recipient: bsky.profile.AnyProfileView
   convoId: string
   moderation: ModerationDecision
+  isGroup: boolean
 }) {
   const t = useTheme()
   const {gtMobile} = useBreakpoints()
@@ -66,9 +68,11 @@ export function MessagesListBlockedFooter({
         pointerEvents="none"
       />
       <Text style={[a.text_lg, a.font_semi_bold, a.text_center]}>
-        {isBlocking
-          ? l`You are blocking this user`
-          : l`This user is blocking you`}
+        {isGroup
+          ? l`You are blocking the chat owner`
+          : isBlocking
+            ? l`You are blocking this user`
+            : l`This user is blocking you`}
       </Text>
 
       <View style={[a.flex_row, a.justify_between, a.gap_md]}>

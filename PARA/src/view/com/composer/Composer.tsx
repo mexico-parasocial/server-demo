@@ -255,6 +255,10 @@ export const ComposePost = ({
   const [publishingStage, setPublishingStage] = useState('')
   const [error, setError] = useState('')
 
+  const enableLargeVideoUploads = ax.features.enabled(
+    ax.features.LargeVideoUploads,
+  )
+
   /**
    * Track when a draft was created so we can measure draft age in metrics.
    * Set when a draft is loaded via handleSelectDraft.
@@ -420,9 +424,10 @@ export const ComposePost = ({
         currentDid,
         abortController.signal,
         _,
+        enableLargeVideoUploads,
       )
     },
-    [_, agent, currentDid, composerDispatch],
+    [_, agent, currentDid, composerDispatch, enableLargeVideoUploads],
   )
 
   const onInitVideo = useNonReactiveCallback(() => {
@@ -567,6 +572,7 @@ export const ComposePost = ({
           currentDid,
           abortController.signal,
           _,
+          enableLargeVideoUploads,
         )
       } catch (e) {
         logger.error('Failed to restore video from draft', {
@@ -575,7 +581,7 @@ export const ComposePost = ({
         })
       }
     },
-    [_, agent, currentDid, composerDispatch],
+    [_, agent, currentDid, composerDispatch, enableLargeVideoUploads],
   )
 
   const handleSelectDraft = useCallback(
@@ -993,8 +999,8 @@ export const ComposePost = ({
           safeMessage: waitErr,
         })
       }
-    } catch (e: unknown) {
-      logger.error(e, {
+    } catch (e) {
+      logger.error(e as Error, {
         message: `Composer: create post failed`,
         hasImages: thread.posts.some(p => p.embed.media?.type === 'images'),
       })
@@ -1062,7 +1068,7 @@ export const ComposePost = ({
     setLangPrefs.savePostLanguageToHistory()
     if (initQuote) {
       // We want to wait for the quote count to update before we call `onPost`, which will refetch data
-      whenAppViewReady(agent, initQuote.uri, res => {
+      void whenAppViewReady(agent, initQuote.uri, res => {
         const anchor = res.data.thread.at(0)
         if (
           AppBskyUnspeccedDefs.isThreadItemPost(anchor?.value) &&
@@ -1109,7 +1115,6 @@ export const ComposePost = ({
   }, [
     _,
     agent,
-    thread,
     canPost,
     isPublishing,
     currentLanguages,

@@ -18,6 +18,7 @@ export const recomputeCabildeoAggregates = async (
   const optionVoteCounts = Array.from({ length: optionCount }, () => 0)
   const optionPositionCounts = Array.from({ length: optionCount }, () => 0)
 
+  const scopedFlairs = cabildeo.flairs || []
   const [positions, votes, delegationCountRes] = await Promise.all([
     db
       .selectFrom('cabildeo_position')
@@ -32,15 +33,17 @@ export const recomputeCabildeoAggregates = async (
     db
       .selectFrom('cabildeo_delegation')
       .where((qb) =>
-        qb
-          .where('cabildeo', '=', cabildeoUri)
-          .orWhere((eb) =>
-            eb
-              .where('cabildeo', 'is', null)
-              .where(
-                sql`scopeflairs ?| ${sql`ARRAY[${sql.join(cabildeo.flairs || [])}]` as any}`,
-              ),
-          ),
+        scopedFlairs.length
+          ? qb
+              .where('cabildeo', '=', cabildeoUri)
+              .orWhere((eb) =>
+                eb
+                  .where('cabildeo', 'is', null)
+                  .where(
+                    sql`"scopeFlairs" ?| ${sql`ARRAY[${sql.join(scopedFlairs)}]` as any}`,
+                  ),
+              )
+          : qb.where('cabildeo', '=', cabildeoUri),
       )
       .select(sql<number>`count(*)::int`.as('count'))
       .executeTakeFirst(),

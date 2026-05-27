@@ -55,7 +55,7 @@ function buildStyle(
 ): maplibregl.StyleSpecification {
   return {
     version: 8,
-    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+    glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
     sources: {
       'raster-tiles': {
         type: 'raster',
@@ -148,12 +148,28 @@ type CivicPoint = {
   title?: string
 }
 
+type CityMarker = {
+  name: string
+  stateName: string
+  coordinate: Coordinate
+  color: string
+  onPress?: () => void
+}
+
+type DistrictCentroid = {
+  districtKey: string
+  coordinate: Coordinate
+  color: string
+  onPress?: () => void
+}
+
 type Props = {
   initialRegion: MapRegion
   viewMode: MapViewMode
   themeName?: string
   onRegionChangeComplete?: (region: MapRegion) => void
   onPress?: () => void
+  onCivicPointPress?: (uri: string) => void
   polygons?: Array<{
     key: string
     coordinates: Coordinate[]
@@ -163,10 +179,25 @@ type Props = {
     onPress?: () => void
   }>
   civicPoints?: CivicPoint[]
+  cityMarkers?: CityMarker[]
+  districtCentroids?: DistrictCentroid[]
 }
 
 function deltaToZoom(latDelta: number): number {
   return Math.max(1, Math.min(20, Math.log2(360 / latDelta)))
+}
+
+function computeCentroid(
+  coordinates: Coordinate[],
+): [number, number] | null {
+  if (coordinates.length === 0) return null
+  let sumLat = 0
+  let sumLng = 0
+  for (const c of coordinates) {
+    sumLat += c.latitude
+    sumLng += c.longitude
+  }
+  return [sumLng / coordinates.length, sumLat / coordinates.length]
 }
 
 function zoomToDelta(zoom: number): number {
@@ -181,8 +212,11 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
       themeName = 'light',
       onRegionChangeComplete,
       onPress,
+      onCivicPointPress,
       polygons,
       civicPoints,
+      cityMarkers,
+      districtCentroids,
     },
     ref,
   ) {
@@ -190,10 +224,14 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
     const mapRef = useRef<maplibregl.Map | null>(null)
     const polygonsRef = useRef<NonNullable<Props['polygons']>>([])
     const civicPointsRef = useRef<NonNullable<Props['civicPoints']>>([])
+    const cityMarkersRef = useRef<NonNullable<Props['cityMarkers']>>([])
+    const districtCentroidsRef = useRef<NonNullable<Props['districtCentroids']>>([])
 
     // Keep latest refs for click handlers
     polygonsRef.current = polygons || []
     civicPointsRef.current = civicPoints || []
+    cityMarkersRef.current = cityMarkers || []
+    districtCentroidsRef.current = districtCentroids || []
 
     // Initialize map
     useEffect(() => {
@@ -209,6 +247,11 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
 
       map.addControl(
         new maplibregl.AttributionControl({compact: true}),
+        'bottom-right',
+      )
+
+      map.addControl(
+        new maplibregl.NavigationControl({showCompass: false}),
         'bottom-right',
       )
 
@@ -228,17 +271,27 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
         const features = map.queryRenderedFeatures(e.point, {
           layers: [
             'polygon-fill',
+            'state-label',
             'civic-cluster-circle',
             'civic-unclustered-point',
+            'city-marker-circle',
+            'city-marker-label',
+            'district-centroid-circle',
           ],
         })
         if (features.length > 0) {
           const layerId = features[0].layer?.id
           const key = features[0].properties?.key
+          const name = features[0].properties?.name
+          const districtKey = features[0].properties?.districtKey
           const clusterId = features[0].properties?.cluster_id
 
-          if (layerId === 'polygon-fill' && key) {
-            const poly = polygonsRef.current.find(p => p.key === key)
+          if (
+            (layerId === 'polygon-fill' || layerId === 'state-label') &&
+            (key || name)
+          ) {
+            const lookupKey = key || name
+            const poly = polygonsRef.current.find(p => p.key === lookupKey)
             poly?.onPress?.()
             return
           }
@@ -269,9 +322,26 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
 
           if (layerId === 'civic-unclustered-point') {
             const uri = features[0].properties?.uri
-            const title = features[0].properties?.title
-            // TODO: navigate to civic detail or show popup
-            console.log('[MapLibre] Civic point clicked:', {uri, title})
+            if (uri) {
+              onCivicPointPress?.(uri)
+            }
+            return
+          }
+
+          if (
+            (layerId === 'city-marker-circle' || layerId === 'city-marker-label') &&
+            name
+          ) {
+            const city = cityMarkersRef.current.find(c => c.name === name)
+            city?.onPress?.()
+            return
+          }
+
+          if (layerId === 'district-centroid-circle' && districtKey) {
+            const district = districtCentroidsRef.current.find(
+              d => d.districtKey === districtKey,
+            )
+            district?.onPress?.()
             return
           }
         }
@@ -291,17 +361,49 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
       map.on('mouseleave', 'civic-unclustered-point', () => {
         map.getCanvas().style.cursor = ''
       })
+      const setPolygonHover = (hovered: boolean) => {
+        if (map.getLayer('polygon-fill')) {
+          map.setPaintProperty(
+            'polygon-fill',
+            'fill-opacity',
+            hovered ? 0.72 : 0.56,
+          )
+        }
+      }
+
       map.on('mouseenter', 'polygon-fill', () => {
         map.getCanvas().style.cursor = 'pointer'
-        if (map.getLayer('polygon-fill')) {
-          map.setPaintProperty('polygon-fill', 'fill-opacity', 0.72)
-        }
+        setPolygonHover(true)
       })
       map.on('mouseleave', 'polygon-fill', () => {
         map.getCanvas().style.cursor = ''
-        if (map.getLayer('polygon-fill')) {
-          map.setPaintProperty('polygon-fill', 'fill-opacity', 0.56)
-        }
+        setPolygonHover(false)
+      })
+      map.on('mouseenter', 'state-label', () => {
+        map.getCanvas().style.cursor = 'pointer'
+        setPolygonHover(true)
+      })
+      map.on('mouseleave', 'state-label', () => {
+        map.getCanvas().style.cursor = ''
+        setPolygonHover(false)
+      })
+      map.on('mouseenter', 'city-marker-circle', () => {
+        map.getCanvas().style.cursor = 'pointer'
+      })
+      map.on('mouseleave', 'city-marker-circle', () => {
+        map.getCanvas().style.cursor = ''
+      })
+      map.on('mouseenter', 'city-marker-label', () => {
+        map.getCanvas().style.cursor = 'pointer'
+      })
+      map.on('mouseleave', 'city-marker-label', () => {
+        map.getCanvas().style.cursor = ''
+      })
+      map.on('mouseenter', 'district-centroid-circle', () => {
+        map.getCanvas().style.cursor = 'pointer'
+      })
+      map.on('mouseleave', 'district-centroid-circle', () => {
+        map.getCanvas().style.cursor = ''
       })
 
       mapRef.current = map
@@ -330,6 +432,8 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
       map.once('styledata', () => {
         addPolygonsToMap(map, polygonsRef.current)
         addCivicPointsToMap(map, civicPointsRef.current, themeName)
+        addCityMarkersToMap(map, cityMarkersRef.current)
+        addDistrictCentroidsToMap(map, districtCentroidsRef.current)
       })
     }, [viewMode, themeName])
 
@@ -370,6 +474,43 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
       }
     }, [civicPoints, themeName])
 
+    // Update city markers when they change
+    useEffect(() => {
+      const map = mapRef.current
+      if (!map) return
+
+      const onLoad = () => addCityMarkersToMap(map, cityMarkers || [])
+
+      if (map.isStyleLoaded()) {
+        onLoad()
+      } else {
+        map.on('load', onLoad)
+      }
+
+      return () => {
+        map.off('load', onLoad)
+      }
+    }, [cityMarkers])
+
+    // Update district centroids when they change
+    useEffect(() => {
+      const map = mapRef.current
+      if (!map) return
+
+      const onLoad = () =>
+        addDistrictCentroidsToMap(map, districtCentroids || [])
+
+      if (map.isStyleLoaded()) {
+        onLoad()
+      } else {
+        map.on('load', onLoad)
+      }
+
+      return () => {
+        map.off('load', onLoad)
+      }
+    }, [districtCentroids])
+
     const addPolygonsToMap = useCallback(
       (map: maplibregl.Map, polys: NonNullable<Props['polygons']>) => {
         // Clean up old source/layers
@@ -379,13 +520,22 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
         if (map.getLayer('polygon-stroke')) {
           map.removeLayer('polygon-stroke')
         }
+        if (map.getLayer('state-label')) {
+          map.removeLayer('state-label')
+        }
         if (map.getSource('state-polygons')) {
           map.removeSource('state-polygons')
+        }
+        if (map.getSource('state-labels')) {
+          map.removeSource('state-labels')
         }
 
         if (polys.length === 0) return
 
-        const features = polys.map(poly => {
+        const polygonFeatures: GeoJSON.Feature[] = []
+        const labelFeatures: GeoJSON.Feature[] = []
+
+        for (const poly of polys) {
           const coordinates = poly.coordinates.map(c => [
             c.longitude,
             c.latitude,
@@ -393,8 +543,9 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
           if (coordinates.length > 0) {
             coordinates.push(coordinates[0]) // Close the ring
           }
-          return {
-            type: 'Feature' as const,
+
+          polygonFeatures.push({
+            type: 'Feature',
             properties: {
               key: poly.key,
               fillColor: poly.fillColor || 'rgba(0,100,255,0.2)',
@@ -402,17 +553,39 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
               strokeWidth: poly.strokeWidth || 1,
             },
             geometry: {
-              type: 'Polygon' as const,
+              type: 'Polygon',
               coordinates: [coordinates],
             },
+          })
+
+          const centroid = computeCentroid(poly.coordinates)
+          if (centroid) {
+            labelFeatures.push({
+              type: 'Feature',
+              properties: {
+                name: poly.key,
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: centroid,
+              },
+            })
           }
-        })
+        }
 
         map.addSource('state-polygons', {
           type: 'geojson',
           data: {
             type: 'FeatureCollection',
-            features,
+            features: polygonFeatures,
+          },
+        })
+
+        map.addSource('state-labels', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: labelFeatures,
           },
         })
 
@@ -442,6 +615,29 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
               ['*', ['get', 'strokeWidth'], 1.5],
             ],
             'line-opacity': 0.88,
+          },
+        })
+
+        map.addLayer({
+          id: 'state-label',
+          type: 'symbol',
+          source: 'state-labels',
+          minzoom: 4.5,
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-font': ['Noto Sans Regular'],
+            'text-size': 13,
+            'text-anchor': 'center',
+            'text-allow-overlap': false,
+            'text-ignore-placement': false,
+            'text-padding': 4,
+          },
+          paint: {
+            'text-color': isDark(themeName) ? '#e5e5e5' : '#374151',
+            'text-halo-color': isDark(themeName)
+              ? 'rgba(0,0,0,0.6)'
+              : 'rgba(255,255,255,0.8)',
+            'text-halo-width': 1.5,
           },
         })
       },
@@ -617,6 +813,124 @@ export const MapLibreWeb = forwardRef<MapLibreWebRef, Props>(
         })
       },
       [],
+    )
+
+    const addCityMarkersToMap = useCallback(
+      (map: maplibregl.Map, markers: NonNullable<Props['cityMarkers']>) => {
+        const layers = ['city-marker-circle', 'city-marker-label']
+        for (const layerId of layers) {
+          if (map.getLayer(layerId)) {
+            map.removeLayer(layerId)
+          }
+        }
+        if (map.getSource('city-markers')) {
+          map.removeSource('city-markers')
+        }
+
+        if (markers.length === 0) return
+
+        const features: GeoJSON.Feature<GeoJSON.Point>[] = markers.map(m => ({
+          type: 'Feature',
+          properties: {
+            name: m.name,
+            stateName: m.stateName,
+            color: m.color,
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: [m.coordinate.longitude, m.coordinate.latitude],
+          },
+        }))
+
+        map.addSource('city-markers', {
+          type: 'geojson',
+          data: {type: 'FeatureCollection', features},
+        })
+
+        map.addLayer({
+          id: 'city-marker-circle',
+          type: 'circle',
+          source: 'city-markers',
+          minzoom: 5,
+          paint: {
+            'circle-radius': 6,
+            'circle-color': ['get', 'color'],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': isDark(themeName)
+              ? 'rgba(255,255,255,0.8)'
+              : 'rgba(255,255,255,0.9)',
+          },
+        })
+
+        map.addLayer({
+          id: 'city-marker-label',
+          type: 'symbol',
+          source: 'city-markers',
+          minzoom: 6,
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-font': ['Noto Sans Regular'],
+            'text-size': 11,
+            'text-anchor': 'top',
+            'text-offset': [0, 0.8],
+            'text-allow-overlap': false,
+            'text-ignore-placement': false,
+          },
+          paint: {
+            'text-color': isDark(themeName) ? '#e5e5e5' : '#374151',
+            'text-halo-color': isDark(themeName)
+              ? 'rgba(0,0,0,0.6)'
+              : 'rgba(255,255,255,0.8)',
+            'text-halo-width': 1.5,
+          },
+        })
+      },
+      [themeName],
+    )
+
+    const addDistrictCentroidsToMap = useCallback(
+      (map: maplibregl.Map, centroids: NonNullable<Props['districtCentroids']>) => {
+        if (map.getLayer('district-centroid-circle')) {
+          map.removeLayer('district-centroid-circle')
+        }
+        if (map.getSource('district-centroids')) {
+          map.removeSource('district-centroids')
+        }
+
+        if (centroids.length === 0) return
+
+        const features: GeoJSON.Feature<GeoJSON.Point>[] = centroids.map(c => ({
+          type: 'Feature',
+          properties: {
+            districtKey: c.districtKey,
+            color: c.color,
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: [c.coordinate.longitude, c.coordinate.latitude],
+          },
+        }))
+
+        map.addSource('district-centroids', {
+          type: 'geojson',
+          data: {type: 'FeatureCollection', features},
+        })
+
+        map.addLayer({
+          id: 'district-centroid-circle',
+          type: 'circle',
+          source: 'district-centroids',
+          paint: {
+            'circle-radius': 5,
+            'circle-color': ['get', 'color'],
+            'circle-stroke-width': 1.5,
+            'circle-stroke-color': isDark(themeName)
+              ? 'rgba(255,255,255,0.8)'
+              : 'rgba(255,255,255,0.9)',
+          },
+        })
+      },
+      [themeName],
     )
 
     useImperativeHandle(ref, () => ({

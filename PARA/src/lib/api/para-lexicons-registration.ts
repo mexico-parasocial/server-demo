@@ -72,6 +72,8 @@ const getCabildeo = {
         type: 'params' as const,
         properties: {
           cabildeo: {type: 'string' as const, format: 'at-uri'},
+          voteNullifier: {type: 'string' as const, maxLength: 128},
+          eligibilityProofRef: {type: 'string' as const, maxLength: 512},
         },
       },
       output: {
@@ -189,6 +191,8 @@ const castVote = {
           properties: {
             cabildeo: {type: 'string' as const, format: 'at-uri'},
             selectedOption: {type: 'integer' as const, minimum: 0},
+            voteNullifier: {type: 'string' as const, maxLength: 128},
+            eligibilityProofRef: {type: 'string' as const, maxLength: 512},
           },
         },
       },

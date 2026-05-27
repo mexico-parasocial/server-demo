@@ -1,6 +1,7 @@
 import {
   type ComponentType,
   forwardRef,
+  useImperativeHandle,
   useMemo,
   useRef,
 } from 'react'
@@ -29,17 +30,42 @@ import {
  * MapScreenImpl. Bridges the imperative ref, polygon data, and theme.
  */
 const MapLibreAdapter = forwardRef<MapViewRef, MapViewProps>(
-  function MapLibreAdapter(props, _ref) {
+  function MapLibreAdapter(props, ref) {
     const {viewMode} = useMapProvider()
     const {themeName} = useAlf()
     const mapLibreRef = useRef<MapLibreWebRef>(null)
 
-    // MapLibre handles polygons and civic points imperatively via GeoJSON layers,
-    // so we extract the plain data and pass it as props.
+    // Bridge imperative ref so shared code can call animateToRegion,
+    // animateCamera, fitToCoordinates, and getCamera.
+    useImperativeHandle(ref, () => ({
+      animateToRegion(region, duration) {
+        mapLibreRef.current?.animateToRegion(region, duration)
+      },
+      animateCamera(camera) {
+        mapLibreRef.current?.animateCamera(camera)
+      },
+      fitToCoordinates(coordinates, options) {
+        mapLibreRef.current?.fitToCoordinates(coordinates, options)
+      },
+      async getCamera() {
+        return mapLibreRef.current?.getCamera() ?? {}
+      },
+    }))
+
+    // MapLibre handles polygons, civic points, city markers, and district
+    // polygons imperatively via GeoJSON layers, so we extract the plain data.
     const polygons = useMemo(() => props.polygonsData || [], [props.polygonsData])
     const civicPoints = useMemo(
       () => props.civicPointsData || [],
       [props.civicPointsData],
+    )
+    const cityMarkers = useMemo(
+      () => props.cityMarkersData || [],
+      [props.cityMarkersData],
+    )
+    const districtCentroids = useMemo(
+      () => props.districtCentroidsData || [],
+      [props.districtCentroidsData],
     )
 
     return (
@@ -50,8 +76,11 @@ const MapLibreAdapter = forwardRef<MapViewRef, MapViewProps>(
         themeName={themeName}
         polygons={polygons}
         civicPoints={civicPoints}
+        cityMarkers={cityMarkers}
+        districtCentroids={districtCentroids}
         onRegionChangeComplete={props.onRegionChangeComplete}
         onPress={props.onPress}
+        onCivicPointPress={props.onCivicPointPress}
       />
     )
   },

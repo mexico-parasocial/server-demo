@@ -202,6 +202,7 @@ function GroupChatItem({
         <AvatarBubbles
           profiles={convo.members}
           size={isWithinSplitView ? 48 : 52}
+          moderationOpts={moderationOpts}
         />
       }
       title={chatName}

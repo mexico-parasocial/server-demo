@@ -11,6 +11,8 @@ export interface ParaPolicyVote {
   signal: number
   isDirect: 0 | 1
   delegatedFrom: string[] | null
+  voteNullifier: string | null
+  eligibilityProofRef: string | null
   reason: string | null
   createdAt: string
   indexedAt: string

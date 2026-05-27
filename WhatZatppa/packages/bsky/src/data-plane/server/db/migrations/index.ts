@@ -92,3 +92,4 @@ export * as _20260516T120000000Z from './20260516T120000000Z-add-cabildeo-vote-v
 export * as _20260518T190519000Z from './20260518T190519000Z-add-role-assignments-to-membership.js'
 export * as _20260518T195000000Z from './20260518T195000000Z-add-governance-mode-to-board.js'
 export * as _20260518T200000000Z from './20260518T200000000Z-add-para-community-shared-content.js'
+export * as _20260526T120000000Z from './20260526T120000000Z-add-civic-vote-nullifiers.js'

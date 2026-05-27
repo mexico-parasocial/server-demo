@@ -6,7 +6,6 @@ import {
   useState,
 } from 'react'
 import {
-  PanResponder,
   Platform,
   StyleSheet,
   TouchableOpacity,
@@ -17,6 +16,7 @@ import Svg, {Circle, G, Line, Rect, Text as SvgText} from 'react-native-svg'
 
 import {COMPASS_COLORS, type CompassPositionId} from '#/lib/compass/compassColors'
 import {useTheme} from '#/alf'
+import {useNativeGraphGestures} from '#/components/graph/useNativeGraphGestures'
 import {Text} from '#/components/Typography'
 import {CARD_TYPE_COLORS, RELATIONSHIP_COLORS, STANCE_COLORS} from '../deliberation-colors'
 import {type GraphData} from '../deliberation-types'
@@ -58,11 +58,18 @@ export function DeliberationGraph({
 
   const [pan, setPan] = useState({x: 0, y: 0})
   const [scale, setScale] = useState(1)
-  const panOffsetRef = useRef({x: 0, y: 0})
   const lastTapRef = useRef(0)
   const onRefreshRef = useRef(onRefresh)
   onRefreshRef.current = onRefresh
-  const hasTriggeredRefreshRef = useRef(false)
+
+  const {panResponder, panOffsetRef} = useNativeGraphGestures({
+    panX: pan.x,
+    panY: pan.y,
+    scale,
+    onPanChange: (x, y) => setPan({x, y}),
+    onScaleChange: s => setScale(s),
+    onRefresh: () => onRefreshRef.current?.(),
+  })
 
   const nodeIds = useMemo(() => data.nodes.map(n => n.id), [data.nodes])
 
@@ -144,51 +151,6 @@ export function DeliberationGraph({
       return sourceVisible && targetVisible && matchesRel
     },
     [hasFilters, activeRelTypes, nodeMap, isNodeVisible],
-  )
-
-  // Pan/zoom responder
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => false,
-        onMoveShouldSetPanResponder: (_evt, gestureState) => {
-          return Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2
-        },
-        onPanResponderGrant: () => {
-          hasTriggeredRefreshRef.current = false
-        },
-        onPanResponderMove: (_evt, gestureState) => {
-          const isHorizontal =
-            Math.abs(gestureState.dx) >= Math.abs(gestureState.dy)
-          const isFastDownwardPull =
-            gestureState.dy > 60 && gestureState.vy > 0.3
-
-          if (
-            !isHorizontal &&
-            isFastDownwardPull &&
-            onRefreshRef.current &&
-            !hasTriggeredRefreshRef.current
-          ) {
-            hasTriggeredRefreshRef.current = true
-            onRefreshRef.current()
-            return
-          }
-
-          if (!hasTriggeredRefreshRef.current) {
-            setPan({
-              x: panOffsetRef.current.x + gestureState.dx,
-              y: panOffsetRef.current.y + gestureState.dy,
-            })
-          }
-        },
-        onPanResponderRelease: (_evt, gestureState) => {
-          if (!hasTriggeredRefreshRef.current) {
-            panOffsetRef.current.x = panOffsetRef.current.x + gestureState.dx
-            panOffsetRef.current.y = panOffsetRef.current.y + gestureState.dy
-          }
-        },
-      }),
-    [],
   )
 
   // Double-tap to zoom

@@ -21,7 +21,9 @@
       "nodeVersion": ">=24.15.0"
     },
     "overrides": {
+      "better-sqlite3": "^12.9.0",
       "cookie": "^0.7.2",
+      "opentelemetry-plugin-better-sqlite3>@opentelemetry/core": "^1.30.0",
       "protobufjs": "^7.5.8"
     },
     "patchedDependencies": {

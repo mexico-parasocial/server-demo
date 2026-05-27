@@ -85,7 +85,7 @@ export interface ViewExternal {
   /** StrongRefs (uri+cid) of the Atmosphere records that backed this view. */
   associatedRefs?: ComAtprotoRepoStrongRef.Main[]
   /** Profiles of the owners of the Atmosphere records that backed this view. */
-  associatedProfiles?: AppBskyActorDefs.ProfileViewDetailed[]
+  associatedProfiles?: AppBskyActorDefs.ProfileViewBasic[]
 }
 
 const hashViewExternal = 'viewExternal'

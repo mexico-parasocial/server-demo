@@ -11,15 +11,21 @@ import {normalizeMexicoStateName} from '#/lib/constants/mexico'
 import {MEXICO_CITY_DATA} from '#/lib/constants/mexicoCityData'
 import {MOCK_DISTRICT_RAQS, STATE_DEMOGRAPHICS} from '#/lib/constants/mockData'
 import {type NavigationProp} from '#/lib/routes/types'
+import {IS_WEB} from '#/platform/detection'
 import {useCabildeosQuery} from '#/state/queries/cabildeo'
 import {atoms as a, useTheme, web} from '#/alf'
 import {Check_Stroke2_Corner0_Rounded as Check} from '#/components/icons/Check'
+import {
+  ChevronBottom_Stroke2_Corner0_Rounded as ChevronDown,
+  ChevronTop_Stroke2_Corner0_Rounded as ChevronUp,
+} from '#/components/icons/Chevron'
 import {CircleX_Stroke2_Corner0_Rounded as CircleX} from '#/components/icons/CircleX'
 import {Filter_Stroke2_Corner0_Rounded as FilterIcon} from '#/components/icons/Filter'
 import {MagnifyingGlass_Stroke2_Corner0_Rounded as MagnifyingGlass} from '#/components/icons/MagnifyingGlass'
 import {SquareBehindSquare4_Stroke2_Corner0_Rounded as LayersIcon} from '#/components/icons/SquareBehindSquare4'
 import {Text} from '#/components/Typography'
 import {MapSidebarPanel} from './MapDesktopLayout'
+import {MapDiscourseLensContent} from './MapDiscourseLensContent'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -54,6 +60,9 @@ function MiniAction({
         active
           ? {borderColor: t.palette.primary_500, backgroundColor: '#ffffff14'}
           : t.atoms.border_contrast_low,
+        web({cursor: 'pointer'}),
+        web({transition: 'background-color 0.1s ease'}),
+        !active && web({':hover': {backgroundColor: t.palette.contrast_100 + '30'}}),
       ]}>
       <Text
         style={[
@@ -264,6 +273,9 @@ function SearchResultRow({
           borderBottomWidth: 1,
           borderBottomColor: t.atoms.border_contrast_low.borderColor,
         },
+        web({cursor: 'pointer'}),
+        web({transition: 'background-color 0.1s ease'}),
+        web({':hover': {backgroundColor: t.palette.contrast_100 + '30'}}),
       ]}>
       <View style={[a.flex_1, a.pr_sm]}>
         <Text style={[a.text_md, t.atoms.text]}>{result.name}</Text>
@@ -350,6 +362,9 @@ export function MapSidebarLayers({
               activeLayer === layer.id
                 ? {backgroundColor: t.palette.primary_500 + '18'}
                 : undefined,
+              web({cursor: 'pointer'}),
+              web({transition: 'background-color 0.1s ease'}),
+              web({':hover': {backgroundColor: t.palette.contrast_100 + '40'}}),
             ]}>
             <Text
               style={[
@@ -384,16 +399,19 @@ export function MapSidebarZoneFilters({
   discourseType,
   selectedDiscourseItem,
   onSelectDiscourseType,
+  onSelectDiscourseItem,
   onClear,
   onOpenPicker,
 }: {
   discourseType: 'Matter' | 'Policy'
   selectedDiscourseItem: string
   onSelectDiscourseType: (type: 'Matter' | 'Policy') => void
+  onSelectDiscourseItem: (item: string, type: 'Matter' | 'Policy') => void
   onClear: () => void
   onOpenPicker: () => void
 }) {
   const t = useTheme()
+  const [pickerExpanded, setPickerExpanded] = useState(false)
   const active =
     selectedDiscourseItem.length > 0 && selectedDiscourseItem !== 'Any'
 
@@ -492,7 +510,13 @@ export function MapSidebarZoneFilters({
 
       <TouchableOpacity
         accessibilityRole="button"
-        onPress={onOpenPicker}
+        onPress={() => {
+          if (IS_WEB) {
+            setPickerExpanded(v => !v)
+          } else {
+            onOpenPicker()
+          }
+        }}
         style={[
           a.flex_row,
           a.align_center,
@@ -501,11 +525,19 @@ export function MapSidebarZoneFilters({
           a.py_xs,
           a.rounded_md,
           a.border,
-          active ? {borderColor: '#FF5A36'} : t.atoms.border_contrast_low,
-          active ? {backgroundColor: '#FF5A3614'} : t.atoms.bg_contrast_100,
+          active || pickerExpanded
+            ? {borderColor: '#FF5A36'}
+            : t.atoms.border_contrast_low,
+          active || pickerExpanded
+            ? {backgroundColor: '#FF5A3614'}
+            : t.atoms.bg_contrast_100,
         ]}>
         <FilterIcon
-          fill={active ? '#FF5A36' : t.atoms.text_contrast_medium.color}
+          fill={
+            active || pickerExpanded
+              ? '#FF5A36'
+              : t.atoms.text_contrast_medium.color
+          }
           width={14}
           height={14}
         />
@@ -513,11 +545,60 @@ export function MapSidebarZoneFilters({
           style={[
             a.text_sm,
             a.font_bold,
-            active ? {color: '#FF5A36'} : t.atoms.text,
+            active || pickerExpanded ? {color: '#FF5A36'} : t.atoms.text,
           ]}>
           {active ? 'Change lens' : 'Choose lens'}
         </Text>
+        {IS_WEB && (
+          <View style={[a.ml_auto]}>
+            {pickerExpanded ? (
+              <ChevronUp
+                width={14}
+                height={14}
+                fill={active || pickerExpanded ? '#FF5A36' : t.atoms.text_contrast_medium.color}
+              />
+            ) : (
+              <ChevronDown
+                width={14}
+                height={14}
+                fill={active || pickerExpanded ? '#FF5A36' : t.atoms.text_contrast_medium.color}
+              />
+            )}
+          </View>
+        )}
       </TouchableOpacity>
+
+      {IS_WEB && pickerExpanded && (
+        <View
+          style={[
+            a.mt_md,
+            a.p_md,
+            a.rounded_lg,
+            t.atoms.bg,
+            a.border,
+            t.atoms.border_contrast_low,
+            web({transition: 'opacity 0.15s ease-out'}),
+            web({
+              boxShadow:
+                '0 4px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)',
+            }),
+            web({maxHeight: '60vh', display: 'flex', flexDirection: 'column'}),
+          ]}>
+          <MapDiscourseLensContent
+            discourseType={discourseType}
+            onChangeDiscourseType={onSelectDiscourseType}
+            selectedDiscourseItem={selectedDiscourseItem}
+            onSelectDiscourseItem={(item, type) => {
+              onSelectDiscourseItem(item, type)
+              setPickerExpanded(false)
+            }}
+            onClear={() => {
+              onClear()
+              setPickerExpanded(false)
+            }}
+          />
+        </View>
+      )}
     </View>
   )
 }
@@ -749,6 +830,9 @@ export function DistrictsSidebar({
                       borderColor: district.accent + '40',
                     }
                   : [t.atoms.bg_contrast_25, t.atoms.border_contrast_low],
+                web({cursor: 'pointer'}),
+                web({transition: 'transform 0.1s ease, box-shadow 0.1s ease'}),
+                !isSelected && web({':hover': {transform: 'translateY(-1px)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)'}}),
               ]}>
               <View
                 style={[

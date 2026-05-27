@@ -1,5 +1,5 @@
 import {createContext, useCallback, useContext, useMemo, useState} from 'react'
-import {type Theme, type ThemeName} from '@bsky.app/alf'
+import {type Theme, type ThemeName, utils as baseUtils} from '@bsky.app/alf'
 
 import {
   computeFontScaleMultiplier,
@@ -9,11 +9,11 @@ import {
   setFontScale as persistFontScale,
 } from '#/alf/fonts'
 import {themes} from '#/alf/themes'
+import {darken, lighten, rgbToHex} from '#/alf/util/colorGeneration'
 import {type Device} from '#/storage'
 export {
   type TextStyleProp,
   type Theme,
-  utils,
   type ViewStyleProp,
 } from '@bsky.app/alf'
 export {atoms} from '#/alf/atoms'
@@ -24,6 +24,12 @@ export * from '#/alf/util/flatten'
 export * from '#/alf/util/platform'
 export * from '#/alf/util/themeSelector'
 export * from '#/alf/util/useGutters'
+export const utils = {
+  ...baseUtils,
+  rgbToHex,
+  lighten,
+  darken,
+}
 
 export type Alf = {
   themeName: ThemeName
@@ -63,7 +69,11 @@ Context.displayName = 'AlfContext'
 export function ThemeProvider({
   children,
   theme: themeName,
-}: React.PropsWithChildren<{theme: ThemeName}>) {
+  themesOverride,
+}: React.PropsWithChildren<{
+  theme: ThemeName
+  themesOverride?: Partial<typeof themes>
+}>) {
   const [fontScale, setFontScale] = useState<Alf['fonts']['scale']>(() =>
     getFontScale(),
   )
@@ -89,11 +99,15 @@ export function ThemeProvider({
     [setFontFamily],
   )
 
-  const value = useMemo<Alf>(
-    () => ({
-      themes,
+  const value = useMemo<Alf>(() => {
+    const t = {
+      ...themes,
+      ...themesOverride,
+    }
+    return {
+      themes: t,
       themeName: themeName,
-      theme: themes[themeName],
+      theme: t[themeName],
       fonts: {
         scale: fontScale,
         scaleMultiplier: fontScaleMultiplier,
@@ -102,16 +116,16 @@ export function ThemeProvider({
         setFontFamily: setFontFamilyAndPersist,
       },
       flags: {},
-    }),
-    [
-      themeName,
-      fontScale,
-      setFontScaleAndPersist,
-      fontFamily,
-      setFontFamilyAndPersist,
-      fontScaleMultiplier,
-    ],
-  )
+    }
+  }, [
+    themeName,
+    fontScale,
+    setFontScaleAndPersist,
+    fontFamily,
+    setFontFamilyAndPersist,
+    fontScaleMultiplier,
+    themesOverride,
+  ])
 
   return <Context.Provider value={value}>{children}</Context.Provider>
 }

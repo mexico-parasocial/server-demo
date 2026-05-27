@@ -43,6 +43,7 @@ export interface HandlerError {
   error?:
     | 'AccountSuspended'
     | 'BlockedActor'
+    | 'BlockedSubject'
     | 'UserForbidsGroups'
     | 'ConvoLocked'
     | 'InsufficientRole'

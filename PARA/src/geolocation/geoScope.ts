@@ -2,7 +2,6 @@ import {
   ELECTORAL_DISTRICTS,
   type ElectoralDistrict,
 } from '#/lib/constants/electoralDistrictsData'
-import {normalizeMexicoStateName} from '#/lib/constants/mexico'
 import {MEXICO_CITY_DATA} from '#/lib/constants/mexicoCityData'
 
 export type GeoScope = 'state' | 'district' | 'city' | 'neighborhood'
@@ -52,15 +51,15 @@ export function findClosestDistrict(
  * Find the closest major city to a given coordinate.
  */
 export function findClosestCity(
-  latitude: number,
-  longitude: number,
+  _latitude: number,
+  _longitude: number,
 ): {name: string; stateName: string; distanceKm: number} | null {
   let closest: {name: string; stateName: string; distanceKm: number} | null =
     null
-  let minDistance = Infinity
+  let _minDistance = Infinity
 
-  for (const [stateName, cities] of Object.entries(MEXICO_CITY_DATA)) {
-    for (const city of cities) {
+  for (const [_stateName, cities] of Object.entries(MEXICO_CITY_DATA)) {
+    for (const _city of cities) {
       // mexicoCityData doesn't have coordinates, so we can't do precise matching
       // In a real implementation, city data would include lat/lng
       // For now, we return the first city of the matching state as a fallback

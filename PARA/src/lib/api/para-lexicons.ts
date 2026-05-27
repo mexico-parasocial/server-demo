@@ -433,6 +433,8 @@ export interface CabildeoVoteRecord {
   reason?: string
   isDirect: boolean
   delegatedFrom: string[] // DIDs of delegators
+  voteNullifier?: string
+  eligibilityProofRef?: string
   effectivePower: number // √N for delegated, 1.0 for direct
 }
 

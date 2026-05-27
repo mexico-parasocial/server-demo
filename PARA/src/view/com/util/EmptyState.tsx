@@ -1,4 +1,4 @@
-import {type ComponentType, isValidElement, type ReactElement} from 'react'
+import {isValidElement} from 'react'
 import {type StyleProp, type TextStyle, type ViewStyle} from 'react-native'
 import {View} from 'react-native'
 
@@ -29,7 +29,7 @@ export function EmptyState({
   button,
 }: {
   testID?: string
-  icon?: React.ComponentType<any> | React.ReactElement | null
+  icon?: React.ComponentType<{[key: string]: unknown}> | React.ReactElement | null
   iconSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
   iconColor?: string
   message: string

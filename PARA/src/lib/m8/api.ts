@@ -10,6 +10,7 @@ import {
   type DeviceTrustSummary,
   type IneExtractedData,
   type IneVerificationResult,
+  type M8CivicVoteProof,
   type M8IdentityRequest,
   type M8IdentityVerificationResult,
   type M8SessionStartResponse,
@@ -225,6 +226,23 @@ export async function postIdentityVerify(requestId: string, presentation: M8Wall
     throw new Error(err.error ?? `Identity verify failed (${res.status})`)
   }
   return (await res.json()) as M8IdentityVerificationResult
+}
+
+export async function postCivicVoteProof(payload: {
+  subjectUri: string
+  subjectType: 'cabildeo' | 'policy' | 'matter' | 'governance'
+  aliasDid?: string
+}): Promise<M8CivicVoteProof> {
+  const res = await m8Fetch('/identity/civic-vote-proof', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string }
+    throw new Error(err.error ?? `Civic vote proof failed (${res.status})`)
+  }
+  const body = (await res.json()) as { proof: M8CivicVoteProof }
+  return body.proof
 }
 
 export async function getParaProviderStatus(): Promise<ProofBrokerSession['paraStatus']> {

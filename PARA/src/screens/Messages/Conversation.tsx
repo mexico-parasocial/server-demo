@@ -11,6 +11,7 @@ import {
   useRoute,
 } from '@react-navigation/native'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
+
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
 import {useViewportZoomLock} from '#/lib/hooks/useViewportZoomLock'
 import {
@@ -255,6 +256,7 @@ function InnerReady({
         recipient={primaryMember}
         convoId={convo.view.id}
         moderation={primaryMemberModeration}
+        isGroup={convo.kind === 'group'}
       />
     )
   } else if (convo?.kind === 'group') {

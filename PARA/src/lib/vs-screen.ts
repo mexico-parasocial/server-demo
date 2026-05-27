@@ -1,5 +1,5 @@
-import {type ParaRaqAxisResult} from '#/lib/api/para-lexicons'
 import {type CabildeoReadView} from '#/lib/api/cabildeo'
+import {type ParaRaqAxisResult} from '#/lib/api/para-lexicons'
 import {COMMUNITY_DATA} from '#/lib/constants/mockData'
 import {RAQ_AXES} from '#/lib/mock-data'
 import {

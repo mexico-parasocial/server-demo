@@ -270,10 +270,10 @@ function LightboxGallery({
               accessibilityHint,
               onPointerDown,
               ...htmlProps
-            } = props as any
+            } = props as Record<string, unknown>
             return (
               <button
-                {...(htmlProps as any)}
+                {...(htmlProps as Record<string, unknown>)}
                 aria-label={accessibilityLabel}
                 aria-describedby={accessibilityHint}
                 onClick={onPress}

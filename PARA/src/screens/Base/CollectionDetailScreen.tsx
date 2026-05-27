@@ -23,6 +23,8 @@ import {
   useRemoveFromCollectionMutation,
   useUpdateCollectionMutation,
 } from '#/state/queries/collections'
+import {useExportCollectionToSembleMutation} from '#/state/queries/sembe'
+import {useSession} from '#/state/session'
 import {Text} from '#/view/com/util/text/Text'
 import {useTheme} from '#/alf'
 import {AddTreeItemDialog} from '#/components/AddTreeItemDialog'
@@ -32,6 +34,7 @@ import {
   ChevronTop_Stroke2_Corner0_Rounded as UpIcon} from '#/components/icons/Chevron'
 import {Pencil_Stroke2_Corner0_Rounded as PencilIcon} from '#/components/icons/Pencil'
 import {PlusLarge_Stroke2_Corner0_Rounded as PlusIcon} from '#/components/icons/Plus'
+import {SquareArrowTopRight_Stroke2_Corner0_Rounded as ExportIcon} from '#/components/icons/SquareArrowTopRight'
 import {Trash_Stroke2_Corner0_Rounded as TrashIcon} from '#/components/icons/Trash'
 import * as Layout from '#/components/Layout'
 import * as Prompt from '#/components/Prompt'
@@ -46,13 +49,16 @@ export function CollectionDetailScreen() {
     params: {collectionId: string}
   }>()
   const t = useTheme()
+  const {currentAccount} = useSession()
   const collectionId = route.params.collectionId
 
   const {data: collection, isLoading} = useCollectionQuery(collectionId)
   const removeMutation = useRemoveFromCollectionMutation()
   const updateMutation = useUpdateCollectionMutation()
   const duplicateMutation = useDuplicateCollectionMutation()
+  const exportMutation = useExportCollectionToSembleMutation()
   const addItemControl = Dialog.useDialogControl()
+  const exportPrompt = Prompt.usePromptControl()
 
   const deletePrompt = Prompt.usePromptControl()
   const [itemToDelete, setItemToDelete] = useState<string | null>(null)
@@ -161,6 +167,28 @@ export function CollectionDetailScreen() {
   const onBrowsePolicies = useCallback(() => {
     navigation.navigate('Agora')
   }, [navigation])
+
+  const onExportToSemble = useCallback(() => {
+    if (!collection) return
+    exportMutation.mutate(
+      {collection},
+      {
+        onSuccess: data => {
+          Toast.show(_(msg`Exported to Semble.so`))
+          // Open the collection on Semble.so
+          const rkey = data.collectionUri.split('/').pop()
+          if (rkey) {
+            Linking.openURL(`https://semble.so/profile/${currentAccount?.handle}/collections/${rkey}`).catch(() => {
+              // silently fail
+            })
+          }
+        },
+        onError: (err: Error) => {
+          Toast.show(err.message || _(msg`Failed to export to Semble.so`), {type: 'error'})
+        },
+      },
+    )
+  }, [collection, exportMutation, currentAccount?.handle, _])
 
   return (
     <Layout.Screen>
@@ -314,6 +342,15 @@ export function CollectionDetailScreen() {
                       <Trans>Duplicate</Trans>
                     </Text>
                   </TouchableOpacity>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel={_(msg`Export to Semble.so`)}
+                    accessibilityHint={_(msg`Exports this collection to Semble.so as a research trail`)}
+                    onPress={() => exportPrompt.open()}
+                    disabled={exportMutation.isPending || collection.items.length === 0}
+                    style={[styles.secondaryBtn, {borderColor: t.palette.contrast_100}]}>
+                    <ExportIcon size="sm" style={{color: t.palette.contrast_400}} />
+                  </TouchableOpacity>
                 </View>
               </View>
             }
@@ -349,6 +386,14 @@ export function CollectionDetailScreen() {
         )}
       </Layout.Content>
 
+      <Prompt.Basic
+        control={exportPrompt}
+        title={_(msg`Export to Semble.so?`)}
+        description={_(msg`This will create a public research collection on Semble.so with your cards and connections.`)}
+        onConfirm={onExportToSemble}
+        confirmButtonCta={_(msg`Export`)}
+        isPending={exportMutation.isPending}
+      />
       <Prompt.Basic
         control={deletePrompt}
         title={_(msg`Remove item?`)}

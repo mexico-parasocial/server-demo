@@ -32,6 +32,8 @@ export default function (server: Server, ctx: AppContext) {
       const did = auth.credentials.did
       const cabildeoUri = input.body.cabildeo
       const selectedOption = input.body.selectedOption
+      const voteNullifier = normalizeOpaqueProofField(input.body.voteNullifier, 128)
+      const eligibilityProofRef = normalizeOpaqueProofField(input.body.eligibilityProofRef, 512)
       const now = new Date()
       const createdAt = now.toISOString()
 
@@ -47,6 +49,8 @@ export default function (server: Server, ctx: AppContext) {
         cabildeo: cabildeoUri,
         selectedOption,
         isDirect: true,
+        ...(voteNullifier ? { voteNullifier } : {}),
+        ...(eligibilityProofRef ? { eligibilityProofRef } : {}),
         createdAt,
       }
 
@@ -205,3 +209,10 @@ const normalizeCommunitySlug = (value: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
+
+const normalizeOpaqueProofField = (value: unknown, maxLength: number) => {
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  if (!trimmed || trimmed.length > maxLength) return undefined
+  return trimmed
+}

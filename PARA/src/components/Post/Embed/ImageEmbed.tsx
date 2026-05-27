@@ -9,10 +9,10 @@ import {
 import {Image} from 'expo-image'
 
 import {useLightboxControls} from '#/state/lightbox'
-import {type Dimensions} from '#/components/Lightbox/types'
 import {atoms as a} from '#/alf'
 import {AutoSizedImage} from '#/components/images/AutoSizedImage'
 import {ImageLayoutGrid} from '#/components/images/ImageLayoutGrid'
+import {type Dimensions} from '#/components/Lightbox/types'
 import {PostEmbedViewContext} from '#/components/Post/Embed/types'
 import {type EmbedType} from '#/types/bsky/post'
 import {type CommonProps} from './types'

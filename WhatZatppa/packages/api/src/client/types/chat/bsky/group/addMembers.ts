@@ -52,6 +52,12 @@ export class BlockedActorError extends XRPCError {
   }
 }
 
+export class BlockedSubjectError extends XRPCError {
+  constructor(src: XRPCError) {
+    super(src.status, src.error, src.message, src.headers, { cause: src })
+  }
+}
+
 export class UserForbidsGroupsError extends XRPCError {
   constructor(src: XRPCError) {
     super(src.status, src.error, src.message, src.headers, { cause: src })
@@ -98,6 +104,7 @@ export function toKnownErr(e: any) {
   if (e instanceof XRPCError) {
     if (e.error === 'AccountSuspended') return new AccountSuspendedError(e)
     if (e.error === 'BlockedActor') return new BlockedActorError(e)
+    if (e.error === 'BlockedSubject') return new BlockedSubjectError(e)
     if (e.error === 'UserForbidsGroups') return new UserForbidsGroupsError(e)
     if (e.error === 'ConvoLocked') return new ConvoLockedError(e)
     if (e.error === 'InsufficientRole') return new InsufficientRoleError(e)

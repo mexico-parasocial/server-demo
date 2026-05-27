@@ -9,6 +9,7 @@ import {
 import {STALE} from '#/state/queries'
 import {useOnMarkAsRead} from '#/state/queries/messages/list-conversations'
 import {useAgent} from '#/state/session'
+import type * as bsky from '#/types/bsky'
 import {
   type ConvoListQueryData,
   getConvoFromQueryData,
@@ -40,6 +41,23 @@ export function precacheConvoQuery(
   convo: ChatBskyConvoDefs.ConvoView,
 ) {
   queryClient.setQueryData(RQKEY(convo.id), convo)
+}
+
+export function* findAllProfilesInQueryData(
+  queryClient: QueryClient,
+  did: string,
+): Generator<bsky.profile.AnyProfileView, void> {
+  const queryDatas = queryClient.getQueriesData<ChatBskyConvoDefs.ConvoView>({
+    queryKey: [RQKEY_ROOT],
+  })
+  for (const [_queryKey, queryData] of queryDatas) {
+    if (!queryData) continue
+    for (const member of queryData.members) {
+      if (member.did === did) {
+        yield member
+      }
+    }
+  }
 }
 
 export function useMarkAsReadMutation() {

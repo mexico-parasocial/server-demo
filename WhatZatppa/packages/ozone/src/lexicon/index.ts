@@ -123,6 +123,7 @@ import * as AppBskyVideoGetUploadLimits from './types/app/bsky/video/getUploadLi
 import * as AppBskyVideoUploadVideo from './types/app/bsky/video/uploadVideo.js'
 import * as ChatBskyActorDeleteAccount from './types/chat/bsky/actor/deleteAccount.js'
 import * as ChatBskyActorExportAccountData from './types/chat/bsky/actor/exportAccountData.js'
+import * as ChatBskyActorGetStatus from './types/chat/bsky/actor/getStatus.js'
 import * as ChatBskyConvoAcceptConvo from './types/chat/bsky/convo/acceptConvo.js'
 import * as ChatBskyConvoAddReaction from './types/chat/bsky/convo/addReaction.js'
 import * as ChatBskyConvoDeleteMessageForSelf from './types/chat/bsky/convo/deleteMessageForSelf.js'
@@ -2035,6 +2036,18 @@ export class ChatBskyActorNS {
     >,
   ) {
     const nsid = 'chat.bsky.actor.exportAccountData' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  getStatus<A extends Auth = void>(
+    cfg: MethodConfigOrHandler<
+      A,
+      ChatBskyActorGetStatus.QueryParams,
+      ChatBskyActorGetStatus.HandlerInput,
+      ChatBskyActorGetStatus.HandlerOutput
+    >,
+  ) {
+    const nsid = 'chat.bsky.actor.getStatus' // @ts-ignore
     return this._server.xrpc.method(nsid, cfg)
   }
 }

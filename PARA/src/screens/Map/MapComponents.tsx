@@ -45,6 +45,7 @@ type SelectedStateOverlayProps = {
 type BigCitiesDataOverlayProps = {
   selectedState: {name: string} | null
   showCities: boolean
+  selectedCityName: string | null
   onClose: () => void
 }
 
@@ -272,6 +273,172 @@ function OverlayFrame({
   )
 }
 
+function getPartyColor(party: string) {
+  switch (party) {
+    case 'Morena':
+      return '#8B1538'
+    case 'PAN':
+      return '#003087'
+    case 'PRI':
+      return '#00923F'
+    case 'MC':
+      return '#FF6B00'
+    case 'PVEM':
+      return '#228B22'
+    case 'PT':
+      return '#FF0000'
+    case 'PRD':
+      return '#FFD700'
+    default:
+      return '#666666'
+  }
+}
+
+function CityContextCard({
+  city,
+  stateName,
+}: {
+  city: {
+    name: string
+    population: string
+    dominantParty: string
+    governing_mayor: string
+  }
+  stateName: string
+}) {
+  const t = useTheme()
+  const navRef = useNavigation<NavigationProp>()
+  const {data: allCabildeos = []} = useCabildeosQuery()
+  const partyColor = getPartyColor(city.dominantParty)
+
+  const cityCabildeos = allCabildeos.filter(
+    c =>
+      normalizeMexicoStateName(c.region || '') ===
+        normalizeMexicoStateName(stateName),
+  )
+
+  return (
+    <View
+      style={[
+        a.mb_md,
+        a.p_md,
+        a.rounded_lg,
+        {backgroundColor: partyColor + '14'},
+        a.border,
+        {borderColor: partyColor + '32'},
+      ]}>
+      <Text style={[a.text_xs, a.font_bold, {color: partyColor}]}>
+        CIUDAD ACTIVA
+      </Text>
+      <Text style={[a.text_lg, a.font_bold, t.atoms.text, a.mt_xs]}>
+        {city.name}
+      </Text>
+      <Text style={[a.text_sm, t.atoms.text_contrast_medium, a.mt_2xs]}>
+        {stateName} · Mayor: {city.governing_mayor}
+      </Text>
+
+      <View style={[a.flex_row, a.gap_sm, a.mt_md]}>
+        <View
+          style={[
+            a.flex_1,
+            a.p_sm,
+            a.rounded_md,
+            t.atoms.bg_contrast_25,
+            a.align_center,
+          ]}>
+          <Text style={[a.text_xl, a.font_bold, t.atoms.text]}>
+            {city.population}
+          </Text>
+          <Text style={[a.text_2xs, t.atoms.text_contrast_medium]}>
+            Population
+          </Text>
+        </View>
+        <View
+          style={[
+            a.flex_1,
+            a.p_sm,
+            a.rounded_md,
+            t.atoms.bg_contrast_25,
+            a.align_center,
+          ]}>
+          <Text style={[a.text_xl, a.font_bold, t.atoms.text]}>
+            {cityCabildeos.length}
+          </Text>
+          <Text style={[a.text_2xs, t.atoms.text_contrast_medium]}>
+            Cabildeos
+          </Text>
+        </View>
+        <View
+          style={[
+            a.flex_1,
+            a.p_sm,
+            a.rounded_md,
+            t.atoms.bg_contrast_25,
+            a.align_center,
+          ]}>
+          <Text style={[a.text_xl, a.font_bold, t.atoms.text]}>
+            {city.dominantParty}
+          </Text>
+          <Text style={[a.text_2xs, t.atoms.text_contrast_medium]}>
+            Dominant
+          </Text>
+        </View>
+      </View>
+
+      {cityCabildeos.length > 0 && (
+        <View style={[a.mt_md, a.gap_sm]}>
+          <Text style={[a.text_xs, a.font_bold, t.atoms.text_contrast_medium]}>
+            RECENT CABILDEOS
+          </Text>
+          {cityCabildeos.slice(0, 3).map(c => (
+            <TouchableOpacity
+              key={c.uri}
+              accessibilityRole="button"
+              onPress={() =>
+                navRef.navigate('CabildeoDetail', {cabildeoUri: c.uri})
+              }
+              style={[
+                a.p_sm,
+                a.rounded_md,
+                t.atoms.bg_contrast_25,
+                a.border,
+                t.atoms.border_contrast_low,
+              ]}>
+              <Text
+                style={[a.text_sm, a.font_bold, t.atoms.text]}
+                numberOfLines={1}>
+                {c.title}
+              </Text>
+              <Text
+                style={[a.text_2xs, t.atoms.text_contrast_medium, a.mt_2xs]}>
+                {c.phase} · {c.voteTotals.total} votes
+              </Text>
+            </TouchableOpacity>
+          ))}
+          {cityCabildeos.length > 3 && (
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() =>
+                navRef.navigate('CabildeoList')
+              }>
+              <Text
+                style={[
+                  a.text_xs,
+                  a.font_bold,
+                  {color: partyColor},
+                  a.text_center,
+                  a.mt_xs,
+                ]}>
+                +{cityCabildeos.length - 3} more
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+    </View>
+  )
+}
+
 function DistrictContextCard({district}: {district: ElectoralDistrict}) {
   const t = useTheme()
   const navRef = useNavigation<NavigationProp>()
@@ -334,13 +501,82 @@ function DistrictContextCard({district}: {district: ElectoralDistrict}) {
             a.align_center,
           ]}>
           <Text style={[a.text_xl, a.font_bold, t.atoms.text]}>
-            {districtCabildeos.length + districtQuestions.length}
+            {districtCabildeos.length}
           </Text>
           <Text style={[a.text_2xs, t.atoms.text_contrast_medium]}>
-            Civic items
+            Cabildeos
+          </Text>
+        </View>
+        <View
+          style={[
+            a.flex_1,
+            a.p_sm,
+            a.rounded_md,
+            t.atoms.bg_contrast_25,
+            a.align_center,
+          ]}>
+          <Text style={[a.text_xl, a.font_bold, t.atoms.text]}>
+            {districtQuestions.length}
+          </Text>
+          <Text style={[a.text_2xs, t.atoms.text_contrast_medium]}>
+            Questions
           </Text>
         </View>
       </View>
+
+      {districtCabildeos.length > 0 && (
+        <View style={[a.mt_md, a.gap_sm]}>
+          <Text style={[a.text_xs, a.font_bold, t.atoms.text_contrast_medium]}>
+            RECENT CABILDEOS
+          </Text>
+          {districtCabildeos.slice(0, 3).map(c => (
+            <TouchableOpacity
+              key={c.uri}
+              accessibilityRole="button"
+              onPress={() =>
+                navRef.navigate('CabildeoDetail', {cabildeoUri: c.uri})
+              }
+              style={[
+                a.p_sm,
+                a.rounded_md,
+                t.atoms.bg_contrast_25,
+                a.border,
+                t.atoms.border_contrast_low,
+              ]}>
+              <Text
+                style={[a.text_sm, a.font_bold, t.atoms.text]}
+                numberOfLines={1}>
+                {c.title}
+              </Text>
+              <Text
+                style={[a.text_2xs, t.atoms.text_contrast_medium, a.mt_2xs]}>
+                {c.phase} · {c.voteTotals.total} votes
+              </Text>
+            </TouchableOpacity>
+          ))}
+          {districtCabildeos.length > 3 && (
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() =>
+                navRef.navigate('DistrictProfile', {
+                  districtId: district.id,
+                  initialTab: 'activity',
+                })
+              }>
+              <Text
+                style={[
+                  a.text_xs,
+                  a.font_bold,
+                  {color: district.accent},
+                  a.text_center,
+                  a.mt_xs,
+                ]}>
+                +{districtCabildeos.length - 3} more
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       <View style={[a.flex_row, a.gap_sm, a.mt_md]}>
         <MiniAction
@@ -510,6 +746,7 @@ export function SelectedStateOverlay({
 export function BigCitiesDataOverlay({
   selectedState,
   showCities,
+  selectedCityName,
   onClose,
 }: BigCitiesDataOverlayProps) {
   const t = useTheme()
@@ -517,34 +754,45 @@ export function BigCitiesDataOverlay({
   if (!selectedState || !showCities) return null
 
   const cityData = getCitiesForState(selectedState.name)
+  const selectedCity =
+    selectedCityName
+      ? cityData.find(c => c.name === selectedCityName) || null
+      : null
 
   return (
     <OverlayFrame
       title={selectedState.name}
       subtitle="Major Cities"
       onClose={onClose}>
-      <View
-        style={[
-          a.mb_md,
-          a.p_md,
-          a.rounded_lg,
-          t.atoms.bg_contrast_25,
-          a.border,
-          t.atoms.border_contrast_low,
-        ]}>
-        <Text style={[a.text_xs, a.font_bold, t.atoms.text_contrast_medium]}>
-          URBAN SNAPSHOT
-        </Text>
-        <Text style={[a.text_lg, a.font_bold, t.atoms.text, a.mt_xs]}>
-          {cityData.length} mapped major cit
-          {cityData.length === 1 ? 'y' : 'ies'}
-        </Text>
-      </View>
+      {selectedCity ? (
+        <CityContextCard city={selectedCity} stateName={selectedState.name} />
+      ) : (
+        <>
+          <View
+            style={[
+              a.mb_md,
+              a.p_md,
+              a.rounded_lg,
+              t.atoms.bg_contrast_25,
+              a.border,
+              t.atoms.border_contrast_low,
+            ]}>
+            <Text
+              style={[a.text_xs, a.font_bold, t.atoms.text_contrast_medium]}>
+              URBAN SNAPSHOT
+            </Text>
+            <Text style={[a.text_lg, a.font_bold, t.atoms.text, a.mt_xs]}>
+              {cityData.length} mapped major cit
+              {cityData.length === 1 ? 'y' : 'ies'}
+            </Text>
+          </View>
 
-      <Text style={[a.text_sm, t.atoms.text_contrast_medium, a.mb_md]}>
-        City-level political context for the current state. The map stays
-        state-based for now while civic data drills into urban centers here.
-      </Text>
+          <Text style={[a.text_sm, t.atoms.text_contrast_medium, a.mb_md]}>
+            City-level political context for the current state. The map stays
+            state-based for now while civic data drills into urban centers here.
+          </Text>
+        </>
+      )}
 
       <ScrollView contentContainerStyle={[a.gap_md, a.pb_lg]}>
         {cityData.length > 0 ? (
@@ -594,7 +842,11 @@ export function BigCitiesDataOverlay({
                   <Text style={[a.font_bold]}>{city.population}</Text>
                 </Text>
                 <Text
-                  style={[a.text_sm, t.atoms.text_contrast_medium, a.mt_xs]}>
+                  style={[
+                    a.text_sm,
+                    t.atoms.text_contrast_medium,
+                    a.mt_xs,
+                  ]}>
                   Mayor: {city.governing_mayor}
                 </Text>
               </View>
@@ -776,12 +1028,28 @@ function SearchResultRow({
   onSelect: (result: SearchResult) => void
 }) {
   const t = useTheme()
+  const {data: allCabildeos = []} = useCabildeosQuery()
   const badgeColor =
     result.type === 'state'
       ? t.palette.primary_500
       : result.type === 'district'
         ? '#D97706'
         : t.atoms.text_contrast_medium.color
+
+  const cabCount = allCabildeos.filter(c => {
+    if (!c.region) return false
+    const normRegion = normalizeMexicoStateName(c.region)
+    if (result.type === 'state') {
+      return normRegion === normalizeMexicoStateName(result.name)
+    }
+    if (result.type === 'city') {
+      return (
+        normRegion === normalizeMexicoStateName(result.subtitle || '') &&
+        c.city === result.name
+      )
+    }
+    return normRegion === normalizeMexicoStateName(result.subtitle || '')
+  }).length
 
   return (
     <TouchableOpacity
@@ -804,13 +1072,20 @@ function SearchResultRow({
           query={query}
           style={[a.text_md, t.atoms.text]}
         />
-        {!!result.subtitle && (
-          <HighlightedSearchText
-            text={result.subtitle}
-            query={query}
-            style={[a.text_xs, t.atoms.text_contrast_medium]}
-          />
-        )}
+          <View style={[a.flex_row, a.align_center, a.gap_xs, a.mt_xs]}>
+          {!!result.subtitle && (
+            <HighlightedSearchText
+              text={result.subtitle}
+              query={query}
+              style={[a.text_xs, t.atoms.text_contrast_medium]}
+            />
+          )}
+          {cabCount > 0 && (
+            <Text style={[a.text_xs, {color: badgeColor}]}>
+              · {cabCount} cabil{cabCount === 1 ? 'deo' : 'deos'}
+            </Text>
+          )}
+        </View>
       </View>
       <View
         style={[

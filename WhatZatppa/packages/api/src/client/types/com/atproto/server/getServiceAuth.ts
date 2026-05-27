@@ -16,7 +16,7 @@ const is$typed = _is$typed,
 const id = 'com.atproto.server.getServiceAuth'
 
 export type QueryParams = {
-  /** The DID of the service that the token will be used to authenticate with */
+  /** The DID or `did#serviceId` reference of the service that the token will be used to authenticate with. */
   aud: string
   /** The time in Unix Epoch seconds that the JWT expires. Defaults to 60 seconds in the future. The service may enforce certain time bounds on tokens depending on the requested scope. */
   exp?: number

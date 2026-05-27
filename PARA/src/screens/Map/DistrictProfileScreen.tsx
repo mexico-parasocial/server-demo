@@ -4,17 +4,14 @@ import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
+import {type CabildeoView} from '#/lib/cabildeo-client'
 import {
   type ElectoralDistrict,
   getDistrictById,
   getDistrictsByState,
 } from '#/lib/constants/electoralDistrictsData'
 import {normalizeMexicoStateName} from '#/lib/constants/mexico'
-import {
-  type DistrictRaqRecord,
-  type DistrictScopedCabildeoRecord,
-  MOCK_DISTRICT_RAQS,
-} from '#/lib/constants/mockData'
+import {STATE_DEMOGRAPHICS} from '#/lib/constants/mockData'
 import {
   type CommonNavigatorParams,
   type NativeStackScreenProps,
@@ -51,6 +48,8 @@ function seededRandom(seed: number) {
   }
 }
 
+// TODO: Replace with real INE election result data when available.
+// Currently generates deterministic synthetic breakdowns for UI preview.
 function generatePartyBreakdown(district: ElectoralDistrict) {
   const parties = ['Morena', 'PAN', 'PRI', 'MC', 'PVEM', 'PT', 'PRD']
   const rng = seededRandom(district.id * 97)
@@ -115,14 +114,20 @@ export function DistrictProfileScreen({navigation, route}: Props) {
 
   const {data: allCabildeos = []} = useCabildeosQuery()
 
+  // Real CabildeoRecord uses districtKey (singular string).
+  // Legacy mock data may use districtKeys (array) — support both.
+  const itemDistrictKeys = (item: CabildeoView): string[] => {
+    const legacy = (item as {districtKeys?: string[]}).districtKeys
+    if (legacy?.length) return legacy
+    return item.districtKey ? [item.districtKey] : []
+  }
+
   const districtCabildeos = useMemo(
     () =>
       district
         ? allCabildeos.filter(
             item =>
-              (item as {districtKeys?: string[]}).districtKeys?.includes(
-                district.districtKey,
-              ) ||
+              itemDistrictKeys(item).includes(district.districtKey) ||
               normalizeMexicoStateName(item.region || '') ===
                 normalizeMexicoStateName(district.stateName),
           )
@@ -137,34 +142,19 @@ export function DistrictProfileScreen({navigation, route}: Props) {
             item =>
               normalizeMexicoStateName(item.region || '') ===
                 normalizeMexicoStateName(district.stateName) &&
-              !(item as {districtKeys?: string[]}).districtKeys?.includes(
-              district.districtKey,
-            ),
+              !itemDistrictKeys(item).includes(district.districtKey),
           )
         : [],
     [district, allCabildeos],
   )
 
-  const districtQuestions = useMemo(
+  const stateDemographics = useMemo(
     () =>
       district
-        ? MOCK_DISTRICT_RAQS.filter(item =>
-            item.districtKeys.includes(district.districtKey),
-          )
-        : [],
-    [district],
-  )
-
-  const stateQuestions = useMemo(
-    () =>
-      district
-        ? MOCK_DISTRICT_RAQS.filter(
-            item =>
-              normalizeMexicoStateName(item.stateName) ===
-                normalizeMexicoStateName(district.stateName) &&
-              !item.districtKeys.includes(district.districtKey),
-          )
-        : [],
+        ? STATE_DEMOGRAPHICS[district.stateName] ||
+          STATE_DEMOGRAPHICS[normalizeMexicoStateName(district.stateName)] ||
+          STATE_DEMOGRAPHICS.default
+        : null,
     [district],
   )
 
@@ -338,7 +328,7 @@ export function DistrictProfileScreen({navigation, route}: Props) {
             />
           </View>
 
-          {/* Voting Record */}
+          {/* PARA civic activity — computed from real cabildeo data in this district. */}
           <View
             style={[a.mt_md, a.pt_md, a.border_t, t.atoms.border_contrast_low]}>
             <Text
@@ -349,25 +339,49 @@ export function DistrictProfileScreen({navigation, route}: Props) {
                 t.atoms.text_contrast_medium,
                 a.mb_sm,
               ]}>
-              <Trans>VOTING RECORD</Trans>
+              <Trans>PARA CIVIC ACTIVITY</Trans>
             </Text>
-            <View style={[a.gap_xs]}>
-              <VoteRecordRow
-                issue="Water desalination"
-                vote="+2"
-                color={t.palette.positive_500}
-              />
-              <VoteRecordRow
-                issue="Transit budget"
-                vote="-1"
-                color={t.palette.negative_500}
-              />
-              <VoteRecordRow
-                issue="Public Wi-Fi"
-                vote="+1"
-                color={t.palette.positive_500}
-              />
-            </View>
+            {districtCabildeos.length > 0 ? (
+              <View style={[a.gap_xs]}>
+                <View style={[a.flex_row, a.align_center, a.justify_between]}>
+                  <Text style={[a.text_sm, t.atoms.text]}>
+                    Total votes cast
+                  </Text>
+                  <Text style={[a.text_sm, a.font_bold, t.atoms.text]}>
+                    {districtCabildeos.reduce(
+                      (sum, c) => sum + (c.voteTotals?.total || 0),
+                      0,
+                    ).toLocaleString()}
+                  </Text>
+                </View>
+                <View style={[a.flex_row, a.align_center, a.justify_between]}>
+                  <Text style={[a.text_sm, t.atoms.text]}>
+                    Positions taken
+                  </Text>
+                  <Text style={[a.text_sm, a.font_bold, t.atoms.text]}>
+                    {districtCabildeos.reduce(
+                      (sum, c) => sum + (c.positionCounts?.total || 0),
+                      0,
+                    ).toLocaleString()}
+                  </Text>
+                </View>
+                <View style={[a.flex_row, a.align_center, a.justify_between]}>
+                  <Text style={[a.text_sm, t.atoms.text]}>Active cabildeos</Text>
+                  <Text style={[a.text_sm, a.font_bold, t.atoms.text]}>
+                    {districtCabildeos.filter(
+                      c => c.phase === 'voting' || c.phase === 'deliberating',
+                    ).length}
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <Text style={[a.text_sm, t.atoms.text_contrast_medium]}>
+                <Trans>
+                  No cabildeo activity in this district yet. Open lobbying
+                  appears on the map when users tag it to this distrito.
+                </Trans>
+              </Text>
+            )}
           </View>
         </View>
 
@@ -440,6 +454,18 @@ export function DistrictProfileScreen({navigation, route}: Props) {
                   ]}>
                   DISTRIBUCIÓN PARTIDISTA
                 </Text>
+                <Text
+                  style={[
+                    a.text_2xs,
+                    t.atoms.text_contrast_medium,
+                    a.mb_md,
+                  ]}>
+                  <Trans>
+                    Placeholder preview — will be computed from PARA civic
+                    engagement data when district-level party affiliation
+                    aggregates are available.
+                  </Trans>
+                </Text>
                 {partyBreakdown.map(item => {
                   const itemColors = getPartyColors(item.party)
                   return (
@@ -507,15 +533,72 @@ export function DistrictProfileScreen({navigation, route}: Props) {
               <Text style={[a.text_sm, t.atoms.text_contrast_high]}>
                 {districtCabildeos.length} cabildeo
                 {districtCabildeos.length === 1 ? '' : 's'} etiquetado
-                {districtQuestions.length} pregunta
-                {districtQuestions.length === 1 ? '' : 's'} abierta
-                {districtQuestions.length === 1 ? '' : 's'}.
+                {districtCabildeos.length === 1 ? '' : 's'} en este distrito.
               </Text>
-              <Text style={[a.text_sm, t.atoms.text_contrast_medium, a.mt_sm]}>
-                El mapa sigue siendo estatal, pero la navegación y la actividad
-                ya usan la clave estable del distrito para que la futura capa de
-                geometría no rompa esta pantalla.
-              </Text>
+              {stateDemographics && (
+                <View
+                  style={[
+                    a.flex_row,
+                    a.gap_md,
+                    a.mt_md,
+                    a.pt_md,
+                    a.border_t,
+                    t.atoms.border_contrast_low,
+                  ]}>
+                  <View style={[a.flex_1]}>
+                    <Text
+                      style={[
+                        a.text_2xs,
+                        a.font_bold,
+                        {letterSpacing: 0.5},
+                        t.atoms.text_contrast_medium,
+                        a.mb_2xs,
+                      ]}>
+                      APROBACIÓN ESTATAL
+                    </Text>
+                    <Text
+                      style={[a.text_lg, a.font_bold, t.atoms.text]}>
+                      {stateDemographics.approval}
+                    </Text>
+                  </View>
+                  <View style={[a.flex_1]}>
+                    <Text
+                      style={[
+                        a.text_2xs,
+                        a.font_bold,
+                        {letterSpacing: 0.5},
+                        t.atoms.text_contrast_medium,
+                        a.mb_2xs,
+                      ]}>
+                      ACTIVOS
+                    </Text>
+                    <Text
+                      style={[a.text_lg, a.font_bold, t.atoms.text]}>
+                      {stateDemographics.active}
+                    </Text>
+                  </View>
+                  <View style={[a.flex_1]}>
+                    <Text
+                      style={[
+                        a.text_2xs,
+                        a.font_bold,
+                        {letterSpacing: 0.5},
+                        t.atoms.text_contrast_medium,
+                        a.mb_2xs,
+                      ]}>
+                      PARTIDO LÍDER
+                    </Text>
+                    <Text
+                      style={[
+                        a.text_lg,
+                        a.font_bold,
+                        {color: getPartyColors(stateDemographics.dominantParty).fg},
+                      ]}>
+                      {stateDemographics.dominantParty}
+                    </Text>
+                  </View>
+                </View>
+              )}
             </View>
 
             {siblingDistricts.length > 0 && (
@@ -623,16 +706,38 @@ export function DistrictProfileScreen({navigation, route}: Props) {
               )}
             />
 
-            <ActivitySection
-              title="Preguntas abiertas"
-              emptyLabel="Aún no hay preguntas abiertas etiquetadas a este distrito."
-              primaryItems={districtQuestions}
-              fallbackItems={stateQuestions}
-              fallbackLabel={`Preguntas abiertas en ${district.stateName}`}
-              actionLabel="Ver RAQ"
-              onAction={() => navigation.navigate('OpenQuestionsList')}
-              renderItem={item => <RaqPreviewCard item={item} />}
-            />
+            <View
+              style={[
+                a.p_lg,
+                a.rounded_xl,
+                t.atoms.bg_contrast_25,
+                a.border,
+                t.atoms.border_contrast_low,
+              ]}>
+              <Text
+                style={[
+                  a.text_xs,
+                  a.font_bold,
+                  {letterSpacing: 1.5},
+                  t.atoms.text_contrast_medium,
+                  a.mb_sm,
+                ]}>
+                PREGUNTAS ABIERTAS
+              </Text>
+              <Text style={[a.text_sm, t.atoms.text_contrast_medium]}>
+                <Trans>
+                  District-scoped RAQs are not yet available. They will appear
+                  here once the backend supports tagging open questions to
+                  federal electoral districts.
+                </Trans>
+              </Text>
+              <View style={[a.mt_md]}>
+                <ActionChip
+                  label="Ver RAQ"
+                  onPress={() => navigation.navigate('OpenQuestionsList')}
+                />
+              </View>
+            </View>
           </View>
         )}
       </ScrollView>
@@ -789,7 +894,7 @@ function CabildeoPreviewCard({
   item,
   onPress,
 }: {
-  item: DistrictScopedCabildeoRecord
+  item: CabildeoView
   onPress?: () => void
 }) {
   const t = useTheme()
@@ -828,49 +933,4 @@ function CabildeoPreviewCard({
   return content
 }
 
-function RaqPreviewCard({item}: {item: DistrictRaqRecord}) {
-  const t = useTheme()
-  return (
-    <View
-      style={[
-        a.p_md,
-        a.rounded_lg,
-        t.atoms.bg,
-        a.border,
-        t.atoms.border_contrast_low,
-      ]}>
-      <View style={[a.flex_row, a.justify_between, a.align_center, a.mb_xs]}>
-        <Text style={[a.text_sm, a.font_bold, t.atoms.text, a.flex_1]}>
-          {item.title}
-        </Text>
-        <View
-          style={[a.px_sm, a.py_xs, a.rounded_full, t.atoms.bg_contrast_100]}>
-          <Text style={[a.text_2xs, a.font_bold, t.atoms.text]}>
-            {item.status}
-          </Text>
-        </View>
-      </View>
-      <Text style={[a.text_sm, t.atoms.text_contrast_medium]}>
-        {item.summary}
-      </Text>
-    </View>
-  )
-}
 
-function VoteRecordRow({
-  issue,
-  vote,
-  color,
-}: {
-  issue: string
-  vote: string
-  color: string
-}) {
-  const t = useTheme()
-  return (
-    <View style={[a.flex_row, a.align_center, a.justify_between]}>
-      <Text style={[a.text_sm, t.atoms.text]}>{issue}</Text>
-      <Text style={[a.text_sm, a.font_bold, {color}]}>{vote}</Text>
-    </View>
-  )
-}

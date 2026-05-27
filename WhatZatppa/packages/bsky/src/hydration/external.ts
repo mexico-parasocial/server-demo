@@ -10,6 +10,11 @@ import {
   parseSiteStandardRecordKey,
   siteStandardRecordKey,
 } from '../util/standard-site.js'
+export {
+  SITE_STANDARD_NSID_PREFIX,
+  parseSiteStandardRecordKey,
+  siteStandardRecordKey,
+} from '../util/standard-site.js'
 import {
   SiteStandardDocumentRecord,
   SiteStandardPublicationRecord,

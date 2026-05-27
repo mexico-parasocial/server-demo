@@ -855,6 +855,57 @@ describe('para feed views', () => {
     expect(draftDetail.cabildeo.optionSummary[0]?.votes).toBe(0)
   })
 
+  it('counts one effective cabildeo vote for shared m8 vote nullifiers', async () => {
+    const board = await createCommunityBoardRecord(sc, alice, {
+      name: 'M8 one person one vote',
+      quadrant: 'center',
+    })
+    await createCommunityMembershipRecord(sc, bob, board.uri, 'active')
+    await createCommunityMembershipRecord(sc, carol, board.uri, 'active')
+    await network.processAll()
+
+    const cabildeo = await createCabildeoRecord(sc, alice, {
+      title: 'Nullifier voting',
+      description: 'A person voting through two aliases still counts once.',
+      community: 'm8-one-person-one-vote',
+      phase: 'voting',
+      options: [{ label: 'A' }, { label: 'B' }],
+    })
+    await network.processAll()
+
+    const voteNullifier = 'm8-test-nullifier-shared-person'
+    await createNullifiedCabildeoVoteRecord(sc, bob, {
+      cabildeo: cabildeo.uri,
+      selectedOption: 0,
+      isDirect: true,
+      voteNullifier,
+      eligibilityProofRef: 'm8:civic-vote-proof:test-bob',
+    })
+    await network.processAll()
+    await network.processAll()
+
+    await createNullifiedCabildeoVoteRecord(sc, carol, {
+      cabildeo: cabildeo.uri,
+      selectedOption: 1,
+      isDirect: true,
+      voteNullifier,
+      eligibilityProofRef: 'm8:civic-vote-proof:test-carol',
+    })
+    await network.processAll()
+    await network.processAll()
+
+    const detail = await callPara<ParaGetCabildeoOutput>(
+      network,
+      'com.para.civic.getCabildeo',
+      { cabildeo: cabildeo.uri },
+      carol,
+    )
+    expect(detail.cabildeo.voteTotals.total).toBe(1)
+    expect(detail.cabildeo.voteTotals.direct).toBe(1)
+    expect(detail.cabildeo.optionSummary[0]?.votes).toBe(0)
+    expect(detail.cabildeo.optionSummary[1]?.votes).toBe(1)
+  })
+
   it('requires active community membership before listing civic members or delegates', async () => {
     const board = await createCommunityBoardRecord(sc, alice, {
       name: 'Privacy Board',
@@ -1339,6 +1390,42 @@ const callParaRaw = async (
     status: res.statusCode,
     body: await res.body.json(),
   }
+}
+
+const createNullifiedCabildeoVoteRecord = async (
+  sc: SeedClient,
+  by: string,
+  opts: {
+    cabildeo: string
+    selectedOption: number
+    isDirect: boolean
+    voteNullifier: string
+    eligibilityProofRef: string
+  },
+) => {
+  const { data } = await sc.agent.com.atproto.repo.createRecord(
+    {
+      repo: by,
+      collection: 'com.para.civic.vote',
+      record: {
+        $type: 'com.para.civic.vote',
+        subject: opts.cabildeo,
+        subjectType: 'cabildeo',
+        cabildeo: opts.cabildeo,
+        selectedOption: opts.selectedOption,
+        isDirect: opts.isDirect,
+        voteNullifier: opts.voteNullifier,
+        eligibilityProofRef: opts.eligibilityProofRef,
+        createdAt: new Date().toISOString(),
+      },
+    },
+    {
+      encoding: 'application/json',
+      headers: sc.getHeaders(by),
+    },
+  )
+
+  return { uri: data.uri, cid: data.cid }
 }
 
 const callParaProcedure = async <T>(

@@ -79,6 +79,8 @@ export interface CabildeoVote {
   selectedOption: number | null
   isDirect: 0 | 1
   delegatedFrom: string[] | null
+  voteNullifier: string | null
+  eligibilityProofRef: string | null
   createdAt: string
   indexedAt: string
   sortAt: GeneratedAlways<string>
