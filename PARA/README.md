@@ -1,21 +1,31 @@
-# PARA Client
+# PARA
 
-React Native / Expo client for the PARA civic platform. Targets iOS, Android, and Web.
+PARA is a civic-social client for Mexico: a mobile and web app for communities, public-interest conversations, policy proposals, and accountable participation. It is built on the AT Protocol and extends the social graph with PARA-specific civic primitives for deliberation, voting, community governance, and public-figure verification.
+
+The product direction is intentionally focused on Mexico. PARA is designed for Mexican citizens, local communities, civic organizations, journalists, organizers, and public representatives who need a healthier space to coordinate around public problems without giving up identity portability, transparency, or community autonomy.
+
+## Vision for Mexico
+
+Mexico has a strong civic culture, but participation is often fragmented across private chats, closed platforms, short-lived campaigns, and institutions that are difficult to audit from the outside. PARA aims to become a civic layer where people in Mexico can:
+
+- organize around local and national issues with durable community spaces;
+- compare proposals, evidence, and voting positions without losing context;
+- delegate attention and voting power to trusted people when they cannot follow every issue directly;
+- identify public figures and institutions with clearer verification signals;
+- build civic memory that belongs to communities instead of a single platform.
+
+PARA is not a replacement for public institutions. It is infrastructure for better civic coordination in Mexico: more informed participation, more accountable public conversation, and more ways for communities to act together.
 
 ---
 
 ## Quick Start
 
 ```bash
-cd PARA
-
-# Install dependencies (pnpm only)
 pnpm install
 
-# Start Expo dev server
-pnpm web        # Web
-pnpm ios        # iOS simulator
-pnpm android    # Android emulator
+pnpm web
+pnpm ios
+pnpm android
 ```
 
 ---
@@ -157,13 +167,13 @@ pnpm seed:civic:apply --introspect-url http://127.0.0.1:2581   # Seed demo data
 
 | Feature | Description |
 |---------|-------------|
-| **Cabildeo** | Structured policy proposals with for/against/amendment voting + liquid delegation |
-| **Civic Tree** | Spatial tree of communities, collections, initiatives, evidence, links, notes |
-| **Political Compass** | 9-position ideological grid for profile positioning and post highlights |
-| **Communities** | Group spaces with governance rules and estandartes (banners) |
-| **Collections** | Curated lists of posts or policies |
-| **Highlights** | Inline color annotations on posts tied to compass positions |
-| **Public-Figure Verification** | Manual verification workflow (`f/` prefix) backed by `com.para.identity` |
+| **Cabildeo** | Structured policy proposals with for/against/amendment voting and liquid delegation. |
+| **Civic Tree** | Spatial tree of communities, collections, initiatives, evidence, links, and notes. |
+| **Political Compass** | 9-position ideological grid for profile positioning, post highlights, and community alignment. |
+| **Communities** | Group spaces with governance rules and estandartes. |
+| **Collections** | Curated lists of posts, policies, civic resources, and community references. |
+| **Highlights** | Inline color annotations on posts tied to compass positions. |
+| **Public-Figure Verification** | Manual verification workflow backed by PARA identity records. |
 
 ---
 

@@ -28,7 +28,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       - name: 🔧 Setup Node
         uses: actions/setup-node@v6
@@ -117,7 +117,7 @@ jobs:
         run: git fetch origin main:main --depth 100
         if: github.event_name == 'pull_request'
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       - name: 🔧 Setup Node
         uses: actions/setup-node@v6

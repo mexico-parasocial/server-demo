@@ -1,6 +1,7 @@
 # OSX
 #
 .DS_Store
+.bundle/
 
 #Agents
 GEMINI.md
@@ -80,6 +81,9 @@ Gemfile.lock
 coverage/
 junit.xml
 artifacts
+*.db
+*.sqlite
+*.sqlite3
 
 # Web bundle outputs
 /dist/
@@ -150,6 +154,7 @@ bskyweb/static/media/*.svg
 
 # Local logs and error files
 *.log
+*.patch
 *_errors.txt
 *_output.txt
 typecheck_errors.txt
@@ -159,5 +164,8 @@ out.txt
 tsc_errors.log
 ios_build.log
 eslint_errors.txt
+final_lint_report.txt
+temp_*.tsx
 *.diff
 PLAN.md
+all_files.txt

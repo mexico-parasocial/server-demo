@@ -1,5 +1,0 @@
-export * from './did/index.js'
-export * from './handle/index.js'
-export * from './id-resolver.js'
-export * from './errors.js'
-export * from './types.js'
