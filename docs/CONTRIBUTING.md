@@ -123,7 +123,7 @@ refactor: extract usePolicyTree hook
 
 ### Package Manager
 
-**pnpm only.** Each subproject has `packageManager` pinned in `package.json`. Using npm or yarn will break lockfile consistency.
+**pnpm only.** Each subproject has `packageManager` pinned in `package.json`. Using npm or pnpmwill break lockfile consistency.
 
 ### TypeScript
 

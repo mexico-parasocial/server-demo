@@ -90,7 +90,7 @@ lex install com.atproto.identity.resolveHandle app.bsky.feed.post
 ```
 
 > [!NOTE]
-> Some systems (like MacOS) already have a `lex` command. If that is the case, use `npx lex`, `pnpm exec lex` or `yarn lex` to run the correct binary.
+> Some systems (like MacOS) already have a `lex` command. If that is the case, use `npx lex`, `pnpm exec lex` or `pnpmlex` to run the correct binary.
 
 This creates a `manifest.json` and a local `./lexicons/` directory with the schema files the package depends on.
 
@@ -108,7 +108,7 @@ Replace the old codegen script with `lex build` as a prebuild step:
 
 The `--indexFile` flag generates an index file that re-exports all root-level namespaces, and `--clear` ensures a clean output directory on each build.
 
-The `lex install --ci` command will ensure that the `manifest.json` is up to date with the installed lexicons. Using the `postinstall` hook ensures that the command runs after `npm install` or `yarn install`, which ensures lexicon integrity in CI environments.
+The `lex install --ci` command will ensure that the `manifest.json` is up to date with the installed lexicons. Using the `postinstall` hook ensures that the command runs after `npm install` or `pnpminstall`, which ensures lexicon integrity in CI environments.
 
 The `./src/lexicons/` directory (generated output) should be gitignored since it is regenerated on every build:
 
