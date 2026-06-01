@@ -388,3 +388,33 @@ index ff8fc8a947a0aeb959e21ec061882c3d190a2ce0..34dde79727765623df80dbcdab5016de
 -    flexWrap: 'wrap',
 -  },
 -});
+diff --git a/Common/cpp/worklets/SharedItems/Shareables.cpp b/Common/cpp/worklets/SharedItems/Shareables.cpp
+index 6136f2c24882325ed8372e9249bf4b8529826c4d..2093dd37c0ed3c67d6df8520315ab4a6f3e2ec8a 100644
+--- a/Common/cpp/worklets/SharedItems/Shareables.cpp
++++ b/Common/cpp/worklets/SharedItems/Shareables.cpp
+@@ -1,3 +1,5 @@
++#include <algorithm>
++
+ #include <worklets/SharedItems/Shareables.h>
+ 
+ using namespace facebook;
+diff --git a/Common/cpp/worklets/Tools/ReanimatedJSIUtils.cpp b/Common/cpp/worklets/Tools/ReanimatedJSIUtils.cpp
+index 0cce76ad59e5595c65a4a437a331e985df3e1a22..917d8732cf8b2b8020db56d5251fbdcc6b412cf6 100644
+--- a/Common/cpp/worklets/Tools/ReanimatedJSIUtils.cpp
++++ b/Common/cpp/worklets/Tools/ReanimatedJSIUtils.cpp
+@@ -1,4 +1,5 @@
+ #include <worklets/Tools/ReanimatedJSIUtils.h>
++#include <iterator>
+ #include <vector>
+ 
+ using namespace facebook;
+diff --git a/apple/reanimated/apple/LayoutReanimation/REASwizzledUIManager.mm b/apple/reanimated/apple/LayoutReanimation/REASwizzledUIManager.mm
+index b7df3a93914c5cb7f60077fe18f602ca5bc5ee34..29fca3488f39cf0d3090d336c6fa7ec1a3550fef 100644
+--- a/apple/reanimated/apple/LayoutReanimation/REASwizzledUIManager.mm
++++ b/apple/reanimated/apple/LayoutReanimation/REASwizzledUIManager.mm
+@@ -1,3 +1,5 @@
++#include <atomic>
++
+ #import <React/RCTLayoutAnimation.h>
+ #import <React/RCTLayoutAnimationGroup.h>
+ #import <React/RCTRootShadowView.h>

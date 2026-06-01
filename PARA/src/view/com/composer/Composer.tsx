@@ -58,7 +58,6 @@ import {
   type BskyAgent,
   RichText,
 } from '@atproto/api'
-import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome'
 import {msg, plural} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
@@ -1773,11 +1772,7 @@ function AltTextReminder({error}: {error: string}) {
   return (
     <View style={[styles.reminderLine, pal.viewLight]}>
       <View style={styles.errorIcon}>
-        <FontAwesomeIcon
-          icon="exclamation"
-          style={{color: colors.red4}}
-          size={10}
-        />
+        <Text style={styles.errorIconText}>!</Text>
       </View>
       <Text style={[pal.text, a.flex_1]}>{error}</Text>
     </View>
@@ -2569,13 +2564,18 @@ const styles = StyleSheet.create({
   errorIcon: {
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.red4,
-    color: colors.red4,
     borderRadius: 30,
     width: 16,
     height: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 5,
+  },
+  errorIconText: {
+    color: colors.red4,
+    fontSize: 10,
+    fontWeight: '700',
+    lineHeight: 12,
   },
   inactivePost: {
     opacity: 0.5,
