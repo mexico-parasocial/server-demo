@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # PARA Production Secret Generator
-# Usage: ./scripts/generate-secrets.sh > WhatZatppa/.env
+# Usage: ./scripts/generate-secrets.sh > WatZappa/.env
 #
 # Generates cryptographically secure secrets for all backend services.
 # Pipe output to .env, then edit domain names and admin passwords.
@@ -112,5 +112,5 @@ echo >&2 "✅ Secrets generated."
 echo >&2 "   Next steps:"
 echo >&2 "   1. Review the output above"
 echo >&2 "   2. Replace <set-your-own-strong-password> with a real admin password"
-echo >&2 "   3. Save to WhatZatppa/.env"
+echo >&2 "   3. Save to WatZappa/.env"
 echo >&2 "   4. Run: ./scripts/deploy-production.sh user@your-server-ip"

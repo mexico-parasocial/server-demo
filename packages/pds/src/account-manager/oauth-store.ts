@@ -41,30 +41,36 @@ import {
   TokenId,
   TokenInfo,
   TokenStore,
+  UpdateEmailConfirmInput,
+  UpdateEmailRequestInput,
+  UpdateEmailRequestOutput,
+  UpdateHandleData,
   UpdateRequestData,
+  VerifyEmailConfirmInput,
+  VerifyEmailRequestInput,
 } from '@atproto/oauth-provider'
 import {
   AuthRequiredError as XrpcAuthRequiredError,
   InvalidRequestError as XrpcInvalidRequestError,
 } from '@atproto/xrpc-server'
-import { ActorStore } from '../actor-store/actor-store'
-import { BackgroundQueue } from '../background'
-import { fromDateISO } from '../db'
-import { ImageUrlBuilder } from '../image/image-url-builder'
-import { dbLogger } from '../logger'
-import { ServerMailer } from '../mailer'
-import { Sequencer, syncEvtDataFromCommit } from '../sequencer'
-import { AccountManager, InvalidPasswordError } from './account-manager'
-import * as schemas from './db/schema'
-import * as accountHelper from './helpers/account'
-import { AccountStatus } from './helpers/account'
-import * as accountDeviceHelper from './helpers/account-device'
-import * as authRequestHelper from './helpers/authorization-request'
-import * as authorizedClientHelper from './helpers/authorized-client'
-import * as deviceHelper from './helpers/device'
-import * as lexiconHelper from './helpers/lexicon'
-import * as tokenHelper from './helpers/token'
-import * as usedRefreshTokenHelper from './helpers/used-refresh-token'
+import { ActorStore } from '../actor-store/actor-store.js'
+import { BackgroundQueue } from '../background.js'
+import { fromDateISO } from '../db/index.js'
+import { ImageUrlBuilder } from '../image/image-url-builder.js'
+import { dbLogger } from '../logger.js'
+import { ServerMailer } from '../mailer/index.js'
+import { Sequencer, syncEvtDataFromCommit } from '../sequencer/index.js'
+import { AccountManager, InvalidPasswordError } from './account-manager.js'
+import * as schemas from './db/schema/index.js'
+import * as accountDeviceHelper from './helpers/account-device.js'
+import * as accountHelper from './helpers/account.js'
+import { AccountStatus, UserAlreadyExistsError } from './helpers/account.js'
+import * as authRequestHelper from './helpers/authorization-request.js'
+import * as authorizedClientHelper from './helpers/authorized-client.js'
+import * as deviceHelper from './helpers/device.js'
+import * as lexiconHelper from './helpers/lexicon.js'
+import * as tokenHelper from './helpers/token.js'
+import * as usedRefreshTokenHelper from './helpers/used-refresh-token.js'
 
 /**
  * This class' purpose is to implement the interface needed by the OAuthProvider
@@ -321,7 +327,7 @@ export class OAuthStore
   ): Promise<DeviceAccount[]> {
     const rows = await accountDeviceHelper.selectQB(this.db, filter).execute()
 
-    const uniqueDids = [...new Set(rows.map((row) => row.did))]
+    const uniqueDids: string[] = [...new Set(rows.map((row) => row.did))]
 
     // Enrich all distinct account with their profile data
     const accounts = new Map(
@@ -417,13 +423,7 @@ export class OAuthStore
         throw new HandleUnavailableError('taken')
       }
     } catch (err) {
-      if (err instanceof XrpcInvalidRequestError) {
-        throw err.customErrorName === 'HandleNotAvailable'
-          ? new HandleUnavailableError('taken', err.message)
-          : new HandleUnavailableError('syntax', err.message)
-      }
-
-      throw err
+      throw toHandleUnavailableError(err)
     }
   }
 
@@ -603,6 +603,93 @@ export class OAuthStore
     return row ? this.toTokenInfo(row) : null
   }
 
+  async verifyEmailRequest({
+    sub: did,
+    locale,
+  }: VerifyEmailRequestInput): Promise<void> {
+    // @TODO @atproto/oauth-provider should strongly type `Sub` as `DidString`
+    assert(isDidString(did), 'sub must be a valid DID string')
+
+    try {
+      await this.accountManager.requestEmailConfirmation(did, { locale })
+    } catch (err) {
+      if (err instanceof XrpcAuthRequiredError) {
+        throw new InvalidRequestError(err.message, err)
+      }
+
+      throw err
+    }
+  }
+
+  async verifyEmailConfirm({
+    sub: did,
+    email,
+    token,
+  }: VerifyEmailConfirmInput): Promise<Account | null> {
+    // @TODO @atproto/oauth-provider should strongly type `Sub` as `DidString`
+    assert(isDidString(did), 'sub must be a valid DID string')
+
+    try {
+      const account = await this.accountManager.confirmEmail(did, email, token)
+
+      return this.buildAccount(account)
+    } catch (err) {
+      if (err instanceof XrpcInvalidRequestError) {
+        return null
+      }
+
+      throw err
+    }
+  }
+
+  async updateEmailRequest({
+    sub: did,
+    locale,
+  }: UpdateEmailRequestInput): Promise<UpdateEmailRequestOutput> {
+    // @TODO @atproto/oauth-provider should strongly type `Sub` as `DidString`
+    assert(isDidString(did), 'sub must be a valid DID string')
+
+    return this.accountManager.requestEmailUpdate(did, { locale })
+  }
+
+  async updateEmailConfirm({
+    sub: did,
+    token,
+    email,
+    locale,
+  }: UpdateEmailConfirmInput): Promise<Account | null> {
+    // @TODO @atproto/oauth-provider should strongly type `Sub` as `DidString`
+    assert(isDidString(did), 'sub must be a valid DID string')
+
+    try {
+      const account = await this.accountManager.updateEmail(did, email, token, {
+        sendConfirmationEmail: true,
+        locale,
+      })
+
+      return this.buildAccount(account)
+    } catch (cause) {
+      if (cause instanceof UserAlreadyExistsError) {
+        throw new InvalidRequestError(cause.message, cause)
+      }
+
+      throw cause
+    }
+  }
+
+  async updateHandle({ sub: did, handle }: UpdateHandleData): Promise<Account> {
+    // @TODO @atproto/oauth-provider should strongly type `Sub` as `DidString`
+    assert(isDidString(did), 'sub must be a valid DID string')
+
+    try {
+      const account = await this.accountManager.updateHandle(did, handle)
+
+      return this.buildAccount(account)
+    } catch (err) {
+      throw toHandleUnavailableError(err)
+    }
+  }
+
   private async toTokenInfo(
     row: accountHelper.ActorAccount & Selectable<schemas.Token>,
   ): Promise<TokenInfo> {
@@ -649,4 +736,33 @@ export class OAuthStore
 
     return account
   }
+}
+
+function toHandleUnavailableError(err: unknown): unknown {
+  if (err instanceof XrpcInvalidRequestError) {
+    if (err.message === 'External handle did not resolve to DID') {
+      return new HandleUnavailableError('resolution', err.message, err)
+    }
+
+    if (err.customErrorName === 'HandleNotAvailable') {
+      return new HandleUnavailableError('reserved', err.message, err)
+    }
+
+    if (err.customErrorName === 'UnsupportedDomain') {
+      return new HandleUnavailableError('domain', err.message, err)
+    }
+
+    if (err.customErrorName === 'InvalidHandle') {
+      if (err.message === 'Inappropriate language in handle') {
+        return new HandleUnavailableError('slur', err.message, err)
+      }
+
+      return new HandleUnavailableError('syntax', err.message, err)
+    }
+
+    // Unexpected case
+    return new InvalidRequestError(err.message, err)
+  }
+
+  return err
 }

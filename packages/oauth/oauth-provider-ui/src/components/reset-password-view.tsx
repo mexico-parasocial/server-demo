@@ -8,17 +8,11 @@ import { ResetPasswordRequestForm } from './reset-password-request-form.tsx'
 
 export type ResetPasswordViewProps = {
   emailDefault?: string
-  onResetPasswordRequest: (
-    data: { email: string },
-    signal: AbortSignal,
-  ) => void | PromiseLike<void>
-  onResetPasswordConfirm: (
-    data: {
-      token: string
-      password: string
-    },
-    signal: AbortSignal,
-  ) => void | PromiseLike<void>
+  onResetPasswordRequest: (data: { email: string }) => void | PromiseLike<void>
+  onResetPasswordConfirm: (data: {
+    token: string
+    password: string
+  }) => void | PromiseLike<void>
   onBack?: () => void
 }
 
@@ -53,12 +47,11 @@ export function ResetPasswordView({
         <ResetPasswordRequestForm
           emailDefault={emailDefault}
           submitLabel={<Trans>Next</Trans>}
-          onSubmit={async (data, signal) => {
-            await onResetPasswordRequest(data, signal)
-            if (!signal.aborted) setView(View.ConfirmReset)
+          handler={async (data) => {
+            await onResetPasswordRequest(data)
+            setView(View.ConfirmReset)
           }}
-          cancelLabel={<Trans>Back</Trans>}
-          onCancel={onBack}
+          onBack={onBack}
         />
         <hr className="my-5 border-gray-300 dark:border-gray-700" />
         <center>
@@ -87,12 +80,11 @@ export function ResetPasswordView({
 
         <ResetPasswordConfirmForm
           submitLabel={<Trans>Next</Trans>}
-          onSubmit={async (data, signal) => {
-            await onResetPasswordConfirm(data, signal)
-            if (!signal.aborted) setView(View.PasswordUpdated)
+          handler={async (data) => {
+            await onResetPasswordConfirm(data)
+            setView(View.PasswordUpdated)
           }}
-          cancelLabel={<Trans>Back</Trans>}
-          onCancel={() => setView(View.RequestReset)}
+          onBack={() => setView(View.RequestReset)}
         />
       </LayoutTitle>
     )

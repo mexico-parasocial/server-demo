@@ -8,7 +8,7 @@ set -euo pipefail
 #
 # Prerequisites:
 #   - rclone installed: https://rclone.org/install/
-#   - R2 credentials configured in WhatZatppa/.env
+#   - R2 credentials configured in the backend .env
 #
 # Usage:
 #   ./scripts/migrate-blobs-to-r2.sh
@@ -19,7 +19,8 @@ set -euo pipefail
 #   3. Verifies each upload
 # =============================================================================
 
-ENV_FILE="WhatZatppa/.env"
+BACKEND_DIR="${BACKEND_DIR:-WatZappa}"
+ENV_FILE="$BACKEND_DIR/.env"
 LOCAL_BLOB_DIR="${HOME}/.paramx-demo/blobstore"
 
 # Colors

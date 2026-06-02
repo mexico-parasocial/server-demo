@@ -1,7 +1,13 @@
 import type {
   Account,
+  ConfirmEmailUpdateInput,
+  ConfirmEmailVerificationInput,
   ConfirmResetPasswordInput,
+  InitiateEmailUpdateInput,
+  InitiateEmailUpdateOutput,
+  InitiateEmailVerificationInput,
   InitiatePasswordResetInput,
+  UpdateHandleInput,
 } from '@atproto/oauth-provider-api'
 import { OAuthScope } from '@atproto/oauth-types'
 import { ClientId } from '../client/client-id.js'
@@ -44,6 +50,13 @@ export {
 
 export type ResetPasswordRequestInput = InitiatePasswordResetInput
 export type ResetPasswordConfirmInput = ConfirmResetPasswordInput
+
+export type UpdateEmailRequestInput = InitiateEmailUpdateInput
+export type UpdateEmailRequestOutput = InitiateEmailUpdateOutput
+export type UpdateEmailConfirmInput = ConfirmEmailUpdateInput
+export type VerifyEmailRequestInput = InitiateEmailVerificationInput
+export type VerifyEmailConfirmInput = ConfirmEmailVerificationInput
+export type UpdateHandleData = UpdateHandleInput
 
 export type CreateAccountData = {
   locale: string
@@ -187,10 +200,31 @@ export interface AccountStore {
     data: ResetPasswordConfirmInput,
   ): Awaitable<null | Account>
 
+  updateEmailRequest(
+    data: UpdateEmailRequestInput,
+  ): Awaitable<UpdateEmailRequestOutput>
+  /**
+   * Must trigger a verification email to be sent to the new email address, that
+   * will then be confirmed through {@link updateEmailConfirm}. The account's
+   * `email_verified` field is expected to become `false` until the new email is
+   * confirmed.
+   */
+  updateEmailConfirm(data: UpdateEmailConfirmInput): Awaitable<Account | null>
+
+  verifyEmailRequest(data: VerifyEmailRequestInput): Awaitable<void>
+  verifyEmailConfirm(data: VerifyEmailConfirmInput): Awaitable<Account | null>
+
   /**
    * @throws {HandleUnavailableError} - To indicate that the handle is already taken
    */
   verifyHandleAvailability(handle: string): Awaitable<void>
+
+  /**
+   * @throws {HandleUnavailableError} - To indicate that the handle is already taken
+   * @throws {InvalidRequestError} - To indicate that the handle is invalid or
+   * cannot be used
+   */
+  updateHandle(data: UpdateHandleData): Awaitable<Account>
 }
 
 export const isAccountStore = buildInterfaceChecker<AccountStore>([
@@ -204,7 +238,12 @@ export const isAccountStore = buildInterfaceChecker<AccountStore>([
   'listDeviceAccounts',
   'resetPasswordRequest',
   'resetPasswordConfirm',
+  'updateEmailRequest',
+  'updateEmailConfirm',
+  'verifyEmailRequest',
+  'verifyEmailConfirm',
   'verifyHandleAvailability',
+  'updateHandle',
 ])
 
 export function asAccountStore<V>(implementation: V): V & AccountStore {

@@ -4,6 +4,8 @@ PARA is a civic-social platform for early adopters who want social networking to
 
 This repository is the demo workspace for the `mexico-parasocial` project. It is meant to help contributors, testers, organizers, and infrastructure partners understand what PARA is, where each subsystem lives, and how to start exploring the platform safely.
 
+The workspace is intentionally organized as a coordination repo plus child project repos. Treat `server-demo` as the public demo index and deployment notebook; treat `WatZappa`, `PARA`, `iM8`, and `mubEZ` as the source-of-truth repos for their own code.
+
 ## Why PARA Exists
 
 Most social platforms optimize for speed, engagement, and private ownership of public conversation. PARA is built around a different premise: civic life needs trustworthy identity, open protocol infrastructure, public-interest deliberation, and interfaces that make collective decisions easier to understand.
@@ -29,6 +31,20 @@ PARA is not only a client. It is a full ecosystem:
 
 > Naming note: the backend repository is **WatZappa**. Use this spelling in docs, scripts, deployments, and GitHub references.
 
+## Workspace Model
+
+`server-demo` is the top-level demo workspace. It can reference snapshots of the child repos and include cross-project docs, deployment scripts, and production-readiness notes. It should not blur ownership between projects:
+
+| Repo | GitHub Target | Role |
+|------|---------------|------|
+| `server-demo` | `mexico-parasocial/server-demo` | Demo entrypoint, workspace docs, deployment coordination |
+| `WatZappa` | `mexico-parasocial/WatZappa` | Backend protocol stack and civic APIs |
+| `PARA` | `mexico-parasocial/PARA` | User-facing client and public web surfaces |
+| `iM8` | `mexico-parasocial/iM8` | Identity frontend and wallet UX |
+| `mubEZ` | `mexico-parasocial/mubEZ` | Identity backend and ZKP-oriented services |
+
+Recommended push order is child repos first, then `server-demo` last. That keeps the demo workspace pointing at already-pushed child commits.
+
 ## What Early Adopters Can Test
 
 Early adopters should expect a working but fast-moving civic-social demo. The platform is especially useful for testing:
@@ -52,6 +68,8 @@ This is not yet a consumer-polished product. It is a real stack for serious test
 | Native iOS/Android client | In progress, Expo-based |
 | Civic lexicons and generated types | Active and changing |
 | Identity/ZKP services | Experimental, security-sensitive |
+| SeaweedFS/R2 storage rehearsal | Active production-readiness track |
+| Pajareo participation surfaces | Active demo feature track |
 | Production deployment scripts | Available, review before use |
 | Public-figure verification | Manual process today, stronger verification planned |
 
@@ -190,6 +208,24 @@ git -C /Users/mlv/Desktop/TH1/iM8 push origin main:demo-sync
 ```
 
 `iM8` currently uses `demo-sync` for non-destructive pushes because its remote `main` has separate history.
+
+Before pushing, check status in all repos:
+
+```bash
+git -C /Users/mlv/Desktop/TH1 status --short --branch
+git -C /Users/mlv/Desktop/TH1/WatZappa status --short --branch
+git -C /Users/mlv/Desktop/TH1/PARA status --short --branch
+git -C /Users/mlv/Desktop/TH1/mubEZ status --short --branch
+git -C /Users/mlv/Desktop/TH1/iM8 status --short --branch
+```
+
+When committing manually, use one focused commit per repo and push in this order:
+
+1. `WatZappa`
+2. `PARA`
+3. `mubEZ`
+4. `iM8` to `demo-sync` unless its `main` history has been reconciled
+5. `server-demo`
 
 ## Documentation
 

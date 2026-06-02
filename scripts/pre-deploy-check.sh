@@ -14,9 +14,10 @@ set -euo pipefail
 #   1 = blockers found, fix before deploying
 # =============================================================================
 
-ENV_FILE="WhatZatppa/.env"
-COMPOSE_FILE="WhatZatppa/docker-compose.prod.yaml"
-CADDYFILE="WhatZatppa/services/caddy/Caddyfile.prod"
+BACKEND_DIR="${BACKEND_DIR:-WatZappa}"
+ENV_FILE="$BACKEND_DIR/.env"
+COMPOSE_FILE="$BACKEND_DIR/docker-compose.prod.yaml"
+CADDYFILE="$BACKEND_DIR/services/caddy/Caddyfile.prod"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -124,7 +125,7 @@ fi
 # =============================================================================
 header "Matrix Stack (Optional)"
 
-MATRIX_COMPOSE_FILE="WhatZatppa/docker-compose.matrix.yaml"
+MATRIX_COMPOSE_FILE="$BACKEND_DIR/docker-compose.matrix.yaml"
 if [ -f "$MATRIX_COMPOSE_FILE" ]; then
   pass "docker-compose.matrix.yaml exists"
   matrix_vars=(
@@ -181,7 +182,7 @@ fi
 # =============================================================================
 header "Docker Build (quick check)"
 
-cd WhatZatppa
+pushd "$BACKEND_DIR" > /dev/null
 
 # Check if Docker daemon is running
 if ! docker info > /dev/null 2>&1; then
@@ -200,7 +201,7 @@ else
     warn "AppView image not built yet — run 'docker compose build' before deploy"
   fi
 fi
-cd ..
+popd > /dev/null
 
 # =============================================================================
 # 6. Secret entropy check

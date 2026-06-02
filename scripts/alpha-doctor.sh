@@ -8,6 +8,7 @@ ACCOUNT_DB="${ACCOUNT_DB:-/data/account-manager.sqlite}"
 PDS_HOST="${PDS_HOST:-https://localhost}"
 REDIS_HOST="${REDIS_HOST:-localhost}"
 POSTGRES_HOST="${POSTGRES_HOST:-localhost}"
+BACKEND_DIR="${BACKEND_DIR:-WatZappa}"
 
 echo "========================================"
 echo "  PARA Alpha Doctor — $(date)"
@@ -86,7 +87,7 @@ echo
 # 5. Docker health
 echo "🐳 DOCKER SERVICES"
 echo "------------------"
-docker compose -f WhatZatppa/docker-compose.prod.yaml ps --format "table {{.Name}}\t{{.Status}}\t{{.State}}" 2>/dev/null || docker ps --format "table {{.Names}}\t{{.Status}}" | tail -n +2
+docker compose -f "$BACKEND_DIR/docker-compose.prod.yaml" ps --format "table {{.Name}}\t{{.Status}}\t{{.State}}" 2>/dev/null || docker ps --format "table {{.Names}}\t{{.Status}}" | tail -n +2
 echo
 
 # 6. PDS health endpoint

@@ -27,7 +27,8 @@ set -euo pipefail
 #   - curl must be installed
 # =============================================================================
 
-ENV_FILE="WhatZatppa/.env"
+BACKEND_DIR="${BACKEND_DIR:-WatZappa}"
+ENV_FILE="$BACKEND_DIR/.env"
 PDS_URL="${PDS_URL:-http://localhost:2583}"
 
 HANDLE="${1:-admin.para.social}"
@@ -77,7 +78,7 @@ fi
 # Check PDS health
 info "Checking PDS health at $PDS_URL ..."
 if ! curl -sf "$PDS_URL/xrpc/_health" > /dev/null; then
-    error "PDS is not responding at $PDS_URL. Start the stack first: docker compose -f WhatZatppa/docker-compose.prod.yaml up -d"
+    error "PDS is not responding at $PDS_URL. Start the stack first: docker compose -f $BACKEND_DIR/docker-compose.prod.yaml up -d"
 fi
 
 # Read current invite setting
@@ -90,9 +91,9 @@ if [ "$INVITE_REQUIRED" = "1" ]; then
     
     # Restart only PDS to pick up the change
     info "Restarting PDS with invites disabled..."
-    cd WhatZatppa
+    pushd "$BACKEND_DIR" > /dev/null
     docker compose -f docker-compose.prod.yaml up -d --no-deps pds
-    cd ..
+    popd > /dev/null
     
     # Wait for PDS to be ready
     info "Waiting for PDS to restart..."
@@ -143,19 +144,32 @@ info "Updating $ENV_FILE with admin DID..."
 # Backup .env
 cp "$ENV_FILE" "$ENV_FILE.bak.$(date +%Y%m%d%H%M%S)"
 
-# Replace ADMIN_DIDS placeholder
-if grep -q "^ADMIN_DIDS=" "$ENV_FILE"; then
-    sed -i.bak "s|^ADMIN_DIDS=.*|ADMIN_DIDS=$ADMIN_DID|" "$ENV_FILE"
-else
-    echo "ADMIN_DIDS=$ADMIN_DID" >> "$ENV_FILE"
-fi
+append_did_env() {
+    local var="$1"
+    local did="$2"
+    local current
 
-# Replace OZONE_ADMIN_DIDS placeholder
-if grep -q "^OZONE_ADMIN_DIDS=" "$ENV_FILE"; then
-    sed -i.bak "s|^OZONE_ADMIN_DIDS=.*|OZONE_ADMIN_DIDS=$ADMIN_DID|" "$ENV_FILE"
-else
-    echo "OZONE_ADMIN_DIDS=$ADMIN_DID" >> "$ENV_FILE"
-fi
+    current=$(grep "^${var}=" "$ENV_FILE" 2>/dev/null | cut -d= -f2- | head -1 || true)
+
+    if [ -z "$current" ] || [[ "$current" == *"<"* ]] || [[ "$current" == *">"* ]]; then
+        if grep -q "^${var}=" "$ENV_FILE"; then
+            sed -i.bak "s|^${var}=.*|${var}=${did}|" "$ENV_FILE"
+        else
+            echo "${var}=${did}" >> "$ENV_FILE"
+        fi
+        return
+    fi
+
+    if echo "$current" | tr ',' '\n' | grep -qx "$did"; then
+        info "$var already includes $did"
+        return
+    fi
+
+    sed -i.bak "s|^${var}=.*|${var}=${current},${did}|" "$ENV_FILE"
+}
+
+append_did_env "ADMIN_DIDS" "$ADMIN_DID"
+append_did_env "OZONE_ADMIN_DIDS" "$ADMIN_DID"
 
 # Step 5: Restore invite requirement if it was disabled
 if [ "$INVITE_REQUIRED" = "1" ]; then
@@ -168,9 +182,9 @@ rm -f "$ENV_FILE.bak"
 
 # Step 6: Restart the full stack so Ozone picks up the admin DID
 info "Restarting stack to apply admin DID to Ozone..."
-cd WhatZatppa
+pushd "$BACKEND_DIR" > /dev/null
 docker compose -f docker-compose.prod.yaml up -d
-cd ..
+popd > /dev/null
 
 info "Waiting for services to restart..."
 sleep 10

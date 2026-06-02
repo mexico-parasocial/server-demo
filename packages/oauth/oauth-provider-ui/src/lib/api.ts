@@ -1,4 +1,14 @@
-import type { ApiEndpoints } from '@atproto/oauth-provider-api'
+import {
+  type ApiEndpoints,
+  type ConfirmResetPasswordInput,
+  type HandleUnavailableReason,
+  type InitiatePasswordResetInput,
+  type SignInInput,
+  type SignUpInput,
+  type UpdateHandleInput,
+  type VerifyHandleAvailabilityInput,
+  isHandleUnavailableReason,
+} from '@atproto/oauth-provider-api'
 import { readCookie } from './cookies.ts'
 import {
   JsonClient,
@@ -13,19 +23,57 @@ const CSRF_HEADER_NAME = 'x-csrf-token'
 
 const API_ENDPOINT_PREFIX = '/@atproto/oauth-provider/~api'
 
+export type ApiOptions = JsonClientOptions<ApiEndpoints>
+
 export class Api extends JsonClient<ApiEndpoints> {
-  constructor(options?: JsonClientOptions) {
+  constructor(options: ApiOptions = {}) {
     const baseUrl = new URL(API_ENDPOINT_PREFIX, window.origin).toString()
     super(baseUrl, {
       ...options,
-      headers: async () => ({
-        ...(await options?.headers?.()),
-        [CSRF_HEADER_NAME]: readCookie(CSRF_COOKIE_NAME),
-      }),
+      headers: async function () {
+        const optionsHeaders = await options?.headers?.call(this)
+        const csrfToken = readCookie(CSRF_COOKIE_NAME)
+        return { ...optionsHeaders, [CSRF_HEADER_NAME]: csrfToken }
+      },
     })
   }
 
-  // Override the parent's parseError method to handle expected error responses
+  async signIn(data: SignInInput) {
+    return this.fetch('POST', '/sign-in', data)
+  }
+
+  async initiatePasswordReset(data: InitiatePasswordResetInput) {
+    return this.fetch('POST', '/reset-password-request', data)
+  }
+
+  async confirmResetPassword(data: ConfirmResetPasswordInput) {
+    return this.fetch('POST', '/reset-password-confirm', data)
+  }
+
+  async validateHandleAvailability(data: VerifyHandleAvailabilityInput) {
+    return this.fetch('POST', '/verify-handle-availability', data)
+  }
+
+  async updateHandle(data: UpdateHandleInput) {
+    return this.fetch('POST', '/update-handle', data)
+  }
+
+  async signUp(data: SignUpInput) {
+    return this.fetch('POST', '/sign-up', data)
+  }
+
+  async signOut(sub: string | string[]) {
+    return this.fetch('POST', '/sign-out', { sub })
+  }
+
+  async consent(sub: string, scope?: string) {
+    return this.fetch('POST', '/consent', { sub, scope })
+  }
+
+  async reject() {
+    return this.fetch('POST', '/reject', {})
+  }
+
   // and transform them into instances of the corresponding error classes.
   public static override parseError(
     json: unknown,
@@ -179,7 +227,7 @@ export class EmailTakenError<
 
 export type HandleUnavailablePayload =
   JsonErrorPayload<'handle_unavailable'> & {
-    reason: 'syntax' | 'domain' | 'slur' | 'taken'
+    reason: HandleUnavailableReason
   }
 export class HandleUnavailableError<
   P extends HandleUnavailablePayload = HandleUnavailablePayload,
@@ -200,10 +248,7 @@ export class HandleUnavailableError<
       super.is(json) &&
       json.error === 'handle_unavailable' &&
       'reason' in json &&
-      (json.reason === 'syntax' ||
-        json.reason === 'domain' ||
-        json.reason === 'slur' ||
-        json.reason === 'taken')
+      isHandleUnavailableReason(json.reason)
     )
   }
 }

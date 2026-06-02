@@ -5,9 +5,10 @@ set -euo pipefail
 # For the 5950X + 128GB machine. Zero cloud. Full privacy.
 
 REMOTE_DIR="/opt/para"
-COMPOSE_FILE="WhatZatppa/docker-compose.local.yaml"
-ENV_FILE="WhatZatppa/.env"
-NGINX_CONF="WhatZatppa/services/nginx/nginx.local.conf"
+BACKEND_DIR="${BACKEND_DIR:-WatZappa}"
+COMPOSE_FILE="$BACKEND_DIR/docker-compose.local.yaml"
+ENV_FILE="$BACKEND_DIR/.env"
+NGINX_CONF="$BACKEND_DIR/services/nginx/nginx.local.conf"
 
 echo "═══════════════════════════════════════════════════════════════"
 echo "  PARA Bare-Metal Deploy"
@@ -35,9 +36,9 @@ fi
 # Build
 echo ""
 echo "🔨 Building Docker images..."
-cd WhatZatppa
+pushd "$BACKEND_DIR" > /dev/null
 docker compose -f docker-compose.local.yaml build
-cd ..
+popd > /dev/null
 
 # Deploy
 echo ""

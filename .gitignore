@@ -47,3 +47,8 @@ m8/eurosky-portal-main/
 # Test artifacts
 test.sqlite
 coverage
+
+# Local storage rehearsal artifacts
+PARA/dev-env/seaweedfs/storage.active.env
+PARA/dev-env/seaweedfs/backups/
+PARA/dev-env/seaweedfs/restore-drills/

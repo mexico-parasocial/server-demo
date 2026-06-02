@@ -1,82 +1,32 @@
-import {
-  ForwardedRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useStableCallback } from './use-stable-callback.ts'
 
 export type AsyncActionController = {
   reset: () => void
 }
 
-export type UseAsyncActionOptions = {
-  ref?: ForwardedRef<AsyncActionController>
-  onLoading?: (loading: boolean) => void
-  onError?: (error: Error | undefined) => void
-}
-
-export function useAsyncAction(
-  fn: (signal: AbortSignal) => void | PromiseLike<void>,
-  { ref, onLoading, onError }: UseAsyncActionOptions = {},
+export function useAsyncAction<Args extends unknown[] = []>(
+  fn: (signal: AbortSignal, ...args: Args) => void | PromiseLike<void>,
 ) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | undefined>()
-
-  const doSetError = useCallback(
-    (error: Error | undefined) => {
-      setError(error)
-      onError?.(error)
-    },
-    [onError],
-  )
-
-  const doSetLoading = useCallback(
-    (loading: boolean) => {
-      setLoading(loading)
-      onLoading?.(loading)
-    },
-    [onLoading],
-  )
-
   const controllerRef = useRef<AbortController>(null)
 
-  const resetRef = useRef<() => void>(null)
-  useEffect(() => {
-    resetRef.current = () => {
-      controllerRef.current?.abort()
-      controllerRef.current = null
-      doSetError(undefined)
-      doSetLoading(false)
-    }
-    return () => {
-      resetRef.current = null
-    }
-  }, [doSetError, doSetLoading])
-
-  useImperativeHandle(
-    ref,
-    (): AsyncActionController => ({
-      reset: () => resetRef.current?.(),
-    }),
-    [],
-  )
-
-  // Cancel pending action when unmounted
-  useEffect(() => {
-    return () => {
-      controllerRef.current?.abort()
-      controllerRef.current = null
-    }
+  const reset = useCallback<() => void>(() => {
+    controllerRef.current?.abort()
+    controllerRef.current = null
+    setError(undefined)
+    setLoading(false)
   }, [])
 
-  const run = useCallback(async (): Promise<void> => {
+  // Abort pending action on unmount
+  useEffect(() => reset, [])
+
+  const run = useStableCallback(async (...args: Args): Promise<void> => {
     // Cancel previous run
     controllerRef.current?.abort()
 
-    doSetLoading(true)
-    doSetError(undefined)
+    setLoading(true)
 
     const controller = new AbortController()
     const { signal } = controller
@@ -84,10 +34,17 @@ export function useAsyncAction(
     controllerRef.current = controller
 
     try {
-      await fn(signal)
+      await fn(signal, ...args)
+
+      // Clear previous error only after successful completion, to avoid
+      // clearing the error if the new action fails. This way the error will be
+      // visible until a successful action occurs or the user triggers a reset.
+      if (controller === controllerRef.current) {
+        setError(undefined)
+      }
     } catch (err) {
       if (controller === controllerRef.current) {
-        doSetError(err instanceof Error ? err : new Error(String(err)))
+        setError(err instanceof Error ? err : new Error(String(err)))
       } else {
         if (!isAbortReason(signal, err)) {
           console.warn('Async action error after abort', err)
@@ -96,18 +53,17 @@ export function useAsyncAction(
     } finally {
       if (controller === controllerRef.current) {
         controllerRef.current = null
-        doSetLoading(false)
+        setLoading(false)
       }
 
       controller.abort()
     }
-  }, [fn, doSetLoading, doSetError])
+  })
 
-  return {
-    loading,
-    error,
-    run,
-  }
+  return useMemo(
+    () => ({ run, reset, loading, error }),
+    [run, reset, loading, error],
+  )
 }
 
 function isAbortReason(signal: AbortSignal, err: unknown): boolean {

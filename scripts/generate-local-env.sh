@@ -3,7 +3,7 @@ set -euo pipefail
 
 # PARA Local Bare-Metal Environment Generator
 # For AMD Ryzen 9 5950X + 128GB RAM — zero cloud, full privacy
-# Usage: ./scripts/generate-local-env.sh > WhatZatppa/.env
+# Usage: ./scripts/generate-local-env.sh > WatZappa/.env
 
 if ! command -v openssl &> /dev/null; then
     echo "❌ openssl is required"
@@ -98,5 +98,5 @@ echo >&2 ""
 echo >&2 "✅ Local secrets generated."
 echo >&2 "   Next:"
 echo >&2 "   1. Set ADMIN_PASSWORDS to something memorable"
-echo >&2 "   2. Save to WhatZatppa/.env"
+echo >&2 "   2. Save to WatZappa/.env"
 echo >&2 "   3. Run: ./scripts/deploy-local.sh"

@@ -9,7 +9,8 @@ set -euo pipefail
 #   ./scripts/setup-r2.sh
 # =============================================================================
 
-ENV_FILE="WhatZatppa/.env"
+BACKEND_DIR="${BACKEND_DIR:-WatZappa}"
+ENV_FILE="$BACKEND_DIR/.env"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'

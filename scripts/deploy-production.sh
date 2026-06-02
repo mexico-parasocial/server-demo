@@ -30,8 +30,9 @@ for arg in "$@"; do
 done
 
 REMOTE_DIR="/opt/para"
-LOCAL_DIR="WhatZatppa"
-ENV_FILE="WhatZatppa/.env"
+BACKEND_DIR="${BACKEND_DIR:-WatZappa}"
+LOCAL_DIR="$BACKEND_DIR"
+ENV_FILE="$BACKEND_DIR/.env"
 
 echo "═══════════════════════════════════════════════════════════════"
 echo "  PARA Production Deploy"
@@ -53,7 +54,7 @@ fi
 # Warn if PDS_HOSTNAME is localhost
 if grep -q "PDS_HOSTNAME=localhost" "$ENV_FILE"; then
     echo "❌ BLOCKER: PDS_HOSTNAME is still 'localhost'."
-    echo "   Fix it: sed -i '' 's/PDS_HOSTNAME=localhost/PDS_HOSTNAME=pds.para-g0v.app/' WhatZatppa/.env"
+    echo "   Fix it: sed -i '' 's/PDS_HOSTNAME=localhost/PDS_HOSTNAME=pds.para-g0v.app/' $ENV_FILE"
     exit 1
 fi
 
@@ -69,7 +70,7 @@ echo ""
 echo "📤 Syncing code to $SERVER:$REMOTE_DIR ..."
 ssh "$SERVER" "mkdir -p $REMOTE_DIR"
 
-# rsync WhatZatppa/ excluding heavy/unnecessary dirs
+# rsync backend source excluding heavy/unnecessary dirs
 rsync -avz --delete \
   --exclude='node_modules' \
   --exclude='.git' \
