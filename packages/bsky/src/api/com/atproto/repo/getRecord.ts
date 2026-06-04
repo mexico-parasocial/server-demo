@@ -1,4 +1,4 @@
-import { AtUri } from '@atproto/syntax'
+import { atUri } from '@atproto/lex'
 import { InvalidRequestError, Server } from '@atproto/xrpc-server'
 import { AppContext } from '../../../../context'
 import { com } from '../../../../lexicons/index.js'

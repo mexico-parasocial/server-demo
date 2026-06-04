@@ -1,6 +1,6 @@
 #!/bin/bash
 # PARA Bare-Metal System Tuning
-# Run once on the 5950X + 128GB machine before first deploy
+# Run once on machine before first deploy
 
 set -euo pipefail
 
